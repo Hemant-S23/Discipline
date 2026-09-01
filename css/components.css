@@ -1097,7 +1097,13 @@
 
 /* ── Onboarding ──────────────────────────────────────────────── */
 .onboarding-step { display: none; }
-.onboarding-step.active { display: block; }
+.onboarding-step.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 
 .onboarding-logo {
   font-size: 24px;
@@ -1106,25 +1112,27 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   letter-spacing: -0.5px;
 }
 
 .onboarding-step h1 {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 900;
   line-height: 1.2;
   letter-spacing: -0.5px;
   margin-bottom: 12px;
 }
-.onboarding-step h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-.onboarding-step > p { font-size: 15px; color: var(--text-2); margin-bottom: 28px; }
+.onboarding-step h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.onboarding-step > p { font-size: 14px; color: var(--text-2); margin-bottom: 20px; }
 
 .goal-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+  max-height: 320px;
+  overflow-y: auto;
 }
 .goal-chip {
   display: flex;
@@ -1144,12 +1152,24 @@
 .goal-chip.selected { border-color: var(--accent); background: var(--accent-10); color: var(--accent); }
 .goal-chip:hover { border-color: var(--accent); }
 
-.starter-habits-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+.starter-habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex: 1;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.starter-habits-list::-webkit-scrollbar { width: 6px; }
+.starter-habits-list::-webkit-scrollbar-thumb { background: var(--accent-20); border-radius: 10px; }
+
 .starter-habit-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: var(--radius);
   border: 1.5px solid var(--border);
   background: var(--surface-2);
@@ -1171,7 +1191,8 @@
   display: flex;
   gap: 6px;
   justify-content: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
 }
 .onboarding-dot {
   width: 8px; height: 8px;

@@ -366,16 +366,21 @@ ul, ol { list-style: none; }
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .onboarding-card {
   background: var(--surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  padding: 48px 40px;
+  padding: 36px 32px;
   max-width: 480px;
   width: 100%;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border);
+  overflow: hidden;
 }
 
 /* ── Utility ─────────────────────────────────────────────────── */
