@@ -231,6 +231,42 @@ html.theme-sunset body {
   background-attachment: fixed;
 }
 
+/* ── Midnight Theme 🌙 ───────────────────────────────────────── */
+html.theme-midnight {
+  --accent:       #8B5CF6;
+  --accent-light: #A78BFA;
+  --accent-dark:  #7C3AED;
+  --accent-10:    rgba(139, 92, 246, 0.14);
+  --accent-20:    rgba(139, 92, 246, 0.25);
+  --accent-glow:  0 0 28px rgba(139, 92, 246, 0.45);
+
+  --bg:           #090714;
+  --surface:      #131028;
+  --surface-2:    #1C1838;
+  --surface-3:    #26214A;
+  --surface-hover:#201B42;
+
+  --text:         #F3F0FF;
+  --text-2:       #A7A1C6;
+  --text-3:       #746E96;
+
+  --border:       rgba(139, 92, 246, 0.22);
+  --border-2:     rgba(139, 92, 246, 0.36);
+
+  --shadow-xs:    0 1px 4px rgba(0, 0, 0, 0.40);
+  --shadow-sm:    0 2px 12px rgba(0, 0, 0, 0.50);
+  --shadow:       0 4px 28px rgba(0, 0, 0, 0.60);
+  --shadow-lg:    0 8px 48px rgba(0, 0, 0, 0.70);
+  --shadow-card:  0 2px 16px rgba(0, 0, 0, 0.40), 0 0 0 1px var(--border);
+}
+
+html.theme-midnight body {
+  background: radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.25) 0px, transparent 65%),
+              radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.20) 0px, transparent 65%),
+              #090714;
+  background-attachment: fixed;
+}
+
 /* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
