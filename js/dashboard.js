@@ -9,7 +9,7 @@ import {
 import { getLevelInfo, getCurrentLevelInfo } from './xp.js';
 import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js';
 import { renderTodayHabits } from './habits.js';
-import { getGreeting, getDailyQuote, rotateQuote, getTodayLong, pctBar, formatNumber } from './ui.js';
+import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber } from './ui.js';
 
 let chartDaily = null;
 let chartWeekly = null;
@@ -36,21 +36,11 @@ function renderHeader() {
   const dateEl   = document.getElementById('dash-date');
   const greetEl  = document.getElementById('dash-greeting');
   const quoteEl  = document.getElementById('dash-quote');
-  const refreshBtn = document.getElementById('btn-refresh-quote');
   const checkinBtn = document.getElementById('dash-checkin-btn');
 
   if (dateEl)  dateEl.textContent  = todayLong;
   if (greetEl) greetEl.textContent = `${greeting}, ${user.name} 👋`;
-
-  if (quoteEl && !quoteEl.dataset.initialized) {
-    quoteEl.textContent = `"${getDailyQuote()}"`;
-    quoteEl.dataset.initialized = 'true';
-    quoteEl.addEventListener('click', () => rotateQuote(quoteEl));
-  }
-  if (refreshBtn && !refreshBtn.dataset.initialized) {
-    refreshBtn.dataset.initialized = 'true';
-    refreshBtn.addEventListener('click', () => rotateQuote(quoteEl));
-  }
+  if (quoteEl) quoteEl.textContent = `"${getDailyQuote()}"`;
 
   // Check-in button state
   if (checkinBtn) {

@@ -1088,7 +1088,7 @@
 .matrix-cell {
   width: 28px;
   height: 28px;
-  cursor: pointer;
+  cursor: not-allowed;
   border-radius: var(--radius-xs);
   position: relative;
 }
@@ -1121,9 +1121,12 @@
   opacity: 0.3;
 }
 
-.matrix-cell.today .matrix-dot { border-color: var(--accent); }
-.matrix-cell.future .matrix-dot { opacity: 0.3; cursor: default; }
-.matrix-cell:not(.future):hover .matrix-dot { border-color: var(--accent); transform: scale(1.15); }
+.matrix-cell.today { cursor: pointer; }
+.matrix-cell.today .matrix-dot { border-color: var(--accent); box-shadow: 0 0 8px rgba(124, 111, 247, 0.4); }
+.matrix-cell.today:hover .matrix-dot { border-color: var(--accent); transform: scale(1.2); }
+
+.matrix-cell.future .matrix-dot { opacity: 0.25; cursor: not-allowed; }
+.matrix-cell.past-locked .matrix-dot { opacity: 0.7; cursor: not-allowed; }
 
 /* ── Mood Picker ─────────────────────────────────────────────── */
 .mood-picker {

@@ -154,30 +154,10 @@ export const QUOTES = [
   "Small promises. Kept every day."
 ];
 
-let lastQuoteIndex = -1;
-
 export function getDailyQuote() {
   const start = new Date(new Date().getFullYear(), 0, 0);
   const day = Math.floor((Date.now() - start.getTime()) / 86400000);
   return QUOTES[day % QUOTES.length];
-}
-
-export function getRandomQuote() {
-  let idx;
-  do {
-    idx = Math.floor(Math.random() * QUOTES.length);
-  } while (idx === lastQuoteIndex && QUOTES.length > 1);
-  lastQuoteIndex = idx;
-  return QUOTES[idx];
-}
-
-export function rotateQuote(quoteEl) {
-  if (!quoteEl) return;
-  quoteEl.classList.add('quote-fade');
-  setTimeout(() => {
-    quoteEl.textContent = `"${getRandomQuote()}"`;
-    quoteEl.classList.remove('quote-fade');
-  }, 250);
 }
 
 // ── Greeting ─────────────────────────────────────────────────

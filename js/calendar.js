@@ -77,10 +77,15 @@ function renderMatrix() {
       if (!scheduled)  cls += ' not-scheduled';
       else if (done)   cls += ' done';
       if (d.isToday)   cls += ' today';
-      if (d.isFuture)  cls += ' future';
+      else if (d.isFuture) cls += ' future';
+      else cls += ' past-locked';
 
-      const clickable = scheduled && !d.isFuture;
-      html += `<td class="${cls}" ${clickable ? `onclick="calendarToggle('${h.id}','${d.dateStr}')"` : ''}>
+      const clickable = scheduled && d.isToday;
+      const onClickAttr = clickable
+        ? `onclick="calendarToggle('${h.id}','${d.dateStr}')"`
+        : `onclick="calendarLockedNotice()"`;
+
+      html += `<td class="${cls}" ${onClickAttr}>
         <div class="matrix-dot">${done ? '✓' : ''}</div>
       </td>`;
     });
@@ -131,14 +136,19 @@ function renderMonthlySummary(habits, days) {
 
 window.calendarToggle = function(habitId, ds) {
   const todayStr = today();
-  const d = new Date(ds + 'T00:00:00');
-  if (d > new Date()) return;
+  if (ds !== todayStr) {
+    showToast('🔒 Past entries are locked. Complete habits on today!', 'warning');
+    return;
+  }
 
   toggleCompletion(habitId, ds);
   renderMatrix();
 
-  // If toggling today, re-render dashboard
-  if (ds === todayStr && window._renderDashboard) window._renderDashboard();
+  if (window._renderDashboard) window._renderDashboard();
+};
+
+window.calendarLockedNotice = function() {
+  showToast('🔒 Past entries are locked. Discipline is built day by day!', 'warning', 2500);
 };
 
 window.calendarPrev = calendarPrev;
