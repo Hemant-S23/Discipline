@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discipline — Build the person you promised yourself you'd become</title>
+  <meta name="description" content="Discipline is a personal habit and consistency dashboard. Track habits, streaks, XP, achievements and build the person you promised yourself you'd become." />
+  <meta name="theme-color" content="#7C6FF7" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- SVG Gradient (for score ring) -->
+  <svg style="width:0;height:0;position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#7C6FF7"/>
+        <stop offset="100%" stop-color="#A59CF5"/>
+      </linearGradient>
+    </defs>
+  </svg>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ONBOARDING OVERLAY
+     ═══════════════════════════════════════════════════════════ -->
+<div id="onboarding-overlay" class="onboarding-overlay">
+  <div class="onboarding-card">
+
+    <!-- Progress Dots -->
+    <div class="onboarding-progress">
+      <div class="onboarding-dot active"></div>
+      <div class="onboarding-dot"></div>
+      <div class="onboarding-dot"></div>
+      <div class="onboarding-dot"></div>
+      <div class="onboarding-dot"></div>
+    </div>
+
+    <!-- Step 1: Welcome -->
+    <div class="onboarding-step active" data-step="1">
+      <div class="onboarding-logo">🎯 DISCIPLINE</div>
+      <h1>Build the person you promised<br>yourself you'd become.</h1>
+      <p>Small promises. Kept every day.</p>
+      <div style="background:var(--surface-2);border-radius:var(--radius);padding:16px 20px;margin-bottom:28px;border:1px solid var(--border)">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:22px">🔥</span>
+            <div>
+              <div style="font-size:14px;font-weight:700">Build streaks</div>
+              <div style="font-size:12px;color:var(--text-2)">Never miss twice</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:22px">⭐</span>
+            <div>
+              <div style="font-size:14px;font-weight:700">Earn XP &amp; level up</div>
+              <div style="font-size:12px;color:var(--text-2)">Every habit counts</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:22px">📊</span>
+            <div>
+              <div style="font-size:14px;font-weight:700">See your progress</div>
+              <div style="font-size:12px;color:var(--text-2)">Beautiful analytics</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary full-width" onclick="onboardingNext()">Let's begin →</button>
+    </div>
+
+    <!-- Step 2: Name -->
+    <div class="onboarding-step" data-step="2">
+      <div class="onboarding-logo">👋</div>
+      <h2>What should we call you?</h2>
+      <p>So we can personalize your experience.</p>
+      <div class="form-group" style="margin-bottom:28px">
+        <input type="text" class="form-input" id="ob-name-input" placeholder="Your name" maxlength="30" style="font-size:18px;text-align:center;font-weight:700" />
+      </div>
+      <div class="onboarding-step-footer">
+        <button class="step-back" onclick="onboardingBack()">← Back</button>
+        <button class="btn-primary" style="flex:1" onclick="onboardingNext()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Goals -->
+    <div class="onboarding-step" data-step="3">
+      <div class="onboarding-logo">🎯</div>
+      <h2>What do you want to improve?</h2>
+      <p>Choose all that apply</p>
+      <div class="goal-grid">
+        <div class="goal-chip" onclick="toggleGoal('mind', this)"><span>🧠 Mind</span></div>
+        <div class="goal-chip" onclick="toggleGoal('learning', this)"><span>📚 Learning</span></div>
+        <div class="goal-chip" onclick="toggleGoal('fitness', this)"><span>💪 Fitness</span></div>
+        <div class="goal-chip" onclick="toggleGoal('work', this)"><span>💻 Work</span></div>
+        <div class="goal-chip" onclick="toggleGoal('personal', this)"><span>🌱 Personal</span></div>
+        <div class="goal-chip" onclick="toggleGoal('routine', this)"><span>😴 Routine</span></div>
+      </div>
+      <div class="onboarding-step-footer">
+        <button class="step-back" onclick="onboardingBack()">← Back</button>
+        <button class="btn-primary" style="flex:1" onclick="onboardingNext()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Starter Habits -->
+    <div class="onboarding-step" data-step="4">
+      <div class="onboarding-logo">✨</div>
+      <h2>Choose your starter habits</h2>
+      <p>Pick 3–5 to begin with. You can always add more later.</p>
+      <div class="starter-habits-list" id="starter-habits-container"></div>
+      <div class="onboarding-step-footer">
+        <button class="step-back" onclick="onboardingBack()">← Back</button>
+        <button class="btn-primary" style="flex:1" onclick="onboardingNext()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 5: Ready -->
+    <div class="onboarding-step" data-step="5">
+      <div class="onboarding-success-icon">🔥</div>
+      <h2 style="text-align:center">You're ready.</h2>
+      <p style="text-align:center">Day 1 starts today. One habit at a time.</p>
+      <div style="background:var(--accent-10);border-radius:var(--radius);padding:16px 20px;margin-bottom:28px;border:1px solid var(--accent-20);text-align:center">
+        <p style="font-size:14px;color:var(--accent);font-weight:600;font-style:italic;margin:0">"You don't need a perfect day.<br>You just need to keep showing up."</p>
+      </div>
+      <button class="btn-primary full-width" onclick="finishOnboarding()">Start my discipline 🚀</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL
+     ═══════════════════════════════════════════════════════════ -->
+<div id="app" class="app-shell hidden">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎯</span>
+      <span class="logo-text">Discipline</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#dashboard" class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+      </a>
+      <a href="#habits" class="nav-item" data-page="habits">
+        <span class="nav-icon">📋</span><span class="nav-label">Habits</span>
+      </a>
+      <a href="#streaks" class="nav-item" data-page="streaks">
+        <span class="nav-icon">🔥</span><span class="nav-label">Streaks</span>
+      </a>
+      <a href="#analytics" class="nav-item" data-page="analytics">
+        <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+      </a>
+      <a href="#achievements" class="nav-item" data-page="achievements">
+        <span class="nav-icon">🏆</span><span class="nav-label">Achievements</span>
+      </a>
+      <a href="#rewards" class="nav-item" data-page="rewards">
+        <span class="nav-icon">🎁</span><span class="nav-label">Rewards</span>
+      </a>
+      <a href="#calendar" class="nav-item" data-page="calendar">
+        <span class="nav-icon">📅</span><span class="nav-label">Calendar</span>
+      </a>
+      <a href="#settings" class="nav-item" data-page="settings">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="sidebar-avatar">D</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-user-name">Friend</div>
+        <div class="user-level-text" id="sidebar-user-level">Lv.1 · Beginner</div>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ▸ DASHBOARD ─────────────────────────────────────────── -->
+    <section id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="date-display" id="dash-date">Loading...</div>
+          <h1 class="greeting" id="dash-greeting">Good morning 👋</h1>
+          <p class="daily-quote" id="dash-quote">"Consistency beats motivation."</p>
+        </div>
+        <button class="btn-checkin" id="dash-checkin-btn" onclick="openModal('modal-checkin')">📝 Daily Check-in</button>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <!-- Discipline Score -->
+        <div class="card score-card">
+          <div class="score-ring-wrap">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="45"/>
+              <circle class="ring-progress" id="score-ring" cx="50" cy="50" r="45"/>
+            </svg>
+            <div class="score-value-wrap">
+              <div class="score-number" id="dash-score-number">0</div>
+            </div>
+          </div>
+          <div class="score-label">Discipline<br>Score</div>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="card progress-card">
+          <div class="card-label">Today</div>
+          <div class="progress-fraction" id="dash-progress-fraction">0 <span class="total">/ 0</span></div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="dash-progress-bar" style="width:0%"></div>
+          </div>
+          <div class="progress-pct" id="dash-progress-pct">0%</div>
+          <div class="progress-remaining" id="dash-progress-remaining">No habits yet</div>
+        </div>
+
+        <!-- Streak Card -->
+        <div class="card streak-card">
+          <div class="streak-fire">🔥</div>
+          <div class="streak-number" id="dash-streak-number">0</div>
+          <div class="streak-label">Day Streak</div>
+          <div class="streak-best" id="dash-streak-best">Best: 0 days</div>
+        </div>
+
+        <!-- XP Card -->
+        <div class="card xp-card">
+          <div class="xp-icon">⭐</div>
+          <div class="xp-number" id="dash-xp-number">0</div>
+          <div class="xp-label">Total XP Earned</div>
+          <div class="level-badge" id="dash-level-badge">⚡ Lv.1 · Beginner</div>
+          <div class="level-bar-wrap">
+            <div class="level-bar" id="dash-level-bar" style="width:0%"></div>
+          </div>
+          <div class="level-xp-info" id="dash-level-xp-info">150 XP to Lv.2</div>
+        </div>
+      </div>
+
+      <!-- Today's Habits -->
+      <div class="card habits-card">
+        <div class="card-header">
+          <h2>Today's Habits</h2>
+          <button class="btn-primary" style="padding:8px 16px;font-size:13px" data-action="add-habit">+ Add</button>
+        </div>
+        <div class="habits-list" id="today-habits-list"></div>
+        <div class="empty-state hidden" id="habits-empty">
+          <div class="empty-icon">🌟</div>
+          <p>Your discipline journey starts here.</p>
+          <button class="btn-primary" data-action="add-habit">+ Create your first habit</button>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header"><h3>Daily Progress</h3><span style="font-size:12px;color:var(--text-3)">Last 7 days</span></div>
+          <div style="height:180px"><canvas id="chart-daily"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Weekly Trend</h3><span style="font-size:12px;color:var(--text-3)">Last 4 weeks</span></div>
+          <div style="height:180px"><canvas id="chart-weekly"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ▸ HABITS ─────────────────────────────────────────────── -->
+    <section id="page-habits" class="page">
+      <div class="page-header">
+        <div>
+          <h1>My Habits</h1>
+          <p class="daily-quote" style="margin-top:4px">Manage and track all your habits</p>
+        </div>
+        <button class="btn-primary" data-action="add-habit">+ Add Habit</button>
+      </div>
+      <div class="filter-tabs">
+        <button class="filter-tab habits-filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab habits-filter-tab" data-filter="mind">🧠 Mind</button>
+        <button class="filter-tab habits-filter-tab" data-filter="learning">📚 Learning</button>
+        <button class="filter-tab habits-filter-tab" data-filter="fitness">💪 Fitness</button>
+        <button class="filter-tab habits-filter-tab" data-filter="work">💻 Work</button>
+        <button class="filter-tab habits-filter-tab" data-filter="personal">🌱 Personal</button>
+        <button class="filter-tab habits-filter-tab" data-filter="routine">😴 Routine</button>
+      </div>
+      <div class="habits-grid" id="habits-page-list"></div>
+    </section>
+
+    <!-- ▸ STREAKS ─────────────────────────────────────────────── -->
+    <section id="page-streaks" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Streaks 🔥</h1>
+          <p class="daily-quote" style="margin-top:4px">Don't break the chain</p>
+        </div>
+      </div>
+
+      <!-- Chain View -->
+      <div class="chain-view">
+        <div class="chain-title">YOUR CHAIN</div>
+        <div class="chain-fires" id="streak-chain-fires"></div>
+        <div class="chain-days-label" id="streak-chain-days">0 DAYS</div>
+        <div class="chain-days-sub">Keep going. Every day matters.</div>
+      </div>
+
+      <!-- Per-habit streaks -->
+      <h3 style="margin-bottom:14px;font-size:16px;font-weight:700;color:var(--text-2)">HABIT STREAKS</h3>
+      <div class="streaks-grid" id="streaks-habits-grid"></div>
+    </section>
+
+    <!-- ▸ ANALYTICS ───────────────────────────────────────────── -->
+    <section id="page-analytics" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Analytics 📊</h1>
+          <p class="daily-quote" style="margin-top:4px">Your consistency at a glance</p>
+        </div>
+      </div>
+
+      <!-- Overview Stats -->
+      <div class="stat-overview-grid">
+        <div class="stat-overview-card">
+          <div class="stat-overview-value" id="stat-total-completions">0</div>
+          <div class="stat-overview-label">Total Completions</div>
+        </div>
+        <div class="stat-overview-card">
+          <div class="stat-overview-value" id="stat-30-pct">0%</div>
+          <div class="stat-overview-label">30-Day Consistency</div>
+        </div>
+        <div class="stat-overview-card">
+          <div class="stat-overview-value" id="stat-best-streak">0 🔥</div>
+          <div class="stat-overview-label">Best Streak</div>
+        </div>
+        <div class="stat-overview-card">
+          <div class="stat-overview-value" id="stat-total-xp">⭐ 0</div>
+          <div class="stat-overview-label">XP Earned</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-header"><h3>Daily Completion</h3><span style="font-size:12px;color:var(--text-3)">Last 14 days</span></div>
+          <div style="height:220px"><canvas id="chart-analytics-daily"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Weekly Trend</h3><span style="font-size:12px;color:var(--text-3)">Last 8 weeks</span></div>
+          <div style="height:220px"><canvas id="chart-analytics-weekly"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Top Habits + Needs Attention -->
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-header"><h3>🏆 Top Habits</h3><span style="font-size:12px;color:var(--text-3)">30-day consistency</span></div>
+          <div class="top-habits-list" id="top-habits-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>⚠️ Needs Attention</h3><span style="font-size:12px;color:var(--text-3)">Below 60%</span></div>
+          <div class="top-habits-list" id="needs-attention-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ▸ ACHIEVEMENTS ─────────────────────────────────────────── -->
+    <section id="page-achievements" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Achievements 🏆</h1>
+          <p class="daily-quote" style="margin-top:4px">Milestones worth celebrating</p>
+        </div>
+      </div>
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </section>
+
+    <!-- ▸ REWARDS ─────────────────────────────────────────────── -->
+    <section id="page-rewards" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Rewards 🎁</h1>
+          <p class="daily-quote" style="margin-top:4px">Unlock rewards with your XP</p>
+        </div>
+      </div>
+      <div class="card card-sm" style="margin-bottom:20px;background:linear-gradient(135deg,var(--accent-10),var(--xp-10));border-color:var(--accent-20)">
+        <div style="font-size:14px;font-weight:600;color:var(--text-2)" id="rewards-xp-status">Loading...</div>
+      </div>
+      <div class="rewards-grid" id="rewards-grid"></div>
+    </section>
+
+    <!-- ▸ CALENDAR ─────────────────────────────────────────────── -->
+    <section id="page-calendar" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Calendar 📅</h1>
+          <p class="daily-quote" style="margin-top:4px">Your habit matrix</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="calendar-nav">
+          <button class="cal-nav-btn" onclick="calendarPrev()">←</button>
+          <h2 id="calendar-month-label">September 2026</h2>
+          <button class="cal-nav-btn" onclick="calendarNext()">→</button>
+        </div>
+        <div id="calendar-matrix-wrap"></div>
+      </div>
+      <div id="calendar-summary"></div>
+    </section>
+
+    <!-- ▸ SETTINGS ─────────────────────────────────────────────── -->
+    <section id="page-settings" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Settings ⚙️</h1>
+          <p class="daily-quote" style="margin-top:4px">Customize your experience</p>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div class="settings-section">
+        <h3>Profile</h3>
+        <div class="card card-sm">
+          <div class="form-group" style="margin-bottom:12px">
+            <label>Your name</label>
+            <input type="text" class="form-input" id="settings-name-input" placeholder="Your name" maxlength="30" />
+          </div>
+          <button class="btn-primary" id="settings-save-name">Save name</button>
+        </div>
+      </div>
+
+      <!-- Theme -->
+      <div class="settings-section">
+        <h3>Appearance</h3>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Dark Mode</div>
+            <div class="settings-row-desc">Switch between light and dark theme</div>
+          </div>
+          <button class="btn-secondary" id="sidebar-theme-toggle" style="font-size:13px;padding:8px 16px">Toggle Theme</button>
+        </div>
+      </div>
+
+      <!-- Archived Habits -->
+      <div class="settings-section">
+        <h3>Archived Habits</h3>
+        <div class="card card-sm">
+          <div id="archived-habits-list"><p style="color:var(--text-3);font-size:14px">No archived habits.</p></div>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="settings-section">
+        <h3>Data</h3>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Export My Data</div>
+            <div class="settings-row-desc">Download your habits and completions as JSON</div>
+          </div>
+          <button class="btn-secondary" id="settings-export-btn" style="font-size:13px;padding:8px 16px">Export</button>
+        </div>
+        <div class="settings-row" style="margin-top:8px">
+          <div>
+            <div class="settings-row-label" style="color:var(--danger)">Reset All Data</div>
+            <div class="settings-row-desc">Permanently delete all habits and progress</div>
+          </div>
+          <button class="btn-danger" id="settings-reset-btn">Reset</button>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="settings-section">
+        <h3>About</h3>
+        <div class="card card-sm" style="text-align:center;padding:28px">
+          <div style="font-size:36px;margin-bottom:10px">🎯</div>
+          <div style="font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">DISCIPLINE</div>
+          <div style="font-size:13px;color:var(--text-2)">Small promises. Kept every day.</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:12px">v1.0.0 — Built with ❤️</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Mobile Bottom Navigation ─────────────────────────────── -->
+<nav class="mobile-nav">
+  <a class="mobile-nav-item active" data-page="dashboard" href="#dashboard">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="mobile-nav-item" data-page="habits" href="#habits">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Habits</span>
+  </a>
+  <button class="mobile-nav-add" data-action="add-habit" title="Add Habit">+</button>
+  <a class="mobile-nav-item" data-page="analytics" href="#analytics">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Stats</span>
+  </a>
+  <a class="mobile-nav-item" data-page="settings" href="#settings">
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODALS
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- ── Add / Edit Habit Modal ────────────────────────────────── -->
+<div id="modal-habit" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="habit-modal-title">Create New Habit</h2>
+      <button class="modal-close" data-close-modal="modal-habit">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="habit-form">
+        <div class="form-group">
+          <label>Habit Name</label>
+          <input type="text" class="form-input" id="habit-name-input" placeholder="e.g. Read 10 pages" required maxlength="50" />
+        </div>
+
+        <div class="form-group">
+          <label>Choose Icon</label>
+          <div class="icon-picker" id="modal-icon-picker"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Category</label>
+          <select class="form-select" id="habit-category-select">
+            <option value="mind">🧠 Mind</option>
+            <option value="learning">📚 Learning</option>
+            <option value="fitness">💪 Fitness</option>
+            <option value="work">💻 Work</option>
+            <option value="personal">🌱 Personal</option>
+            <option value="routine">😴 Routine</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Frequency</label>
+          <div class="radio-group">
+            <div class="radio-option selected freq-option" data-value="daily">📅 Every day</div>
+            <div class="radio-option freq-option" data-value="weekdays">💼 Weekdays</div>
+            <div class="radio-option freq-option" data-value="weekends">🏖️ Weekends</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Difficulty &amp; XP Reward</label>
+          <div class="diff-picker">
+            <div class="diff-option diff-option-btn" data-value="easy">
+              <span style="font-size:20px">🌱</span>
+              <span>Easy</span>
+              <span style="color:var(--success);font-size:11px">+10 XP</span>
+            </div>
+            <div class="diff-option diff-option-btn selected" data-value="medium">
+              <span style="font-size:20px">⚡</span>
+              <span>Medium</span>
+              <span style="color:var(--accent);font-size:11px">+20 XP</span>
+            </div>
+            <div class="diff-option diff-option-btn" data-value="hard">
+              <span style="font-size:20px">🔥</span>
+              <span>Hard</span>
+              <span style="color:var(--danger);font-size:11px">+30 XP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Reminder (optional)</label>
+          <input type="time" class="form-input" id="habit-reminder-input" />
+        </div>
+
+        <button type="submit" class="btn-primary full-width" id="habit-modal-submit">Create Habit</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Daily Check-in Modal ───────────────────────────────────── -->
+<div id="modal-checkin" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Daily Check-in 📝</h2>
+      <button class="modal-close" data-close-modal="modal-checkin">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-2);margin-bottom:20px;font-size:15px">How was today?</p>
+      <div class="mood-picker">
+        <button class="mood-btn" data-mood="great"><span class="mood-emoji">😄</span>Great</button>
+        <button class="mood-btn" data-mood="good"><span class="mood-emoji">🙂</span>Good</button>
+        <button class="mood-btn" data-mood="okay"><span class="mood-emoji">😐</span>Okay</button>
+        <button class="mood-btn" data-mood="difficult"><span class="mood-emoji">😕</span>Tough</button>
+        <button class="mood-btn" data-mood="exhausted"><span class="mood-emoji">😴</span>Tired</button>
+      </div>
+      <div class="form-group">
+        <label>Add a note (optional)</label>
+        <textarea class="form-textarea" id="checkin-note" placeholder="How did today go? What are you proud of?"></textarea>
+      </div>
+      <button class="btn-primary full-width" id="save-checkin-btn">Save Check-in ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Milestone Modal ────────────────────────────────────────── -->
+<div id="modal-milestone" class="modal-overlay">
+  <div class="modal milestone-modal">
+    <div class="milestone-big-emoji" id="milestone-emoji">🔥</div>
+    <h2 id="milestone-title">14 Days!</h2>
+    <p id="milestone-msg" style="color:var(--text-2);margin:8px 0 16px">Two weeks strong!</p>
+    <div class="milestone-streak-viz" id="milestone-fires">🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥</div>
+    <button class="btn-primary" style="margin-top:20px;width:100%" data-close-modal="modal-milestone">Keep going! 💪</button>
+  </div>
+</div>
+
+<!-- ── Achievement Modal ──────────────────────────────────────── -->
+<div id="modal-achievement" class="modal-overlay">
+  <div class="modal achievement-modal">
+    <div class="achievement-unlock-label">🏆 Achievement Unlocked!</div>
+    <div class="achievement-big-icon" id="ach-icon">🌱</div>
+    <h2 id="ach-name">First Step</h2>
+    <p id="ach-desc" style="color:var(--text-2);margin:8px 0 12px">Complete your first habit.</p>
+    <span class="rarity-badge" id="ach-rarity">Common</span>
+    <button class="btn-primary" style="margin-top:20px;width:100%" data-close-modal="modal-achievement">Awesome! ⭐</button>
+  </div>
+</div>
+
+<!-- ── Level Up Modal ─────────────────────────────────────────── -->
+<div id="modal-levelup" class="modal-overlay">
+  <div class="modal level-up-modal">
+    <div class="level-up-stars">✨ ✨ ✨</div>
+    <div class="level-up-label">LEVEL UP!</div>
+    <div class="level-up-num" id="levelup-num">2</div>
+    <div class="level-up-name" id="levelup-name">Starter</div>
+    <p style="color:var(--text-2);margin:8px 0 20px">Keep up the incredible work!</p>
+    <button class="btn-primary" style="width:100%" data-close-modal="modal-levelup">Continue 🔥</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     UTILITY ELEMENTS
+     ═══════════════════════════════════════════════════════════ -->
+<div id="toast-container"></div>
+<div id="xp-float-container"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════ -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>

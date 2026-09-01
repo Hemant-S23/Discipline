@@ -1,0 +1,177 @@
+/* ============================================================
+   responsive.css — Breakpoints for tablet and mobile
+   ============================================================ */
+
+/* ── Tablet: 768–1023px ──────────────────────────────────────── */
+@media (max-width: 1023px) {
+
+  :root {
+    --sidebar-w: 70px;
+    --page-pad: 20px;
+  }
+
+  .sidebar {
+    width: var(--sidebar-w);
+    align-items: center;
+  }
+
+  .sidebar-logo {
+    padding: 20px 10px;
+    justify-content: center;
+  }
+  .logo-text { display: none; }
+  .logo-icon { font-size: 26px; }
+
+  .sidebar-nav { padding: 12px 8px; }
+
+  .nav-item {
+    justify-content: center;
+    padding: 12px 8px;
+    gap: 0;
+  }
+  .nav-label { display: none; }
+  .nav-icon { width: auto; }
+
+  .nav-item.active::before { display: none; }
+  .nav-item.active { border-radius: var(--radius-sm); }
+
+  .sidebar-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+  .user-info { display: none; }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .greeting { font-size: 24px; }
+}
+
+/* ── Mobile: up to 767px ─────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  :root {
+    --page-pad: 16px;
+  }
+
+  .sidebar { display: none; }
+
+  .main-content {
+    margin-left: 0;
+    padding-bottom: var(--mobile-nav-h);
+  }
+
+  .mobile-nav { display: flex; }
+
+  /* Stats row */
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Scores */
+  .score-ring-wrap { width: 80px; height: 80px; }
+  .score-number { font-size: 22px; }
+  .streak-number { font-size: 28px; }
+  .xp-number { font-size: 24px; }
+  .progress-fraction { font-size: 28px; }
+
+  /* Charts */
+  .charts-row { grid-template-columns: 1fr; }
+
+  /* Page */
+  .page { padding: var(--page-pad); padding-bottom: calc(var(--mobile-nav-h) + 16px); }
+
+  /* Greeting */
+  .greeting { font-size: 22px; }
+
+  /* Page header */
+  .page-header { flex-direction: column; gap: 12px; }
+  .page-header .btn-checkin { width: 100%; text-align: center; }
+
+  /* Habits grid */
+  .habits-grid { grid-template-columns: 1fr; }
+
+  /* Analytics */
+  .analytics-grid { grid-template-columns: 1fr; }
+  .stat-overview-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Calendar */
+  .matrix-table th:first-child { min-width: 110px; }
+
+  /* Achievements */
+  .achievements-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Rewards */
+  .rewards-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Streak cards */
+  .streaks-grid { grid-template-columns: 1fr; }
+
+  /* Filter tabs */
+  .filter-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 6px; }
+  .filter-tab { flex-shrink: 0; }
+
+  /* Onboarding */
+  .onboarding-card { padding: 32px 24px; }
+  .onboarding-step h1 { font-size: 24px; }
+  .goal-grid { grid-template-columns: 1fr; }
+
+  /* Toast */
+  #toast-container { right: 12px; left: 12px; bottom: calc(var(--mobile-nav-h) + 12px); }
+  .toast { max-width: 100%; }
+
+  /* Modal */
+  .modal { border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 95vh; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+  /* diff picker */
+  .diff-picker { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Radio group */
+  .radio-group { flex-direction: row; }
+  .radio-option { font-size: 12px; padding: 9px 10px; }
+
+  /* Score card on mobile */
+  .score-card { flex-direction: row; gap: 14px; }
+  .score-label { text-align: left; margin-top: 0; }
+
+  /* Habit item */
+  .habit-item-difficulty { display: none; }
+}
+
+/* ── Very small: 375px and under ─────────────────────────────── */
+@media (max-width: 375px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .achievements-grid { grid-template-columns: 1fr; }
+  .rewards-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Large: 1440px+ ──────────────────────────────────────────── */
+@media (min-width: 1440px) {
+  .stats-row { grid-template-columns: repeat(4, 1fr); }
+  .page { max-width: 1300px; }
+  .habits-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .analytics-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Print ───────────────────────────────────────────────────── */
+@media print {
+  .sidebar, .mobile-nav, #toast-container, #confetti-canvas, #xp-float-container { display: none !important; }
+  .main-content { margin-left: 0; }
+}

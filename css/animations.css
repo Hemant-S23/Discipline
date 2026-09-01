@@ -1,0 +1,196 @@
+/* ============================================================
+   animations.css — Micro-animations and transitions
+   ============================================================ */
+
+/* ── Habit Completion Bounce ─────────────────────────────────── */
+@keyframes habitBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.35); }
+  50%  { transform: scale(0.92); }
+  70%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.habit-bounce { animation: habitBounce 0.55s var(--t-spring) forwards; }
+
+/* ── Check Appear ────────────────────────────────────────────── */
+@keyframes checkAppear {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* ── XP Float ────────────────────────────────────────────────── */
+.xp-float {
+  position: absolute;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--xp);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(0) translateX(-50%);
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  transition: none;
+  filter: drop-shadow(0 2px 4px rgba(245,158,11,0.3));
+}
+.xp-float-active {
+  animation: xpFloat 1.3s ease-out forwards;
+}
+@keyframes xpFloat {
+  0%   { opacity: 0; transform: translateY(0) translateX(-50%) scale(0.8); }
+  15%  { opacity: 1; transform: translateY(-10px) translateX(-50%) scale(1.1); }
+  80%  { opacity: 1; transform: translateY(-50px) translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateY(-70px) translateX(-50%) scale(0.9); }
+}
+
+/* ── Streak Pulse ────────────────────────────────────────────── */
+@keyframes streakPulse {
+  0%   { transform: scale(1); filter: drop-shadow(0 0 0 rgba(249,115,22,0)); }
+  50%  { transform: scale(1.25); filter: drop-shadow(0 0 12px rgba(249,115,22,0.7)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(249,115,22,0)); }
+}
+.streak-pulse { animation: streakPulse 0.75s ease-in-out; }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  pointer-events: all;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast.toast-show { opacity: 1; transform: translateX(0); }
+.toast.toast-hide { opacity: 0; transform: translateX(20px); }
+.toast-icon { font-size: 16px; flex-shrink: 0; }
+
+.toast-success { border-left: 3px solid var(--success); }
+.toast-success .toast-icon { color: var(--success); }
+.toast-error   { border-left: 3px solid var(--danger); }
+.toast-error   .toast-icon { color: var(--danger); }
+.toast-info    { border-left: 3px solid var(--accent); }
+.toast-info    .toast-icon { color: var(--accent); }
+.toast-achievement { border-left: 3px solid var(--xp); background: linear-gradient(135deg, var(--surface), var(--xp-10)); }
+.toast-achievement .toast-icon { color: var(--xp); }
+.toast-warning { border-left: 3px solid var(--streak); }
+.toast-warning .toast-icon { color: var(--streak); }
+
+/* ── Progress Ring Fill ──────────────────────────────────────── */
+@keyframes ringFill {
+  from { stroke-dashoffset: 314; }
+}
+.ring-progress { animation: ringFill 1.2s ease-out forwards; }
+
+/* ── Progress Bar Fill ───────────────────────────────────────── */
+@keyframes barFill {
+  from { width: 0%; }
+}
+.progress-bar { animation: barFill 0.9s ease-out; }
+
+/* ── Card Hover ──────────────────────────────────────────────── */
+.card {
+  transition: transform var(--t), box-shadow var(--t);
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* ── Level Up Stars ──────────────────────────────────────────── */
+@keyframes starFloat {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(1.5); opacity: 0; }
+}
+.star-float { animation: starFloat 1s ease-out forwards; }
+
+/* ── Shimmer (loading skeleton) ───────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Slide In ────────────────────────────────────────────────── */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-in-up    { animation: slideInUp 0.3s ease forwards; }
+.slide-in-right { animation: slideInRight 0.3s ease forwards; }
+.slide-in-down  { animation: slideInDown 0.3s ease forwards; }
+
+/* ── Fade In ─────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in { animation: fadeIn 0.25s ease forwards; }
+
+/* ── Spin ────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }
+
+/* ── Onboarding step slide ───────────────────────────────────── */
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.onboarding-step.active { animation: stepIn 0.35s ease; }
+
+/* ── Habit card stagger ──────────────────────────────────────── */
+.habit-card:nth-child(1) { animation-delay: 0.03s; }
+.habit-card:nth-child(2) { animation-delay: 0.06s; }
+.habit-card:nth-child(3) { animation-delay: 0.09s; }
+.habit-card:nth-child(4) { animation-delay: 0.12s; }
+.habit-card:nth-child(5) { animation-delay: 0.15s; }
+.habit-card:nth-child(6) { animation-delay: 0.18s; }
+
+/* ── Celebration Ring ────────────────────────────────────────── */
+@keyframes celebrationRing {
+  0%   { box-shadow: 0 0 0 0 rgba(124, 111, 247, 0.6); }
+  70%  { box-shadow: 0 0 0 20px rgba(124, 111, 247, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 111, 247, 0); }
+}
+.celebrate { animation: celebrationRing 0.8s ease-out; }
+
+/* ── Ripple ──────────────────────────────────────────────────── */
+.ripple {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transform: scale(0);
+  animation: rippleAnim 0.6s ease-out;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(50); opacity: 0; }
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
