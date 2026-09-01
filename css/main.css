@@ -173,6 +173,64 @@ html.theme-forest {
   --shadow-card:  0 2px 16px rgba(16, 185, 129, 0.08), 0 0 0 1px var(--border);
 }
 
+/* ── Sunset Theme 🌅 ────────────────────────────────────────── */
+html.theme-sunset {
+  --accent:       #F97316;
+  --accent-light: #FB923C;
+  --accent-dark:  #EA580C;
+  --accent-10:    rgba(249, 115, 22, 0.12);
+  --accent-20:    rgba(249, 115, 22, 0.22);
+  --accent-glow:  0 0 24px rgba(249, 115, 22, 0.40);
+
+  --bg:           #FFF8F5;
+  --surface:      #FFFFFF;
+  --surface-2:    #FFF1EC;
+  --surface-3:    #FFE4D6;
+  --surface-hover:#FFD8C2;
+
+  --text:         #361204;
+  --text-2:       #7C2D12;
+  --text-3:       #C2410C;
+
+  --border:       rgba(249, 115, 22, 0.20);
+  --border-2:     rgba(249, 115, 22, 0.32);
+
+  --shadow-xs:    0 1px 4px rgba(249, 115, 22, 0.08);
+  --shadow-sm:    0 2px 12px rgba(249, 115, 22, 0.10);
+  --shadow:       0 4px 28px rgba(249, 115, 22, 0.14);
+  --shadow-lg:    0 8px 48px rgba(249, 115, 22, 0.20);
+  --shadow-card:  0 2px 16px rgba(249, 115, 22, 0.08), 0 0 0 1px var(--border);
+}
+
+/* ── Theme Ambient Radial Glows ──────────────────────────────── */
+html.theme-sakura body {
+  background: radial-gradient(at 0% 0%, rgba(244, 152, 181, 0.25) 0px, transparent 60%),
+              radial-gradient(at 100% 100%, rgba(232, 99, 138, 0.18) 0px, transparent 60%),
+              #FFF0F4;
+  background-attachment: fixed;
+}
+
+html.theme-ocean body {
+  background: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.25) 0px, transparent 60%),
+              radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.18) 0px, transparent 60%),
+              #F0F9FF;
+  background-attachment: fixed;
+}
+
+html.theme-forest body {
+  background: radial-gradient(at 0% 0%, rgba(52, 211, 153, 0.25) 0px, transparent 60%),
+              radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.18) 0px, transparent 60%),
+              #F0FDF4;
+  background-attachment: fixed;
+}
+
+html.theme-sunset body {
+  background: radial-gradient(at 0% 0%, rgba(251, 146, 60, 0.25) 0px, transparent 60%),
+              radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.18) 0px, transparent 60%),
+              #FFF8F5;
+  background-attachment: fixed;
+}
+
 /* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
