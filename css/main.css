@@ -86,7 +86,35 @@
   --shadow-sm:    0 2px 12px rgba(0, 0, 0, 0.40);
   --shadow:       0 4px 28px rgba(0, 0, 0, 0.50);
   --shadow-lg:    0 8px 48px rgba(0, 0, 0, 0.60);
-  --shadow-card:  0 2px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border);
+}
+
+/* ── Sakura Theme 🌸 ────────────────────────────────────────── */
+html.theme-sakura {
+  --accent:       #E8638A;
+  --accent-light: #F498B5;
+  --accent-dark:  #C4436A;
+  --accent-10:    rgba(232, 99, 138, 0.12);
+  --accent-20:    rgba(232, 99, 138, 0.22);
+  --accent-glow:  0 0 20px rgba(232, 99, 138, 0.35);
+
+  --bg:           #FFF0F4;
+  --surface:      #FFFFFF;
+  --surface-2:    #FFF5F8;
+  --surface-3:    #FFE8F0;
+  --surface-hover:#FFE2EC;
+
+  --text:         #2D1822;
+  --text-2:       #7C5367;
+  --text-3:       #AF889A;
+
+  --border:       rgba(232, 99, 138, 0.18);
+  --border-2:     rgba(232, 99, 138, 0.30);
+
+  --shadow-xs:    0 1px 4px rgba(232, 99, 138, 0.08);
+  --shadow-sm:    0 2px 12px rgba(232, 99, 138, 0.10);
+  --shadow:       0 4px 28px rgba(232, 99, 138, 0.14);
+  --shadow-lg:    0 8px 48px rgba(232, 99, 138, 0.20);
+  --shadow-card:  0 2px 16px rgba(232, 99, 138, 0.08), 0 0 0 1px var(--border);
 }
 
 /* ── Reset ───────────────────────────────────────────────────── */

@@ -3,6 +3,7 @@
 // ============================================================
 
 import { getUser } from './data.js';
+import { showToast } from './ui.js';
 
 export const REWARDS = [
   {
@@ -104,19 +105,21 @@ export function renderRewardsPage() {
 
   const user = getUser();
   const totalXP = user.totalXP || 0;
+  const activeRewardId = localStorage.getItem('discipline_active_reward');
 
   container.innerHTML = REWARDS.map((r, i) => {
     const isUnlocked = totalXP >= r.cost;
+    const isEquipped = activeRewardId === r.id;
     return `
-      <div class="reward-card ${isUnlocked ? 'unlocked' : 'locked'} slide-in-up"
+      <div class="reward-card ${isUnlocked ? 'unlocked' : 'locked'} ${isEquipped ? 'equipped' : ''} slide-in-up"
            style="animation-delay:${i * 0.04}s"
            onclick="${isUnlocked ? `applyReward('${r.id}')` : ''}">
         <div class="reward-icon">${r.icon}</div>
         <div class="reward-name">${r.name}</div>
         <div style="font-size:12px;color:var(--text-2);text-align:center">${r.desc}</div>
         <div class="reward-cost">⭐ ${r.cost.toLocaleString()} XP</div>
-        <div class="reward-status ${isUnlocked ? 'unlocked' : 'locked'}">
-          ${isUnlocked ? '✓ Unlocked' : `🔒 ${(r.cost - totalXP).toLocaleString()} XP needed`}
+        <div class="reward-status ${isEquipped ? 'equipped' : (isUnlocked ? 'unlocked' : 'locked')}">
+          ${isEquipped ? '✨ Equipped' : (isUnlocked ? '✓ Tap to Equip' : `🔒 ${(r.cost - totalXP).toLocaleString()} XP needed`)}
         </div>
       </div>
     `;
@@ -133,15 +136,39 @@ export function renderRewardsPage() {
 // Apply a visual reward (theme)
 export function applyReward(rewardId) {
   const reward = getRewardById(rewardId);
-  if (!reward || !reward.themeClass) return;
-  // Remove other theme classes
-  REWARDS.forEach(r => { if (r.themeClass) document.documentElement.classList.remove(r.themeClass); });
-  document.documentElement.classList.add(reward.themeClass);
-  // Persist selection
-  localStorage.setItem('discipline_active_reward', rewardId);
+  if (!reward) return;
+
+  const currentSaved = localStorage.getItem('discipline_active_reward');
+
+  // Toggle off if already equipped
+  if (currentSaved === rewardId) {
+    REWARDS.forEach(r => { if (r.themeClass) document.documentElement.classList.remove(r.themeClass); });
+    localStorage.removeItem('discipline_active_reward');
+    showToast('Default theme restored', 'info');
+    renderRewardsPage();
+    if (window._renderDashboard) window._renderDashboard();
+    return;
+  }
+
+  if (reward.themeClass) {
+    REWARDS.forEach(r => { if (r.themeClass) document.documentElement.classList.remove(r.themeClass); });
+    document.documentElement.classList.add(reward.themeClass);
+    localStorage.setItem('discipline_active_reward', rewardId);
+    showToast(`${reward.icon} ${reward.name} equipped!`, 'success');
+  } else {
+    showToast(`${reward.icon} ${reward.name} unlocked!`, 'achievement');
+  }
+
+  renderRewardsPage();
+  if (window._renderDashboard) window._renderDashboard();
 }
 
 export function restoreActiveReward() {
   const saved = localStorage.getItem('discipline_active_reward');
-  if (saved) applyReward(saved);
+  if (saved) {
+    const reward = getRewardById(saved);
+    if (reward && reward.themeClass) {
+      document.documentElement.classList.add(reward.themeClass);
+    }
+  }
 }
