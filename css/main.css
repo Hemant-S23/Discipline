@@ -113,8 +113,35 @@ html.theme-sakura {
   --shadow-xs:    0 1px 4px rgba(232, 99, 138, 0.08);
   --shadow-sm:    0 2px 12px rgba(232, 99, 138, 0.10);
   --shadow:       0 4px 28px rgba(232, 99, 138, 0.14);
-  --shadow-lg:    0 8px 48px rgba(232, 99, 138, 0.20);
-  --shadow-card:  0 2px 16px rgba(232, 99, 138, 0.08), 0 0 0 1px var(--border);
+}
+
+/* ── Ocean Theme 🌊 ─────────────────────────────────────────── */
+html.theme-ocean {
+  --accent:       #0EA5E9;
+  --accent-light: #38BDF8;
+  --accent-dark:  #0284C7;
+  --accent-10:    rgba(14, 165, 233, 0.12);
+  --accent-20:    rgba(14, 165, 233, 0.22);
+  --accent-glow:  0 0 20px rgba(14, 165, 233, 0.35);
+
+  --bg:           #F0F9FF;
+  --surface:      #FFFFFF;
+  --surface-2:    #F5FCFF;
+  --surface-3:    #E0F2FE;
+  --surface-hover:#BAE6FD;
+
+  --text:         #0F172A;
+  --text-2:       #475569;
+  --text-3:       #94A3B8;
+
+  --border:       rgba(14, 165, 233, 0.18);
+  --border-2:     rgba(14, 165, 233, 0.30);
+
+  --shadow-xs:    0 1px 4px rgba(14, 165, 233, 0.08);
+  --shadow-sm:    0 2px 12px rgba(14, 165, 233, 0.10);
+  --shadow:       0 4px 28px rgba(14, 165, 233, 0.14);
+  --shadow-lg:    0 8px 48px rgba(14, 165, 233, 0.20);
+  --shadow-card:  0 2px 16px rgba(14, 165, 233, 0.08), 0 0 0 1px var(--border);
 }
 
 /* ── Reset ───────────────────────────────────────────────────── */
