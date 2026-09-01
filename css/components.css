@@ -515,6 +515,17 @@
 }
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary.full-width { width: 100%; text-align: center; display: block; }
+.btn-primary.btn-completed {
+  background: var(--success-10);
+  border: 1px solid var(--success);
+  color: var(--success);
+  box-shadow: none;
+}
+.btn-primary.btn-completed:hover {
+  background: rgba(34, 197, 94, 0.22);
+  border-color: var(--success);
+  transform: none;
+}
 
 .btn-secondary {
   background: var(--surface-2);

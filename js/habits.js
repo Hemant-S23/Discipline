@@ -4,7 +4,7 @@
 
 import {
   getActiveHabits, getArchivedHabits, addHabit, updateHabit, archiveHabit, restoreHabit,
-  getCompletions, isCompleted, toggleCompletion, today, isHabitScheduledForDate,
+  getCompletions, isCompleted, markComplete, hasAwardedXpToday, today, isHabitScheduledForDate,
   getHabitConsistency, getHabitById
 } from './data.js';
 import { awardXP, getXPForDifficulty, XP_BONUSES } from './xp.js';
@@ -15,58 +15,68 @@ import { showToast, showXPFloat, openModal, closeModal, animateHabitComplete, CA
 // ── Habit Completion ──────────────────────────────────────────
 export function handleHabitToggle(habitId, checkBtnEl) {
   const todayStr = today();
-  const wasCompleted = toggleCompletion(habitId, todayStr);
+  const habit = getHabitById(habitId);
+  if (!habit) return;
 
-  if (wasCompleted) {
-    const habit = getHabitById(habitId);
-    if (!habit) return;
+  const alreadyDone = isCompleted(habitId, todayStr);
 
-    // Award XP
-    const xp = habit.xpReward || getXPForDifficulty(habit.difficulty);
-    const result = awardXP(xp, `habit_${habitId}`);
-
-    // Show XP float
-    showXPFloat(xp, checkBtnEl);
-
-    // Animate check
-    if (checkBtnEl) animateHabitComplete(checkBtnEl);
-
-    // Streak check
-    const streak = calculateHabitStreak(habitId);
-    const milestone = checkMilestone(streak.current);
-    if (milestone) {
-      setTimeout(() => showMilestoneModal(milestone, streak.current), 600);
-    }
-
-    // Perfect day check
-    const perfectBonus = checkPerfectDay();
-    if (perfectBonus) {
-      setTimeout(() => {
-        const { showConfetti } = window._ui || {};
-        if (showConfetti) showConfetti();
-        showToast('🎯 Perfect Day! +50 Bonus XP', 'achievement', 4000);
-        awardXP(XP_BONUSES.PERFECT_DAY, 'perfect_day');
-      }, 800);
-    }
-
-    // Check achievements
-    const newAch = checkAndUnlockAchievements();
-    newAch.forEach((a, i) => {
-      setTimeout(() => showAchievementModal(a), 1200 + i * 500);
-    });
-
-    // Level up?
-    if (result.leveledUp) {
-      setTimeout(() => showLevelUpModal(result.levelInfo), 1800);
-    }
-
-    showToast(`✓ ${habit.name} completed! +${xp} XP`, 'success');
-  } else {
-    showToast('Habit unmarked', 'info', 2000);
+  if (alreadyDone) {
+    showToast(`✓ ${habit.name} is already completed for today! 🎉`, 'info', 2500);
+    return;
   }
 
-  // Re-render today's habits list + dashboard stats
+  // Mark as complete for today
+  markComplete(habitId, todayStr);
+
+  // Award XP (ONLY if not awarded today for this habit)
+  const xpSource = `habit_${habitId}`;
+  let xpAwarded = 0;
+  let result = null;
+
+  if (!hasAwardedXpToday(xpSource)) {
+    const xp = habit.xpReward || getXPForDifficulty(habit.difficulty);
+    xpAwarded = xp;
+    result = awardXP(xp, xpSource);
+    showXPFloat(xp, checkBtnEl);
+  }
+
+  // Animate check
+  if (checkBtnEl) animateHabitComplete(checkBtnEl);
+
+  // Streak check
+  const streak = calculateHabitStreak(habitId);
+  const milestone = checkMilestone(streak.current);
+  if (milestone) {
+    setTimeout(() => showMilestoneModal(milestone, streak.current), 600);
+  }
+
+  // Perfect day check (award Perfect Day bonus ONLY ONCE per day!)
+  if (!hasAwardedXpToday('perfect_day') && checkPerfectDay()) {
+    setTimeout(() => {
+      const { showConfetti } = window._ui || {};
+      if (showConfetti) showConfetti();
+      showToast('🎯 Perfect Day! +50 Bonus XP', 'achievement', 4000);
+      awardXP(XP_BONUSES.PERFECT_DAY, 'perfect_day');
+      if (window._renderDashboard) window._renderDashboard();
+    }, 800);
+  }
+
+  // Check achievements
+  const newAch = checkAndUnlockAchievements();
+  newAch.forEach((a, i) => {
+    setTimeout(() => showAchievementModal(a), 1200 + i * 500);
+  });
+
+  // Level up?
+  if (result && result.leveledUp) {
+    setTimeout(() => showLevelUpModal(result.levelInfo), 1800);
+  }
+
+  showToast(`✓ ${habit.name} completed!${xpAwarded ? ` +${xpAwarded} XP` : ''}`, 'success');
+
+  // Re-render views
   if (window._renderDashboard) window._renderDashboard();
+  renderHabitsPage(window._currentHabitFilter || 'all');
 }
 
 function checkPerfectDay() {
@@ -186,7 +196,7 @@ export function renderHabitsPage(filter = 'all') {
             <div class="consistency-bar-wrap"><div class="consistency-bar" style="width:${consistency}%"></div></div>
             <span class="consistency-pct">${consistency}%</span>
           </div>
-          <button class="btn-primary" style="padding:8px 14px;font-size:13px" onclick="handleHabitToggleGlobal('${h.id}', this)">
+          <button class="btn-primary ${done ? 'btn-completed' : ''}" style="padding:8px 14px;font-size:13px" onclick="handleHabitToggleGlobal('${h.id}', this)">
             ${done ? '✓ Done' : '○ Mark'}
           </button>
         </div>

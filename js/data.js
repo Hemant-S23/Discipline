@@ -171,6 +171,11 @@ export function addXPEntry(amount, source) {
   log.push({ amount, source, date: today(), timestamp: Date.now() });
   save(KEYS.XP_LOG, log);
 }
+export function hasAwardedXpToday(source) {
+  const log = getXPLog();
+  const todayStr = today();
+  return log.some(entry => entry.source === source && entry.date === todayStr);
+}
 
 // ── Analytics helpers ─────────────────────────────────────────
 export function getDailyStats(daysBack = 7) {
