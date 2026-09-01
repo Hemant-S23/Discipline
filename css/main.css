@@ -144,6 +144,35 @@ html.theme-ocean {
   --shadow-card:  0 2px 16px rgba(14, 165, 233, 0.08), 0 0 0 1px var(--border);
 }
 
+/* ── Forest Theme 🌿 ────────────────────────────────────────── */
+html.theme-forest {
+  --accent:       #10B981;
+  --accent-light: #34D399;
+  --accent-dark:  #059669;
+  --accent-10:    rgba(16, 185, 129, 0.12);
+  --accent-20:    rgba(16, 185, 129, 0.22);
+  --accent-glow:  0 0 20px rgba(16, 185, 129, 0.35);
+
+  --bg:           #F0FDF4;
+  --surface:      #FFFFFF;
+  --surface-2:    #F5FDF8;
+  --surface-3:    #DCFCE7;
+  --surface-hover:#BBF7D0;
+
+  --text:         #064E3B;
+  --text-2:       #047857;
+  --text-3:       #6EE7B7;
+
+  --border:       rgba(16, 185, 129, 0.18);
+  --border-2:     rgba(16, 185, 129, 0.30);
+
+  --shadow-xs:    0 1px 4px rgba(16, 185, 129, 0.08);
+  --shadow-sm:    0 2px 12px rgba(16, 185, 129, 0.10);
+  --shadow:       0 4px 28px rgba(16, 185, 129, 0.14);
+  --shadow-lg:    0 8px 48px rgba(16, 185, 129, 0.20);
+  --shadow-card:  0 2px 16px rgba(16, 185, 129, 0.08), 0 0 0 1px var(--border);
+}
+
 /* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
