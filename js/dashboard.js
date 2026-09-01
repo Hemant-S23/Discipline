@@ -4,12 +4,12 @@
 
 import {
   getUser, getActiveHabits, getCompletions, getCompletionsForDate,
-  today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats
+  today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats, getCheckinForDate
 } from './data.js';
 import { getLevelInfo, getCurrentLevelInfo } from './xp.js';
 import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js';
 import { renderTodayHabits } from './habits.js';
-import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber } from './ui.js';
+import { getGreeting, getDailyQuote, rotateQuote, getTodayLong, pctBar, formatNumber } from './ui.js';
 
 let chartDaily = null;
 let chartWeekly = null;
@@ -31,16 +31,42 @@ export function renderDashboard() {
 function renderHeader() {
   const user = getUser();
   const greeting = getGreeting();
-  const quote    = getDailyQuote();
   const todayLong = getTodayLong();
 
   const dateEl   = document.getElementById('dash-date');
   const greetEl  = document.getElementById('dash-greeting');
   const quoteEl  = document.getElementById('dash-quote');
+  const refreshBtn = document.getElementById('btn-refresh-quote');
+  const checkinBtn = document.getElementById('dash-checkin-btn');
 
   if (dateEl)  dateEl.textContent  = todayLong;
   if (greetEl) greetEl.textContent = `${greeting}, ${user.name} 👋`;
-  if (quoteEl) quoteEl.textContent = `"${quote}"`;
+
+  if (quoteEl && !quoteEl.dataset.initialized) {
+    quoteEl.textContent = `"${getDailyQuote()}"`;
+    quoteEl.dataset.initialized = 'true';
+    quoteEl.addEventListener('click', () => rotateQuote(quoteEl));
+  }
+  if (refreshBtn && !refreshBtn.dataset.initialized) {
+    refreshBtn.dataset.initialized = 'true';
+    refreshBtn.addEventListener('click', () => rotateQuote(quoteEl));
+  }
+
+  // Check-in button state
+  if (checkinBtn) {
+    const todayCheckin = getCheckinForDate(today());
+    if (todayCheckin) {
+      const moodEmojis = { great: '😄', good: '🙂', okay: '😐', difficult: '😕', exhausted: '😴' };
+      const emoji = moodEmojis[todayCheckin.mood] || '✨';
+      checkinBtn.innerHTML = `✓ Checked-in ${emoji}`;
+      checkinBtn.classList.add('checked-in');
+      checkinBtn.title = `Today's Mood: ${todayCheckin.mood} — Click to view/edit`;
+    } else {
+      checkinBtn.innerHTML = `📝 Daily Check-in`;
+      checkinBtn.classList.remove('checked-in');
+      checkinBtn.title = 'Complete today\'s check-in';
+    }
+  }
 
   // Sidebar user info
   const nameEl  = document.getElementById('sidebar-user-name');

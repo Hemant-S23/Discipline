@@ -129,17 +129,55 @@ export const QUOTES = [
   "Show up. Every day. No exceptions.",
   "Discipline is the bridge between goals and accomplishment.",
   "One day or day one. You decide.",
-  "We are what we repeatedly do.",
-  "The only bad workout is the one you didn't do.",
+  "We are what we repeatedly do. Excellence is not an act, but a habit.",
   "Build systems, not goals.",
   "Motivation gets you started. Habit keeps you going.",
-  "Each day is a new opportunity to grow."
+  "Each day is a new opportunity to grow.",
+  "First we make our habits, then our habits make us.",
+  "Discipline is choosing between what you want now and what you want most.",
+  "Your habits shape your identity, and your identity shapes your habits.",
+  "Be relentless in the pursuit of what sets your mind on fire.",
+  "Great things are done by a series of small things brought together.",
+  "Action is the foundational key to all success.",
+  "Self-discipline is self-caring.",
+  "Focus on the process, not the outcome.",
+  "A 1% improvement every day means 37x better in a year.",
+  "Small daily improvements over time lead to stunning results.",
+  "Discipline will take you places motivation never could.",
+  "Mastering yourself is true power.",
+  "The pain of discipline is far less than the pain of regret.",
+  "Do something today that your future self will thank you for.",
+  "If you get tired, learn to rest, not to quit.",
+  "Energy flows where attention goes.",
+  "Clear vision, disciplined action, daily compound interest.",
+  "Fall in love with the daily grind.",
+  "Small promises. Kept every day."
 ];
+
+let lastQuoteIndex = -1;
 
 export function getDailyQuote() {
   const start = new Date(new Date().getFullYear(), 0, 0);
   const day = Math.floor((Date.now() - start.getTime()) / 86400000);
   return QUOTES[day % QUOTES.length];
+}
+
+export function getRandomQuote() {
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * QUOTES.length);
+  } while (idx === lastQuoteIndex && QUOTES.length > 1);
+  lastQuoteIndex = idx;
+  return QUOTES[idx];
+}
+
+export function rotateQuote(quoteEl) {
+  if (!quoteEl) return;
+  quoteEl.classList.add('quote-fade');
+  setTimeout(() => {
+    quoteEl.textContent = `"${getRandomQuote()}"`;
+    quoteEl.classList.remove('quote-fade');
+  }, 250);
 }
 
 // ── Greeting ─────────────────────────────────────────────────

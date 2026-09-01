@@ -11,7 +11,7 @@ import { renderAchievementsPage } from './achievements.js';
 import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js';
 import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js';
 import {
-  getActiveHabits, getUser, updateUser, saveCheckin, today, resetAllData, exportData
+  getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, today, resetAllData, exportData
 } from './data.js';
 import {
   showToast, openModal, closeModal, closeAllModals, showConfetti, getDailyQuote, CATEGORY_ICONS
@@ -144,6 +144,26 @@ function initHabitForm() {
 function initCheckin() {
   let selectedMood = null;
 
+  const checkinBtn = document.getElementById('dash-checkin-btn');
+  if (checkinBtn) {
+    checkinBtn.addEventListener('click', () => {
+      const todayStr = today();
+      const existing = getCheckinForDate(todayStr);
+      const noteInput = document.getElementById('checkin-note');
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+
+      if (existing) {
+        selectedMood = existing.mood;
+        const moodBtn = document.querySelector(`.mood-btn[data-mood="${existing.mood}"]`);
+        if (moodBtn) moodBtn.classList.add('selected');
+        if (noteInput) noteInput.value = existing.note || '';
+      } else {
+        selectedMood = null;
+        if (noteInput) noteInput.value = '';
+      }
+    });
+  }
+
   document.querySelectorAll('.mood-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
@@ -156,13 +176,13 @@ function initCheckin() {
   if (saveBtn) saveBtn.addEventListener('click', () => {
     const note = document.getElementById('checkin-note')?.value || '';
     const todayStr = today();
-    const completions = window._getCompletions ? window._getCompletions() : [];
     saveCheckin({ date: todayStr, mood: selectedMood || 'good', note, completionPct: 0 });
     showToast('✓ Check-in saved!', 'success');
     closeModal('modal-checkin');
     selectedMood = null;
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
     if (document.getElementById('checkin-note')) document.getElementById('checkin-note').value = '';
+    renderDashboard();
   });
 }
 

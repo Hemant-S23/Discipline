@@ -198,7 +198,10 @@
         <div class="page-header-left">
           <div class="date-display" id="dash-date">Loading...</div>
           <h1 class="greeting" id="dash-greeting">Good morning 👋</h1>
-          <p class="daily-quote" id="dash-quote">"Consistency beats motivation."</p>
+          <div class="daily-quote-wrap">
+            <p class="daily-quote" id="dash-quote" title="Click to change quote">"Consistency beats motivation."</p>
+            <button class="btn-quote-refresh" id="btn-refresh-quote" title="Get another motivational quote">🔄</button>
+          </div>
         </div>
         <button class="btn-checkin" id="dash-checkin-btn" onclick="openModal('modal-checkin')">📝 Daily Check-in</button>
       </div>
