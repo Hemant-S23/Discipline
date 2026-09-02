@@ -76,6 +76,7 @@
     padding-bottom: var(--mobile-nav-h);
   }
 
+  .mobile-top-header { display: flex; }
   .mobile-nav { display: flex; }
 
   /* Stats row */

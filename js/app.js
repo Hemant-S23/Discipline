@@ -54,6 +54,9 @@ function navigateTo(page) {
     case 'settings':     renderSettingsPage();       break;
   }
 
+  // Hide mobile drawer if open
+  closeMobileDrawer();
+
   // Scroll to top
   const main = document.querySelector('.main-content');
   if (main) main.scrollTop = 0;
@@ -87,9 +90,43 @@ function toggleTheme() {
   if (currentPage === 'analytics')  renderAnalyticsPage();
 }
 
+// ── Mobile Drawer ─────────────────────────────────────────────
+export function openMobileDrawer() {
+  const drawer = document.getElementById('mobile-drawer');
+  if (drawer) drawer.classList.add('drawer-open');
+}
+
+export function closeMobileDrawer() {
+  const drawer = document.getElementById('mobile-drawer');
+  if (drawer) drawer.classList.remove('drawer-open');
+}
+
 function updateThemeToggle(theme) {
   const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const drawerBtn = document.getElementById('drawer-theme-toggle');
+  const icon = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.textContent = icon;
+  if (drawerBtn) drawerBtn.textContent = icon;
+}
+
+function initMobileDrawer() {
+  const toggleBtn = document.getElementById('mobile-menu-toggle-btn');
+  const moreBtn   = document.getElementById('mobile-nav-more-btn');
+  const closeBtn  = document.getElementById('mobile-drawer-close-btn');
+  const drawer    = document.getElementById('mobile-drawer');
+  const drawerThemeBtn = document.getElementById('drawer-theme-toggle');
+
+  if (toggleBtn) toggleBtn.addEventListener('click', openMobileDrawer);
+  if (moreBtn)   moreBtn.addEventListener('click', openMobileDrawer);
+  if (closeBtn)  closeBtn.addEventListener('click', closeMobileDrawer);
+
+  if (drawer) {
+    drawer.addEventListener('click', e => {
+      if (e.target === drawer) closeMobileDrawer();
+    });
+  }
+
+  if (drawerThemeBtn) drawerThemeBtn.addEventListener('click', toggleTheme);
 }
 
 // ── Nav Events ────────────────────────────────────────────────
@@ -326,6 +363,7 @@ function appInit() {
   initTheme();
   initRouter();
   initNav();
+  initMobileDrawer();
   initHabitForm();
   initCheckin();
   initModalClose();

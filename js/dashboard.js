@@ -58,17 +58,28 @@ function renderHeader() {
     }
   }
 
-  // Sidebar user info
-  const nameEl  = document.getElementById('sidebar-user-name');
-  const levelEl = document.getElementById('sidebar-user-level');
-  const avatarEl = document.getElementById('sidebar-avatar');
+  // Sidebar & Mobile user info
+  const nameEl         = document.getElementById('sidebar-user-name');
+  const levelEl        = document.getElementById('sidebar-user-level');
+  const avatarEl       = document.getElementById('sidebar-avatar');
 
-  if (nameEl)   nameEl.textContent  = user.name;
-  if (levelEl) {
-    const info = getCurrentLevelInfo();
-    levelEl.textContent = `Lv.${info.level} · ${info.name}`;
-  }
-  if (avatarEl) avatarEl.textContent = (user.name || 'F')[0].toUpperCase();
+  const drawerNameEl   = document.getElementById('drawer-user-name');
+  const drawerLevelEl  = document.getElementById('drawer-user-level');
+  const drawerAvatarEl = document.getElementById('drawer-avatar');
+  const mobileLevelEl  = document.getElementById('mobile-header-user-level');
+
+  const info = getCurrentLevelInfo();
+
+  if (nameEl)       nameEl.textContent       = user.name;
+  if (drawerNameEl) drawerNameEl.textContent = user.name;
+
+  if (levelEl)       levelEl.textContent       = `Lv.${info.level} · ${info.name}`;
+  if (drawerLevelEl) drawerLevelEl.textContent = `Lv.${info.level} · ${info.name}`;
+  if (mobileLevelEl) mobileLevelEl.textContent = `Lv.${info.level}`;
+
+  const initial = (user.name || 'F')[0].toUpperCase();
+  if (avatarEl)       avatarEl.textContent       = initial;
+  if (drawerAvatarEl) drawerAvatarEl.textContent = initial;
 }
 
 // ── Discipline Score ──────────────────────────────────────────
