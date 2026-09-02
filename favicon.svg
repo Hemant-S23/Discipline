@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="faviconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B7DFF" />
+      <stop offset="100%" stop-color="#5B4FE8" />
+    </linearGradient>
+    <linearGradient id="centerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F97316" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="512" height="512" rx="128" fill="url(#faviconGrad)" />
+
+  <!-- Outer Ring -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#FFFFFF" stroke-width="36" stroke-linecap="round" opacity="0.95" />
+
+  <!-- Middle Ring -->
+  <circle cx="256" cy="256" r="100" fill="none" stroke="#FFFFFF" stroke-width="30" opacity="0.9" />
+
+  <!-- Center Bullseye -->
+  <circle cx="256" cy="256" r="48" fill="url(#centerGrad)" />
+  <circle cx="256" cy="256" r="20" fill="#FFFFFF" />
+
+  <!-- Arrow Accent -->
+  <path d="M370 142 L310 202 M370 142 L330 142 M370 142 L370 182" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
