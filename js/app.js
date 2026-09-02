@@ -357,81 +357,82 @@ function initSettings() {
   if (sidebarThemeBtn) sidebarThemeBtn.addEventListener('click', toggleTheme);
 }
 
-// ── Authentication & Account UI ───────────────────────────────
-function initAuthUI() {
-  let mode = 'signin';
-
+window.setAuthTab = function(m) {
   const tabSignin = document.getElementById('auth-tab-signin');
   const tabSignup = document.getElementById('auth-tab-signup');
   const nameGroup = document.getElementById('auth-name-group');
   const submitBtn = document.getElementById('auth-submit-btn');
   const modalTitle = document.getElementById('auth-modal-title');
-  const form = document.getElementById('auth-form');
-  const googleBtn = document.getElementById('auth-google-btn');
-  const forgotBtn = document.getElementById('auth-forgot-btn');
-  const logoutBtn = document.getElementById('settings-logout-btn');
-  const deleteAccountBtn = document.getElementById('settings-delete-account-btn');
 
-  function setMode(m) {
-    mode = m;
-    if (m === 'signin') {
-      tabSignin?.classList.add('active');
-      tabSignup?.classList.remove('active');
-      nameGroup?.classList.add('hidden');
-      if (submitBtn) submitBtn.textContent = 'Sign In with Email';
-      if (modalTitle) modalTitle.textContent = 'Sign In to Sync';
+  if (m === 'signin') {
+    tabSignin?.classList.add('active');
+    tabSignup?.classList.remove('active');
+    nameGroup?.classList.add('hidden');
+    if (submitBtn) submitBtn.textContent = 'Sign In with Email';
+    if (modalTitle) modalTitle.textContent = 'Sign In to Sync';
+  } else {
+    tabSignup?.classList.add('active');
+    tabSignin?.classList.remove('active');
+    nameGroup?.classList.remove('hidden');
+    if (submitBtn) submitBtn.textContent = 'Create Free Account';
+    if (modalTitle) modalTitle.textContent = 'Create Cloud Account';
+  }
+};
+
+window.submitAuthForm = async function(e) {
+  if (e) e.preventDefault();
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const email = document.getElementById('auth-email-input')?.value?.trim();
+  const password = document.getElementById('auth-password-input')?.value;
+  const name = document.getElementById('auth-name-input')?.value?.trim();
+
+  if (!email || !password) {
+    showToast('Please enter your email and password', 'error');
+    return;
+  }
+
+  const isSignUp = document.getElementById('auth-tab-signup')?.classList.contains('active');
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Please wait...';
+  }
+
+  try {
+    if (isSignUp) {
+      await signUpWithEmail(email, password, name);
     } else {
-      tabSignup?.classList.add('active');
-      tabSignin?.classList.remove('active');
-      nameGroup?.classList.remove('hidden');
-      if (submitBtn) submitBtn.textContent = 'Create Free Account';
-      if (modalTitle) modalTitle.textContent = 'Create Cloud Account';
+      await loginWithEmail(email, password);
+    }
+  } catch (err) {
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = isSignUp ? 'Create Free Account' : 'Sign In with Email';
     }
   }
+};
 
-  if (tabSignin) tabSignin.addEventListener('click', () => setMode('signin'));
-  if (tabSignup) tabSignup.addEventListener('click', () => setMode('signup'));
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('auth-email-input')?.value?.trim();
-      const password = document.getElementById('auth-password-input')?.value;
-      const name = document.getElementById('auth-name-input')?.value?.trim();
-
-      if (!email || !password) return;
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Please wait...';
-
-      try {
-        if (mode === 'signup') {
-          await signUpWithEmail(email, password, name);
-        } else {
-          await loginWithEmail(email, password);
-        }
-      } catch (err) {
-      } finally {
-        submitBtn.disabled = false;
-        setMode(mode);
-      }
-    });
+window.handleGoogleLogin = async function() {
+  const googleBtn = document.getElementById('auth-google-btn');
+  if (googleBtn) googleBtn.style.opacity = '0.6';
+  try {
+    await loginWithGoogle();
+  } catch (e) {
+  } finally {
+    if (googleBtn) googleBtn.style.opacity = '1';
   }
+};
 
-  if (googleBtn) {
-    googleBtn.addEventListener('click', async () => {
-      try {
-        await loginWithGoogle();
-      } catch (e) {}
-    });
-  }
+window.handleForgotPass = async function() {
+  const email = document.getElementById('auth-email-input')?.value?.trim();
+  await resetPassword(email);
+};
 
-  if (forgotBtn) {
-    forgotBtn.addEventListener('click', async () => {
-      const email = document.getElementById('auth-email-input')?.value?.trim();
-      await resetPassword(email);
-    });
-  }
+// ── Authentication & Account UI ───────────────────────────────
+function initAuthUI() {
+  const logoutBtn = document.getElementById('settings-logout-btn');
+  const deleteAccountBtn = document.getElementById('settings-delete-account-btn');
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
