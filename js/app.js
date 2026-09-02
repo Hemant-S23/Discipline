@@ -15,6 +15,9 @@ import {
 } from './data.js';
 import { awardXP, XP_BONUSES } from './xp.js';
 import {
+  initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData
+} from './auth.js';
+import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
 } from './ui.js';
 
@@ -354,6 +357,129 @@ function initSettings() {
   if (sidebarThemeBtn) sidebarThemeBtn.addEventListener('click', toggleTheme);
 }
 
+// ── Authentication & Account UI ───────────────────────────────
+function initAuthUI() {
+  let mode = 'signin';
+
+  const tabSignin = document.getElementById('auth-tab-signin');
+  const tabSignup = document.getElementById('auth-tab-signup');
+  const nameGroup = document.getElementById('auth-name-group');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const modalTitle = document.getElementById('auth-modal-title');
+  const form = document.getElementById('auth-form');
+  const googleBtn = document.getElementById('auth-google-btn');
+  const forgotBtn = document.getElementById('auth-forgot-btn');
+  const logoutBtn = document.getElementById('settings-logout-btn');
+  const deleteAccountBtn = document.getElementById('settings-delete-account-btn');
+
+  function setMode(m) {
+    mode = m;
+    if (m === 'signin') {
+      tabSignin?.classList.add('active');
+      tabSignup?.classList.remove('active');
+      nameGroup?.classList.add('hidden');
+      if (submitBtn) submitBtn.textContent = 'Sign In with Email';
+      if (modalTitle) modalTitle.textContent = 'Sign In to Sync';
+    } else {
+      tabSignup?.classList.add('active');
+      tabSignin?.classList.remove('active');
+      nameGroup?.classList.remove('hidden');
+      if (submitBtn) submitBtn.textContent = 'Create Free Account';
+      if (modalTitle) modalTitle.textContent = 'Create Cloud Account';
+    }
+  }
+
+  if (tabSignin) tabSignin.addEventListener('click', () => setMode('signin'));
+  if (tabSignup) tabSignup.addEventListener('click', () => setMode('signup'));
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email-input')?.value?.trim();
+      const password = document.getElementById('auth-password-input')?.value;
+      const name = document.getElementById('auth-name-input')?.value?.trim();
+
+      if (!email || !password) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Please wait...';
+
+      try {
+        if (mode === 'signup') {
+          await signUpWithEmail(email, password, name);
+        } else {
+          await loginWithEmail(email, password);
+        }
+      } catch (err) {
+      } finally {
+        submitBtn.disabled = false;
+        setMode(mode);
+      }
+    });
+  }
+
+  if (googleBtn) {
+    googleBtn.addEventListener('click', async () => {
+      try {
+        await loginWithGoogle();
+      } catch (e) {}
+    });
+  }
+
+  if (forgotBtn) {
+    forgotBtn.addEventListener('click', async () => {
+      const email = document.getElementById('auth-email-input')?.value?.trim();
+      await resetPassword(email);
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await logoutUser();
+      updateAccountSettingsUI(null);
+    });
+  }
+
+  if (deleteAccountBtn) {
+    deleteAccountBtn.addEventListener('click', () => {
+      showConfirmModal({
+        title: 'Delete Account & Data?',
+        message: '⚠️ This will PERMANENTLY delete your account and all saved cloud habits, streaks, and progress. This action cannot be undone.',
+        icon: '🗑️',
+        confirmText: 'Delete Account & Data',
+        cancelText: 'Cancel',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+          await deleteAccountAndData();
+        }
+      });
+    });
+  }
+
+  initAuth((user) => {
+    updateAccountSettingsUI(user);
+  });
+}
+
+function updateAccountSettingsUI(authUser) {
+  const statusEl = document.getElementById('settings-account-status');
+  const descEl   = document.getElementById('settings-account-desc');
+  const loginBtn = document.getElementById('settings-login-btn');
+  const logoutBtn = document.getElementById('settings-logout-btn');
+
+  const user = getUser();
+  if (authUser || user.email) {
+    const email = authUser ? authUser.email : user.email;
+    if (statusEl) statusEl.textContent = `Cloud Account: ${email}`;
+    if (descEl) descEl.textContent = '✓ Progress is automatically synced to the cloud';
+    if (loginBtn) loginBtn.classList.add('hidden');
+    if (logoutBtn) logoutBtn.classList.remove('hidden');
+  } else {
+    if (statusEl) statusEl.textContent = 'Guest Account (Local Storage)';
+    if (descEl) descEl.textContent = 'Sign in with Email or Google to sync progress across all your devices';
+    if (loginBtn) loginBtn.classList.remove('hidden');
+    if (logoutBtn) logoutBtn.classList.add('hidden');
+  }
 // ── Global add habit button ───────────────────────────────────
 function initGlobalButtons() {
   document.querySelectorAll('[data-action="add-habit"]').forEach(btn => {
@@ -371,6 +497,7 @@ function appInit() {
   initCheckin();
   initModalClose();
   initSettings();
+  initAuthUI();
   initGlobalButtons();
   restoreActiveReward();
 
