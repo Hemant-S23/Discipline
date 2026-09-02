@@ -14,7 +14,7 @@ import {
   getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, today, resetAllData, exportData
 } from './data.js';
 import {
-  showToast, openModal, closeModal, closeAllModals, showConfetti, getDailyQuote, CATEGORY_ICONS
+  showToast, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
 } from './ui.js';
 
 // ── Pages ─────────────────────────────────────────────────────
@@ -271,12 +271,18 @@ function initSettings() {
 
   const resetBtn = document.getElementById('settings-reset-btn');
   if (resetBtn) resetBtn.addEventListener('click', () => {
-    if (confirm('⚠️ This will delete ALL your habits, completions, and progress. This cannot be undone.\n\nAre you sure?')) {
-      if (confirm('Really sure? All data will be permanently deleted.')) {
+    showConfirmModal({
+      title: 'Reset All Data?',
+      message: '⚠️ This will permanently delete ALL your habits, completions, streaks, and progress. This action cannot be undone.',
+      icon: '⚠️',
+      confirmText: 'Reset Everything',
+      cancelText: 'Cancel',
+      confirmClass: 'btn-danger',
+      onConfirm: () => {
         resetAllData();
         location.reload();
       }
-    }
+    });
   });
 
   const themeBtn = document.getElementById('theme-toggle');

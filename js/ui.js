@@ -66,6 +66,55 @@ export function closeAllModals() {
   document.body.classList.remove('body-modal');
 }
 
+// ── Generic Confirm Modal Helper ──────────────────────────────
+export function showConfirmModal({
+  title = 'Confirmation',
+  message = 'Are you sure?',
+  icon = '⚠️',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  confirmClass = 'btn-primary',
+  onConfirm = null
+}) {
+  const modal = document.getElementById('modal-confirm');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('confirm-modal-title');
+  const msgEl   = document.getElementById('confirm-modal-msg');
+  const iconEl  = document.getElementById('confirm-modal-icon-wrap');
+  const confirmBtn = document.getElementById('confirm-action-btn');
+  const cancelBtn  = document.getElementById('confirm-cancel-btn');
+
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl) msgEl.textContent = message;
+  if (iconEl) iconEl.textContent = icon;
+
+  if (confirmBtn) {
+    confirmBtn.textContent = confirmText;
+    confirmBtn.className = confirmClass || 'btn-primary';
+    confirmBtn.onclick = () => {
+      closeModal('modal-confirm');
+      if (typeof onConfirm === 'function') onConfirm();
+    };
+  }
+
+  if (cancelBtn) {
+    cancelBtn.textContent = cancelText;
+  }
+
+  openModal('modal-confirm');
+}
+
+// Escape key listener for closing modals
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllModals();
+    }
+  });
+}
+
+
 // ── Confetti ─────────────────────────────────────────────────
 export function showConfetti(duration = 3000) {
   const canvas = document.getElementById('confetti-canvas');

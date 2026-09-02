@@ -306,13 +306,36 @@ window.handleHabitToggleGlobal = (id, el) => handleHabitToggle(id, el);
 window.confirmArchive = function(id) {
   const h = getHabitById(id);
   if (!h) return;
-  if (confirm(`Archive "${h.name}"? Your history will be preserved.`)) {
-    archiveHabit(id);
-    showToast('Habit archived 🗂️', 'info');
-    renderHabitsPage(window._currentHabitFilter || 'all');
-    if (window._renderDashboard) window._renderDashboard();
+
+  const streak = calculateHabitStreak(id);
+
+  const nameEl   = document.getElementById('archive-modal-habit-name');
+  const iconEl   = document.getElementById('archive-modal-habit-icon');
+  const metaEl   = document.getElementById('archive-modal-habit-meta');
+  const streakEl = document.getElementById('archive-modal-habit-streak');
+  const confirmBtn = document.getElementById('archive-confirm-action-btn');
+
+  if (nameEl)   nameEl.textContent = h.name;
+  if (iconEl) {
+    iconEl.textContent = h.icon;
+    iconEl.style.background = h.color ? h.color + '22' : 'var(--accent-10)';
   }
+  if (metaEl)   metaEl.textContent = `${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category} · ${h.frequency}`;
+  if (streakEl) streakEl.textContent = `🔥 ${streak.current} ${streak.current === 1 ? 'day' : 'days'} streak`;
+
+  if (confirmBtn) {
+    confirmBtn.onclick = () => {
+      archiveHabit(id);
+      closeModal('modal-archive');
+      showToast('Habit archived 🗂️', 'info');
+      renderHabitsPage(window._currentHabitFilter || 'all');
+      if (window._renderDashboard) window._renderDashboard();
+    };
+  }
+
+  openModal('modal-archive');
 };
+
 
 // ── Milestones + Achievement Modals ───────────────────────────
 function showMilestoneModal(milestone, streak) {

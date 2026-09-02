@@ -652,6 +652,66 @@
   </div>
 </div>
 
+<!-- ── Custom Archive Confirmation Modal ──────────────────────── -->
+<div id="modal-archive" class="modal-overlay">
+  <div class="modal archive-modal">
+    <div class="modal-header">
+      <div class="archive-header-title">
+        <div class="archive-icon-badge">🗂️</div>
+        <h2>Archive Habit</h2>
+      </div>
+      <button class="modal-close" data-close-modal="modal-archive">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="archive-modal-subtext">Are you sure you want to archive this habit?</p>
+      
+      <div class="archive-habit-card-preview" id="archive-habit-preview">
+        <div class="archive-habit-icon" id="archive-modal-habit-icon">🧘</div>
+        <div class="archive-habit-info">
+          <div class="archive-habit-name" id="archive-modal-habit-name">Meditate</div>
+          <div class="archive-habit-meta" id="archive-modal-habit-meta">🧠 Mind · Daily</div>
+        </div>
+        <div class="archive-habit-badge" id="archive-modal-habit-streak">🔥 1 streak</div>
+      </div>
+
+      <div class="archive-notice-box">
+        <span class="notice-icon">💡</span>
+        <span class="notice-text">
+          Your completion history, streaks, and XP will be safely preserved. You can view or restore archived habits anytime in <strong>Settings</strong>.
+        </span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-close-modal="modal-archive">Cancel</button>
+        <button type="button" class="btn-archive-confirm" id="archive-confirm-action-btn">
+          <span>Archive Habit</span> 🗂️
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Generic Confirmation Modal ──────────────────────────────── -->
+<div id="modal-confirm" class="modal-overlay">
+  <div class="modal confirm-dialog-modal">
+    <div class="modal-header">
+      <div class="archive-header-title">
+        <div class="archive-icon-badge confirm-icon-badge" id="confirm-modal-icon-wrap">⚠️</div>
+        <h2 id="confirm-modal-title">Confirmation</h2>
+      </div>
+      <button class="modal-close" data-close-modal="modal-confirm">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-modal-msg" style="color:var(--text-2);font-size:14px;line-height:1.5;margin-bottom:20px;"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="confirm-cancel-btn" data-close-modal="modal-confirm">Cancel</button>
+        <button type="button" class="btn-primary" id="confirm-action-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ═══════════════════════════════════════════════════════════
      UTILITY ELEMENTS
      ═══════════════════════════════════════════════════════════ -->
