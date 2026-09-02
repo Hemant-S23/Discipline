@@ -481,6 +481,7 @@ function updateAccountSettingsUI(authUser) {
     if (logoutBtn) logoutBtn.classList.add('hidden');
   }
 }
+window._updateAccountUI = updateAccountSettingsUI;
 
 // ── Global add habit button ───────────────────────────────────
 function initGlobalButtons() {
