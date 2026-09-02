@@ -2,23 +2,24 @@
 // data.js — LocalStorage data layer for Discipline
 // ============================================================
 
-const KEYS = {
+export const KEYS = {
   USER: 'discipline_user',
   HABITS: 'discipline_habits',
   COMPLETIONS: 'discipline_completions',
   CHECKINS: 'discipline_checkins',
   ACHIEVEMENTS: 'discipline_achievements',
+  REWARDS: 'discipline_rewards',
   XP_LOG: 'discipline_xp_log'
 };
 
 // ── Helpers ──────────────────────────────────────────────────
-function load(key, fallback = null) {
+export function load(key, fallback = null) {
   try {
     const v = localStorage.getItem(key);
     return v ? JSON.parse(v) : fallback;
   } catch { return fallback; }
 }
-function save(key, data) {
+export function save(key, data) {
   try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('Storage error', e); }
 }
 export function today() {

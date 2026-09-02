@@ -3,7 +3,6 @@
 // ============================================================
 
 import { getUser, updateUser, addHabit } from './data.js';
-import { openModal, closeModal } from './ui.js';
 
 const STARTER_HABITS = [
   { icon: '📚', name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily',    cats: ['learning'] },
@@ -26,24 +25,12 @@ let selectedGoals = new Set();
 let selectedHabits = new Set();
 let userName = '';
 
-export function initOnboarding() {
-  const user = getUser();
-  if (user.onboardingDone) {
-    document.getElementById('onboarding-overlay').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-    return false;
-  }
-  showStep(1);
-  return true;
-}
-
-function showStep(step) {
+export function showStep(step) {
   currentStep = step;
   document.querySelectorAll('.onboarding-step').forEach(el => el.classList.remove('active'));
   const stepEl = document.querySelector(`.onboarding-step[data-step="${step}"]`);
   if (stepEl) stepEl.classList.add('active');
 
-  // Update progress dots
   document.querySelectorAll('.onboarding-dot').forEach((dot, idx) => {
     dot.classList.remove('active', 'done');
     if (idx + 1 === step) dot.classList.add('active');
@@ -53,18 +40,30 @@ function showStep(step) {
   if (step === 4) renderStarterHabits();
 }
 
+export function initOnboarding() {
+  const user = getUser();
+  if (user.onboardingDone) {
+    const overlay = document.getElementById('onboarding-overlay');
+    const appShell = document.getElementById('app');
+    if (overlay) overlay.classList.add('hidden');
+    if (appShell) appShell.classList.remove('hidden');
+    return false;
+  }
+  showStep(1);
+  return true;
+}
+
 function renderStarterHabits() {
   const container = document.getElementById('starter-habits-container');
   if (!container) return;
 
-  // Show habits matching selected goals (or all if none selected)
   const filtered = selectedGoals.size === 0
     ? STARTER_HABITS
     : STARTER_HABITS.filter(h => h.cats.some(c => selectedGoals.has(c)));
 
   container.innerHTML = filtered.map((h, i) => `
     <div class="starter-habit-item ${selectedHabits.has(i) ? 'selected' : ''}"
-         onclick="toggleStarterHabit(${i})" data-idx="${i}">
+         onclick="window.toggleStarterHabit(${i})" data-idx="${i}">
       <span class="starter-habit-icon">${h.icon}</span>
       <div class="starter-habit-info">
         <div class="starter-habit-name">${h.name}</div>
@@ -73,11 +72,10 @@ function renderStarterHabits() {
     </div>
   `).join('');
 
-  // Store filtered list so we can reference it by index
   window._onboardingFiltered = filtered;
 }
 
-// Global function for inline onclick
+// Attach immediately to window for inline onclick handlers
 window.toggleStarterHabit = function(idx) {
   if (selectedHabits.has(idx)) selectedHabits.delete(idx);
   else selectedHabits.add(idx);
@@ -96,29 +94,31 @@ window.onboardingNext = function() {
     const input = document.getElementById('ob-name-input');
     userName = (input?.value || '').trim() || 'Friend';
   }
-  if (currentStep < TOTAL_STEPS) showStep(currentStep + 1);
+  if (currentStep < TOTAL_STEPS) {
+    showStep(currentStep + 1);
+  }
 };
 
 window.onboardingBack = function() {
-  if (currentStep > 1) showStep(currentStep - 1);
+  if (currentStep > 1) {
+    showStep(currentStep - 1);
+  }
 };
 
 window.finishOnboarding = function() {
-  // Save name
   updateUser({ name: userName || 'Friend', onboardingDone: true });
 
-  // Create selected habits
   const filtered = window._onboardingFiltered || STARTER_HABITS;
   const habitsToCreate = selectedHabits.size > 0
     ? [...selectedHabits].map(i => filtered[i]).filter(Boolean)
-    : STARTER_HABITS.slice(0, 3); // default 3 if none chosen
+    : STARTER_HABITS.slice(0, 3);
 
   habitsToCreate.forEach(h => addHabit({ ...h }));
 
-  // Hide onboarding, show app
-  document.getElementById('onboarding-overlay').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
+  const overlay = document.getElementById('onboarding-overlay');
+  const appShell = document.getElementById('app');
+  if (overlay) overlay.classList.add('hidden');
+  if (appShell) appShell.classList.remove('hidden');
 
-  // Trigger app init
   if (window._appInit) window._appInit();
 };

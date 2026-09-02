@@ -1,18 +1,7 @@
 // ============================================================
-// firebase-config.js — Firebase modular SDK v10 initialization
+// firebase-config.js — Safe, Resilient Firebase SDK v10 Loader
 // ============================================================
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser,
-  sendPasswordResetEmail, updateProfile
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import {
-  getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
-// Replace with your Firebase Project Configuration keys from Firebase Console
 export const firebaseConfig = {
   apiKey: "AIzaSyDemoConfigKeyForDisciplineAppProject123",
   authDomain: "discipline-app-prod.firebaseapp.com",
@@ -22,27 +11,38 @@ export const firebaseConfig = {
   appId: "1:1234567890:web:abcdef1234567890"
 };
 
-let app = null;
-let auth = null;
-let db = null;
-let googleProvider = null;
-let isFirebaseConfigured = false;
+export let app = null;
+export let auth = null;
+export let db = null;
+export let googleProvider = null;
+export let isFirebaseConfigured = false;
 
-try {
-  if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('DemoConfigKey')) {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    googleProvider = new GoogleAuthProvider();
-    isFirebaseConfigured = true;
+export let firebaseAuth = {};
+export let firebaseFirestore = {};
+
+/**
+ * Lazy Load Firebase SDK dynamically without blocking app startup
+ */
+export async function loadFirebase() {
+  if (isFirebaseConfigured) return true;
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes('DemoConfigKey')) {
+    return false;
   }
-} catch (e) {
-  console.warn('Firebase initialization fallback active:', e);
-}
+  try {
+    const firebaseApp = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+    const authMod     = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+    const dbMod       = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
 
-export {
-  app, auth, db, googleProvider, isFirebaseConfigured,
-  signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
-  doc, setDoc, getDoc, updateDoc, deleteDoc, collection
-};
+    app = firebaseApp.initializeApp(firebaseConfig);
+    auth = authMod.getAuth(app);
+    db = dbMod.getFirestore(app);
+    googleProvider = new authMod.GoogleAuthProvider();
+    firebaseAuth = authMod;
+    firebaseFirestore = dbMod;
+    isFirebaseConfigured = true;
+    return true;
+  } catch (e) {
+    console.warn('Firebase network fallback active:', e);
+    return false;
+  }
+}
