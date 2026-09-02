@@ -87,33 +87,38 @@ export async function loginWithEmail(email, password) {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       closeModal('modal-auth');
       showToast('✓ Successfully signed in! ☁️', 'success');
-      updateUser({ email, name: cred.user.displayName || email.split('@')[0], isLoggedIn: true, authDone: true });
+      updateUser({ email: cred.user.email, name: cred.user.displayName || email.split('@')[0], isLoggedIn: true, authDone: true });
       if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
       console.warn('Firebase signIn error:', err.code);
-      // Auto attempt signup if account doesn't exist yet
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, email, password);
-          closeModal('modal-auth');
-          showToast('✓ Account created & signed in! 🚀', 'success');
-          updateUser({ email, name: email.split('@')[0], isLoggedIn: true, authDone: true });
-          if (window._updateAccountUI) window._updateAccountUI(cred.user);
-          return cred.user;
-        } catch (signUpErr) {
-          // Fall through to seamless local auth mode
-        }
-      }
+      const msg = getAuthErrorMessage(err.code);
+      showToast(msg, 'error');
+      throw err;
     }
-  }
+  } else {
+    // Local Registered Accounts Validation
+    const accounts = load('discipline_accounts', []);
+    const existing = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
 
-  // Seamless Bulletproof Fallback
-  updateUser({ email, name: email.split('@')[0], isLoggedIn: true, authDone: true, nameCustomized: true });
-  closeModal('modal-auth');
-  showToast(`✓ Welcome, ${email.split('@')[0]}! 🔐`, 'success');
-  if (window._updateAccountUI) window._updateAccountUI(getUser());
-  return { email, displayName: email.split('@')[0] };
+    if (!existing) {
+      const errorMsg = '⚠️ No account found with this email. Please switch to Create Account!';
+      showToast(errorMsg, 'error');
+      throw new Error(errorMsg);
+    }
+
+    if (existing.password !== password) {
+      const errorMsg = '⚠️ Incorrect password. Please check and try again.';
+      showToast(errorMsg, 'error');
+      throw new Error(errorMsg);
+    }
+
+    updateUser({ email: existing.email, name: existing.name || email.split('@')[0], isLoggedIn: true, authDone: true, nameCustomized: true });
+    closeModal('modal-auth');
+    showToast(`✓ Welcome back, ${existing.name || email.split('@')[0]}! 🔐`, 'success');
+    if (window._updateAccountUI) window._updateAccountUI(getUser());
+    return { email: existing.email, displayName: existing.name };
+  }
 }
 
 export async function signUpWithEmail(email, password, name) {
@@ -122,7 +127,7 @@ export async function signUpWithEmail(email, password, name) {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const userName = name || email.split('@')[0];
       await updateProfile(cred.user, { displayName: userName });
-      updateUser({ name: userName, email, isLoggedIn: true, authDone: true, nameCustomized: true });
+      updateUser({ name: userName, email: cred.user.email, isLoggedIn: true, authDone: true, nameCustomized: true });
       await uploadLocalDataToCloud(cred.user.uid);
       closeModal('modal-auth');
       showToast('✓ Account created! Cloud sync activated 🚀', 'success');
@@ -130,28 +135,32 @@ export async function signUpWithEmail(email, password, name) {
       return cred.user;
     } catch (err) {
       console.warn('Firebase signUp error:', err.code);
-      if (err.code === 'auth/email-already-in-use') {
-        try {
-          const cred = await signInWithEmailAndPassword(auth, email, password);
-          closeModal('modal-auth');
-          showToast('✓ Welcome back! Signed in 🔐', 'success');
-          updateUser({ email, name: name || email.split('@')[0], isLoggedIn: true, authDone: true });
-          if (window._updateAccountUI) window._updateAccountUI(cred.user);
-          return cred.user;
-        } catch (signInErr) {
-          // Fall through to seamless local auth mode
-        }
-      }
+      const msg = getAuthErrorMessage(err.code);
+      showToast(msg, 'error');
+      throw err;
     }
-  }
+  } else {
+    // Local Account Creation Validation
+    const accounts = load('discipline_accounts', []);
+    const existing = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
 
-  // Seamless Bulletproof Fallback
-  const userName = name || email.split('@')[0];
-  updateUser({ name: userName, email, isLoggedIn: true, authDone: true, nameCustomized: true });
-  closeModal('modal-auth');
-  showToast(`✓ Account created for ${userName}! 🚀`, 'success');
-  if (window._updateAccountUI) window._updateAccountUI(getUser());
-  return { email, displayName: userName };
+    if (existing) {
+      const errorMsg = '⚠️ An account with this email already exists. Please switch to Sign In!';
+      showToast(errorMsg, 'error');
+      throw new Error(errorMsg);
+    }
+
+    const userName = name || email.split('@')[0];
+    const newAcc = { email, password, name: userName, createdAt: new Date().toISOString() };
+    accounts.push(newAcc);
+    save('discipline_accounts', accounts);
+
+    updateUser({ name: userName, email, isLoggedIn: true, authDone: true, nameCustomized: true });
+    closeModal('modal-auth');
+    showToast(`✓ Account created for ${userName}! 🚀`, 'success');
+    if (window._updateAccountUI) window._updateAccountUI(getUser());
+    return { email, displayName: userName };
+  }
 }
 
 export async function loginWithGoogle() {
@@ -165,16 +174,18 @@ export async function loginWithGoogle() {
       return cred.user;
     } catch (err) {
       console.warn('Google Sign-In popup error/restriction:', err.code);
+      const msg = getAuthErrorMessage(err.code);
+      showToast(msg, 'error');
+      throw err;
     }
+  } else {
+    const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
+    updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, nameCustomized: true });
+    closeModal('modal-auth');
+    showToast('✓ Signed in with Google! 🌐', 'success');
+    if (window._updateAccountUI) window._updateAccountUI(getUser());
+    return googleUser;
   }
-
-  // Seamless Bulletproof Google Fallback
-  const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
-  updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, nameCustomized: true });
-  closeModal('modal-auth');
-  showToast('✓ Signed in with Google! 🌐', 'success');
-  if (window._updateAccountUI) window._updateAccountUI(getUser());
-  return googleUser;
 }
 
 export async function resetPassword(email) {
@@ -187,7 +198,7 @@ export async function resetPassword(email) {
       await sendPasswordResetEmail(auth, email);
       showToast('✓ Password reset link sent to your email!', 'success');
     } catch (err) {
-      showToast(`✓ Password reset email sent to ${email}`, 'success');
+      showToast(getAuthErrorMessage(err.code), 'error');
     }
   } else {
     showToast(`✓ Password reset email sent to ${email}`, 'success');
@@ -221,13 +232,14 @@ export async function deleteAccountAndData() {
 
 function getAuthErrorMessage(code) {
   switch (code) {
-    case 'auth/invalid-email': return 'Invalid email address';
-    case 'auth/user-disabled': return 'This user account has been disabled';
-    case 'auth/user-not-found': return 'No account found with this email';
-    case 'auth/wrong-password': return 'Incorrect password';
-    case 'auth/email-already-in-use': return 'An account with this email already exists';
-    case 'auth/weak-password': return 'Password should be at least 6 characters';
-    case 'auth/unauthorized-domain': return 'Domain authorizing in progress...';
-    default: return 'Authentication notice. Proceeding with your account.';
+    case 'auth/invalid-email': return '⚠️ Invalid email address format.';
+    case 'auth/user-disabled': return '⚠️ This user account has been disabled.';
+    case 'auth/user-not-found': return '⚠️ No account found with this email. Please switch to Create Account!';
+    case 'auth/wrong-password': return '⚠️ Incorrect password. Please check and try again.';
+    case 'auth/invalid-credential': return '⚠️ No account found with these details. Please switch to Create Account!';
+    case 'auth/email-already-in-use': return '⚠️ An account with this email already exists. Please switch to Sign In!';
+    case 'auth/weak-password': return '⚠️ Password should be at least 6 characters.';
+    case 'auth/unauthorized-domain': return '⚠️ Add hemant-s23.github.io in Firebase Console -> Authentication -> Settings -> Authorized Domains';
+    default: return '⚠️ Authentication failed. Please check your credentials.';
   }
 }
