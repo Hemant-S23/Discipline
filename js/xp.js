@@ -80,9 +80,10 @@ export function getCurrentLevelInfo() {
 
 // XP Bonuses
 export const XP_BONUSES = {
-  PERFECT_DAY: 50,
-  STREAK_7:    100,
-  STREAK_30:   500,
-  STREAK_100:  2000,
-  FIRST_HABIT: 20
+  DAILY_CHECKIN: 15,
+  PERFECT_DAY:   50,
+  STREAK_7:      100,
+  STREAK_30:     500,
+  STREAK_100:    2000,
+  FIRST_HABIT:   20
 };

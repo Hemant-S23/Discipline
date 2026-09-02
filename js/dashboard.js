@@ -48,13 +48,13 @@ function renderHeader() {
     if (todayCheckin) {
       const moodEmojis = { great: '😄', good: '🙂', okay: '😐', difficult: '😕', exhausted: '😴' };
       const emoji = moodEmojis[todayCheckin.mood] || '✨';
-      checkinBtn.innerHTML = `✓ Checked-in ${emoji}`;
+      checkinBtn.innerHTML = `<span>✓ Checked-in ${emoji}</span><span class="btn-checkin-badge">Done</span>`;
       checkinBtn.classList.add('checked-in');
       checkinBtn.title = `Today's Mood: ${todayCheckin.mood} — Click to view/edit`;
     } else {
-      checkinBtn.innerHTML = `📝 Daily Check-in`;
+      checkinBtn.innerHTML = `<span>📝 Daily Check-in</span><span class="btn-checkin-badge">+15 XP ⭐</span>`;
       checkinBtn.classList.remove('checked-in');
-      checkinBtn.title = 'Complete today\'s check-in';
+      checkinBtn.title = 'Complete today\'s check-in to earn +15 XP';
     }
   }
 

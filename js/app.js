@@ -11,10 +11,11 @@ import { renderAchievementsPage } from './achievements.js';
 import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js';
 import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js';
 import {
-  getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, today, resetAllData, exportData
+  getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, hasAwardedXpToday, today, resetAllData, exportData
 } from './data.js';
+import { awardXP, XP_BONUSES } from './xp.js';
 import {
-  showToast, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
+  showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
 } from './ui.js';
 
 // ── Pages ─────────────────────────────────────────────────────
@@ -177,11 +178,32 @@ function initCheckin() {
     const note = document.getElementById('checkin-note')?.value || '';
     const todayStr = today();
     saveCheckin({ date: todayStr, mood: selectedMood || 'good', note, completionPct: 0 });
-    showToast('✓ Check-in saved!', 'success');
+
+    const xpKey = `daily_checkin_${todayStr}`;
+    let xpAwarded = 0;
+    let result = null;
+
+    if (!hasAwardedXpToday(xpKey)) {
+      const xp = XP_BONUSES.DAILY_CHECKIN || 15;
+      xpAwarded = xp;
+      result = awardXP(xp, xpKey);
+      if (checkinBtn) showXPFloat(xp, checkinBtn);
+    }
+
+    showToast(`✓ Check-in saved!${xpAwarded ? ` +${xpAwarded} XP ⭐` : ''}`, 'success');
     closeModal('modal-checkin');
     selectedMood = null;
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
     if (document.getElementById('checkin-note')) document.getElementById('checkin-note').value = '';
+
+    if (result && result.leveledUp) {
+      setTimeout(() => {
+        document.getElementById('levelup-num').textContent  = result.levelInfo.level;
+        document.getElementById('levelup-name').textContent = result.levelInfo.name;
+        openModal('modal-levelup');
+      }, 800);
+    }
+
     renderDashboard();
   });
 }
