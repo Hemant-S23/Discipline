@@ -1581,7 +1581,72 @@
   transform: scale(0.97);
 }
 
-/* ── Auth Modal & Cloud Sync Styles ─────────────────────────── */
+/* ── Auth Landing Overlay & Cloud Sync Styles ───────────────── */
+.landing-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(at 10% 10%, rgba(124, 111, 247, 0.18) 0px, transparent 50%),
+              radial-gradient(at 90% 90%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+              var(--bg);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.landing-card {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 440px;
+  padding: 32px 28px;
+  animation: modalPopIn 0.35s var(--t-spring);
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.landing-logo {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.landing-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.28;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.landing-subtitle {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 0;
+}
+
+.btn-guest {
+  background: var(--surface-2) !important;
+  border: 1.5px dashed var(--border-2) !important;
+  color: var(--text) !important;
+  font-weight: 600 !important;
+}
+
+.btn-guest:hover {
+  background: var(--surface-3) !important;
+  border-color: var(--accent-20) !important;
+}
+
 .auth-modal {
   max-width: 420px;
 }

@@ -357,41 +357,38 @@ function initSettings() {
   if (sidebarThemeBtn) sidebarThemeBtn.addEventListener('click', toggleTheme);
 }
 
-window.setAuthTab = function(m) {
-  const tabSignin = document.getElementById('auth-tab-signin');
-  const tabSignup = document.getElementById('auth-tab-signup');
-  const nameGroup = document.getElementById('auth-name-group');
-  const submitBtn = document.getElementById('auth-submit-btn');
-  const modalTitle = document.getElementById('auth-modal-title');
+window.setLandingTab = function(m) {
+  const tabSignin = document.getElementById('landing-tab-signin');
+  const tabSignup = document.getElementById('landing-tab-signup');
+  const nameGroup = document.getElementById('landing-name-group');
+  const submitBtn = document.getElementById('landing-submit-btn');
 
   if (m === 'signin') {
     tabSignin?.classList.add('active');
     tabSignup?.classList.remove('active');
     nameGroup?.classList.add('hidden');
     if (submitBtn) submitBtn.textContent = 'Sign In with Email';
-    if (modalTitle) modalTitle.textContent = 'Sign In to Sync';
   } else {
     tabSignup?.classList.add('active');
     tabSignin?.classList.remove('active');
     nameGroup?.classList.remove('hidden');
     if (submitBtn) submitBtn.textContent = 'Create Free Account';
-    if (modalTitle) modalTitle.textContent = 'Create Cloud Account';
   }
 };
 
-window.submitAuthForm = async function(e) {
+window.handleLandingAuthSubmit = async function(e) {
   if (e) e.preventDefault();
-  const submitBtn = document.getElementById('auth-submit-btn');
-  const email = document.getElementById('auth-email-input')?.value?.trim();
-  const password = document.getElementById('auth-password-input')?.value;
-  const name = document.getElementById('auth-name-input')?.value?.trim();
+  const submitBtn = document.getElementById('landing-submit-btn');
+  const email = document.getElementById('landing-email-input')?.value?.trim();
+  const password = document.getElementById('landing-password-input')?.value;
+  const name = document.getElementById('landing-name-input')?.value?.trim();
 
   if (!email || !password) {
     showToast('Please enter your email and password', 'error');
     return;
   }
 
-  const isSignUp = document.getElementById('auth-tab-signup')?.classList.contains('active');
+  const isSignUp = document.getElementById('landing-tab-signup')?.classList.contains('active');
 
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -404,6 +401,8 @@ window.submitAuthForm = async function(e) {
     } else {
       await loginWithEmail(email, password);
     }
+    updateUser({ isLoggedIn: true, authDone: true });
+    proceedAfterAuth();
   } catch (err) {
   } finally {
     if (submitBtn) {
@@ -414,18 +413,44 @@ window.submitAuthForm = async function(e) {
 };
 
 window.handleGoogleLogin = async function() {
-  const googleBtn = document.getElementById('auth-google-btn');
+  const googleBtn = document.querySelector('.btn-google');
   if (googleBtn) googleBtn.style.opacity = '0.6';
   try {
-    await loginWithGoogle();
+    const googleUser = await loginWithGoogle();
+    if (googleUser) {
+      updateUser({ isLoggedIn: true, authDone: true });
+      proceedAfterAuth();
+    }
   } catch (e) {
   } finally {
     if (googleBtn) googleBtn.style.opacity = '1';
   }
 };
 
+window.handleGuestMode = function() {
+  updateUser({ isGuest: true, authDone: true });
+  showToast('Welcome! Exploring in Guest Mode 👤', 'info');
+  proceedAfterAuth();
+};
+
+function proceedAfterAuth() {
+  const landingOverlay = document.getElementById('landing-overlay');
+  if (landingOverlay) landingOverlay.classList.add('hidden');
+
+  const user = getUser();
+  if (!user.onboardingDone) {
+    const onboardingOverlay = document.getElementById('onboarding-overlay');
+    if (onboardingOverlay) onboardingOverlay.classList.remove('hidden');
+    initOnboarding();
+  } else {
+    const appShell = document.getElementById('app');
+    if (appShell) appShell.classList.remove('hidden');
+    appInit();
+  }
+}
+
 window.handleForgotPass = async function() {
-  const email = document.getElementById('auth-email-input')?.value?.trim();
+  const email = document.getElementById('landing-email-input')?.value?.trim() || document.getElementById('auth-email-input')?.value?.trim();
   await resetPassword(email);
 };
 
@@ -437,7 +462,8 @@ function initAuthUI() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       await logoutUser();
-      updateAccountSettingsUI(null);
+      updateUser({ isLoggedIn: false, authDone: false, isGuest: false });
+      location.reload();
     });
   }
 
@@ -514,12 +540,35 @@ function appInit() {
   navigateTo(PAGES.includes(page) ? page : 'dashboard');
 }
 
-// ── Boot ──────────────────────────────────────────────────────
+// ── Boot Entry Pipeline ───────────────────────────────────────
 window._appInit = appInit;
 
-// Init onboarding (or go straight to app)
-const needsOnboarding = initOnboarding();
-if (!needsOnboarding) appInit();
+function bootApp() {
+  const user = getUser();
+  const isAuthDone = user.isLoggedIn || user.isGuest || user.authDone || user.email;
+
+  const landingOverlay = document.getElementById('landing-overlay');
+  const onboardingOverlay = document.getElementById('onboarding-overlay');
+  const appShell = document.getElementById('app');
+
+  if (!isAuthDone) {
+    if (landingOverlay) landingOverlay.classList.remove('hidden');
+    if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
+    if (appShell) appShell.classList.add('hidden');
+  } else if (!user.onboardingDone) {
+    if (landingOverlay) landingOverlay.classList.add('hidden');
+    if (onboardingOverlay) onboardingOverlay.classList.remove('hidden');
+    if (appShell) appShell.classList.add('hidden');
+    initOnboarding();
+  } else {
+    if (landingOverlay) landingOverlay.classList.add('hidden');
+    if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
+    if (appShell) appShell.classList.remove('hidden');
+    appInit();
+  }
+}
+
+bootApp();
 
 // Handle browser back/forward
 window.addEventListener('popstate', () => {
