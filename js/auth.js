@@ -3,8 +3,10 @@
 // ============================================================
 
 import {
-  loadFirebase, isFirebaseConfigured, auth, db, googleProvider,
-  firebaseAuth, firebaseFirestore
+  auth, db, googleProvider, isFirebaseConfigured,
+  signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
+  doc, setDoc, getDoc, deleteDoc
 } from './firebase-config.js';
 import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js';
 import { showToast, closeModal } from './ui.js';
@@ -16,9 +18,8 @@ export function getAuthUser() {
 }
 
 export async function initAuth(onUserChange) {
-  const ready = await loadFirebase();
-  if (ready && auth) {
-    firebaseAuth.onAuthStateChanged(auth, async (firebaseUser) => {
+  if (isFirebaseConfigured && auth) {
+    onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         currentAuthUser = firebaseUser;
         const user = getUser();
@@ -34,7 +35,6 @@ export async function initAuth(onUserChange) {
       if (typeof onUserChange === 'function') onUserChange(currentAuthUser || getUser());
     });
   } else {
-    // Local Auth State check
     const user = getUser();
     if (typeof onUserChange === 'function') onUserChange(user.email ? user : null);
   }
@@ -43,8 +43,8 @@ export async function initAuth(onUserChange) {
 export async function syncCloudData(uid) {
   if (!isFirebaseConfigured || !db) return;
   try {
-    const userDocRef = firebaseFirestore.doc(db, 'users', uid);
-    const snap = await firebaseFirestore.getDoc(userDocRef);
+    const userDocRef = doc(db, 'users', uid);
+    const snap = await getDoc(userDocRef);
 
     if (snap.exists()) {
       const cloudData = snap.data();
@@ -65,7 +65,7 @@ export async function syncCloudData(uid) {
 export async function uploadLocalDataToCloud(uid) {
   if (!isFirebaseConfigured || !db) return;
   try {
-    const userDocRef = firebaseFirestore.doc(db, 'users', uid);
+    const userDocRef = doc(db, 'users', uid);
     const payload = {
       habits: load(KEYS.HABITS, []),
       completions: load(KEYS.COMPLETIONS, []),
@@ -75,26 +75,25 @@ export async function uploadLocalDataToCloud(uid) {
       userProfile: getUser(),
       lastSyncedAt: new Date().toISOString()
     };
-    await firebaseFirestore.setDoc(userDocRef, payload, { merge: true });
+    await setDoc(userDocRef, payload, { merge: true });
   } catch (e) {
     console.error('Error uploading data to cloud:', e);
   }
 }
 
 export async function loginWithEmail(email, password) {
-  const ready = await loadFirebase();
-  if (ready && auth) {
+  if (isFirebaseConfigured && auth) {
     try {
-      const cred = await firebaseAuth.signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
       closeModal('modal-auth');
       showToast('✓ Successfully signed in! ☁️', 'success');
+      if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
       showToast(getAuthErrorMessage(err.code), 'error');
       throw err;
     }
   } else {
-    // Seamless Working Local Authentication Mode
     updateUser({ email, name: email.split('@')[0], isLoggedIn: true, nameCustomized: true });
     closeModal('modal-auth');
     showToast(`✓ Welcome back, ${email.split('@')[0]}! 🔐`, 'success');
@@ -104,24 +103,23 @@ export async function loginWithEmail(email, password) {
 }
 
 export async function signUpWithEmail(email, password, name) {
-  const ready = await loadFirebase();
-  if (ready && auth) {
+  if (isFirebaseConfigured && auth) {
     try {
-      const cred = await firebaseAuth.createUserWithEmailAndPassword(auth, email, password);
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
       if (name) {
-        await firebaseAuth.updateProfile(cred.user, { displayName: name });
+        await updateProfile(cred.user, { displayName: name });
         updateUser({ name, email, isLoggedIn: true, nameCustomized: true });
       }
       await uploadLocalDataToCloud(cred.user.uid);
       closeModal('modal-auth');
       showToast('✓ Account created! Cloud sync activated 🚀', 'success');
+      if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
       showToast(getAuthErrorMessage(err.code), 'error');
       throw err;
     }
   } else {
-    // Seamless Working Local Account Creation
     const userName = name || email.split('@')[0];
     updateUser({ name: userName, email, isLoggedIn: true, nameCustomized: true });
     closeModal('modal-auth');
@@ -132,19 +130,19 @@ export async function signUpWithEmail(email, password, name) {
 }
 
 export async function loginWithGoogle() {
-  const ready = await loadFirebase();
-  if (ready && auth) {
+  if (isFirebaseConfigured && auth) {
     try {
-      const cred = await firebaseAuth.signInWithPopup(auth, googleProvider);
+      const cred = await signInWithPopup(auth, googleProvider);
       closeModal('modal-auth');
       showToast('✓ Signed in with Google! 🌐', 'success');
+      if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
-      showToast('Google Sign-in cancelled or failed', 'error');
+      console.warn('Google Sign-In error:', err);
+      showToast(getAuthErrorMessage(err.code) || 'Google Sign-in popup cancelled or domain not authorized', 'error');
       throw err;
     }
   } else {
-    // Working Google Sign-In Simulation
     const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
     updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, nameCustomized: true });
     closeModal('modal-auth');
@@ -159,10 +157,9 @@ export async function resetPassword(email) {
     showToast('Please enter your email address', 'error');
     return;
   }
-  const ready = await loadFirebase();
-  if (ready && auth) {
+  if (isFirebaseConfigured && auth) {
     try {
-      await firebaseAuth.sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email);
       showToast('✓ Password reset link sent to your email!', 'success');
     } catch (err) {
       showToast(getAuthErrorMessage(err.code), 'error');
@@ -174,7 +171,7 @@ export async function resetPassword(email) {
 
 export async function logoutUser() {
   if (isFirebaseConfigured && auth) {
-    await firebaseAuth.signOut(auth);
+    await signOut(auth);
   }
   updateUser({ email: null, isLoggedIn: false });
   showToast('Logged out. Switched to guest mode 👋', 'info');
@@ -185,8 +182,8 @@ export async function deleteAccountAndData() {
   const user = auth?.currentUser;
   if (user && isFirebaseConfigured && db) {
     try {
-      await firebaseFirestore.deleteDoc(firebaseFirestore.doc(db, 'users', user.uid));
-      await firebaseAuth.deleteUser(user);
+      await deleteDoc(doc(db, 'users', user.uid));
+      await deleteUser(user);
     } catch (e) {
       console.error('Error deleting cloud account:', e);
     }
@@ -205,6 +202,7 @@ function getAuthErrorMessage(code) {
     case 'auth/wrong-password': return 'Incorrect password';
     case 'auth/email-already-in-use': return 'An account with this email already exists';
     case 'auth/weak-password': return 'Password should be at least 6 characters';
-    default: return 'Authentication failed. Please try again.';
+    case 'auth/unauthorized-domain': return 'Add your domain (localhost or hemant-s23.github.io) in Firebase Authorized Domains';
+    default: return 'Authentication error. Please try again.';
   }
 }
