@@ -150,20 +150,6 @@
      ═══════════════════════════════════════════════════════════ -->
 <div id="app" class="app-shell hidden">
 
-  <!-- ── Top Mobile Header (Mobile Only) ────────────────────────── -->
-  <header class="mobile-top-header" id="mobile-top-header">
-    <div class="mobile-header-brand">
-      <span class="logo-icon">🎯</span>
-      <span class="mobile-header-title">Discipline</span>
-    </div>
-    <div class="mobile-header-right">
-      <div class="user-level-badge-sm" id="mobile-header-user-level">Lv.1</div>
-      <button class="mobile-menu-btn" id="mobile-menu-toggle-btn" title="Open Navigation Menu">
-        <span>☰</span>
-      </button>
-    </div>
-  </header>
-
   <!-- ── Sidebar ──────────────────────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -210,6 +196,20 @@
 
   <!-- ── Main Content ─────────────────────────────────────── -->
   <main class="main-content">
+
+    <!-- ── Top Mobile Header (Mobile Only) ────────────────────────── -->
+    <header class="mobile-top-header" id="mobile-top-header">
+      <div class="mobile-header-brand">
+        <span class="logo-icon">🎯</span>
+        <span class="mobile-header-title">Discipline</span>
+      </div>
+      <div class="mobile-header-right">
+        <div class="user-level-badge-sm" id="mobile-header-user-level">Lv.1</div>
+        <button class="mobile-menu-btn" id="mobile-menu-toggle-btn" onclick="openMobileDrawer()" title="Open Navigation Menu">
+          <span>☰</span>
+        </button>
+      </div>
+    </header>
 
     <!-- ▸ DASHBOARD ─────────────────────────────────────────── -->
     <section id="page-dashboard" class="page active">
@@ -529,7 +529,7 @@
     <span class="nav-icon">🔥</span>
     <span class="nav-label">Streaks</span>
   </a>
-  <button class="mobile-nav-item mobile-nav-more" id="mobile-nav-more-btn" title="More Menu">
+  <button class="mobile-nav-item mobile-nav-more" id="mobile-nav-more-btn" onclick="openMobileDrawer()" title="More Menu">
     <span class="nav-icon">☰</span>
     <span class="nav-label">More</span>
   </button>
@@ -546,7 +546,7 @@
           <div class="user-level-text" id="drawer-user-level">Lv.1 · Beginner</div>
         </div>
       </div>
-      <button class="drawer-close" id="mobile-drawer-close-btn" title="Close Menu">✕</button>
+      <button class="drawer-close" id="mobile-drawer-close-btn" onclick="closeMobileDrawer()" title="Close Menu">✕</button>
     </div>
 
     <div class="drawer-section-title">ALL PAGES</div>

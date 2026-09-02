@@ -91,15 +91,18 @@ function toggleTheme() {
 }
 
 // ── Mobile Drawer ─────────────────────────────────────────────
-export function openMobileDrawer() {
+window.openMobileDrawer = function() {
   const drawer = document.getElementById('mobile-drawer');
   if (drawer) drawer.classList.add('drawer-open');
-}
+};
 
-export function closeMobileDrawer() {
+window.closeMobileDrawer = function() {
   const drawer = document.getElementById('mobile-drawer');
   if (drawer) drawer.classList.remove('drawer-open');
-}
+};
+
+export const openMobileDrawer = window.openMobileDrawer;
+export const closeMobileDrawer = window.closeMobileDrawer;
 
 function updateThemeToggle(theme) {
   const btn = document.getElementById('theme-toggle');
