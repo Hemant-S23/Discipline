@@ -80,12 +80,30 @@ export async function syncCloudData(uid) {
 
     if (snap.exists()) {
       const cloudData = snap.data();
-      if (cloudData.habits)       save(KEYS.HABITS, cloudData.habits);
-      if (cloudData.completions)  save(KEYS.COMPLETIONS, cloudData.completions);
-      if (cloudData.checkins)     save(KEYS.CHECKINS, cloudData.checkins);
-      if (cloudData.achievements) save(KEYS.ACHIEVEMENTS, cloudData.achievements);
-      if (cloudData.rewards)      save(KEYS.REWARDS, cloudData.rewards);
-      if (cloudData.userProfile)  save(KEYS.USER, cloudData.userProfile);
+      const localHabits = load(KEYS.HABITS, []);
+
+      // If cloud has habits, restore them. If cloud is empty but local has habits (e.g. from onboarding), keep local & sync up!
+      if (cloudData.habits && Array.isArray(cloudData.habits) && cloudData.habits.length > 0) {
+        save(KEYS.HABITS, cloudData.habits);
+      } else if (localHabits.length > 0) {
+        await uploadLocalDataToCloud(uid);
+      }
+
+      if (cloudData.completions && Array.isArray(cloudData.completions) && cloudData.completions.length > 0) {
+        save(KEYS.COMPLETIONS, cloudData.completions);
+      }
+      if (cloudData.checkins && Array.isArray(cloudData.checkins) && cloudData.checkins.length > 0) {
+        save(KEYS.CHECKINS, cloudData.checkins);
+      }
+      if (cloudData.achievements && Array.isArray(cloudData.achievements) && cloudData.achievements.length > 0) {
+        save(KEYS.ACHIEVEMENTS, cloudData.achievements);
+      }
+      if (cloudData.rewards && Array.isArray(cloudData.rewards) && cloudData.rewards.length > 0) {
+        save(KEYS.REWARDS, cloudData.rewards);
+      }
+      if (cloudData.userProfile) {
+        save(KEYS.USER, { ...getUser(), ...cloudData.userProfile });
+      }
     } else {
       await uploadLocalDataToCloud(uid);
     }
@@ -262,13 +280,29 @@ export async function deleteAccountAndData() {
       await deleteDoc(doc(db, 'users', user.uid));
       await deleteUser(user);
     } catch (e) {
-      console.error('Error deleting cloud account:', e);
+      console.warn('Error deleting cloud account:', e.code, e);
+      if (e.code === 'auth/requires-recent-login') {
+        showToast('⚠️ Security check: Please sign in again before deleting your account.', 'error');
+        return false;
+      }
     }
   }
 
+  // Also remove from local registered accounts if any
+  const currentUser = getUser();
+  if (currentUser?.email) {
+    const accounts = load('discipline_accounts', []).filter(a => a.email.toLowerCase() !== currentUser.email.toLowerCase());
+    save('discipline_accounts', accounts);
+  }
+
   resetAllData();
-  showToast('Account and all data permanently deleted', 'info');
-  setTimeout(() => location.reload(), 1000);
+  updateUser({ email: null, isLoggedIn: false, authDone: false, isGuest: false });
+  showToast('✓ Account and all data permanently deleted.', 'info');
+  setTimeout(() => {
+    location.hash = '';
+    location.reload();
+  }, 1000);
+  return true;
 }
 
 function getAuthErrorMessage(code) {

@@ -3,6 +3,8 @@
 // ============================================================
 
 import { getUser, updateUser, addHabit } from './data.js';
+import { uploadLocalDataToCloud } from './auth.js';
+import { auth, isFirebaseConfigured } from './firebase-config.js';
 
 const STARTER_HABITS = [
   { icon: '📚', name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily',    cats: ['learning'] },
@@ -22,7 +24,7 @@ const STARTER_HABITS = [
 let currentStep = 1;
 const TOTAL_STEPS = 5;
 let selectedGoals = new Set();
-let selectedHabits = new Set();
+let selectedHabitNames = new Set();
 let userName = '';
 
 export function showStep(step) {
@@ -61,32 +63,46 @@ function renderStarterHabits() {
     ? STARTER_HABITS
     : STARTER_HABITS.filter(h => h.cats.some(c => selectedGoals.has(c)));
 
-  container.innerHTML = filtered.map((h, i) => `
-    <div class="starter-habit-item ${selectedHabits.has(i) ? 'selected' : ''}"
-         onclick="window.toggleStarterHabit(${i})" data-idx="${i}">
-      <span class="starter-habit-icon">${h.icon}</span>
-      <div class="starter-habit-info">
-        <div class="starter-habit-name">${h.name}</div>
-        <div class="starter-habit-meta">${h.category} · ${h.difficulty} · +${h.xpReward} XP</div>
-      </div>
-    </div>
-  `).join('');
+  // If no habits selected yet, pre-select first 3
+  if (selectedHabitNames.size === 0 && filtered.length > 0) {
+    filtered.slice(0, 3).forEach(h => selectedHabitNames.add(h.name));
+  }
 
-  window._onboardingFiltered = filtered;
+  container.innerHTML = filtered.map((h) => {
+    const isSel = selectedHabitNames.has(h.name);
+    return `
+      <div class="starter-habit-item ${isSel ? 'selected' : ''}"
+           onclick="window.toggleStarterHabitByName('${h.name.replace(/'/g, "\\'")}')">
+        <span class="starter-habit-icon">${h.icon}</span>
+        <div class="starter-habit-info">
+          <div class="starter-habit-name">${h.name}</div>
+          <div class="starter-habit-meta">${h.category} · ${h.difficulty} · +${h.xpReward} XP</div>
+        </div>
+        <span class="starter-habit-check">${isSel ? '✓' : '+'}</span>
+      </div>
+    `;
+  }).join('');
 }
 
-// Attach immediately to window for inline onclick handlers
-window.toggleStarterHabit = function(idx) {
-  if (selectedHabits.has(idx)) selectedHabits.delete(idx);
-  else selectedHabits.add(idx);
-  document.querySelectorAll(`.starter-habit-item[data-idx="${idx}"]`).forEach(el => {
-    el.classList.toggle('selected', selectedHabits.has(idx));
-  });
+window.toggleStarterHabitByName = function(name) {
+  if (selectedHabitNames.has(name)) {
+    selectedHabitNames.delete(name);
+  } else {
+    selectedHabitNames.add(name);
+  }
+  renderStarterHabits();
 };
 
 window.toggleGoal = function(goal, el) {
-  if (selectedGoals.has(goal)) { selectedGoals.delete(goal); el.classList.remove('selected'); }
-  else { selectedGoals.add(goal); el.classList.add('selected'); }
+  if (selectedGoals.has(goal)) {
+    selectedGoals.delete(goal);
+    el.classList.remove('selected');
+  } else {
+    selectedGoals.add(goal);
+    el.classList.add('selected');
+  }
+  // Clear pre-selections when categories change so fresh category habits are highlighted
+  selectedHabitNames.clear();
 };
 
 window.onboardingNext = function() {
@@ -105,15 +121,34 @@ window.onboardingBack = function() {
   }
 };
 
-window.finishOnboarding = function() {
+window.finishOnboarding = async function() {
   updateUser({ name: userName || 'Friend', onboardingDone: true });
 
-  const filtered = window._onboardingFiltered || STARTER_HABITS;
-  const habitsToCreate = selectedHabits.size > 0
-    ? [...selectedHabits].map(i => filtered[i]).filter(Boolean)
+  const habitsToCreate = selectedHabitNames.size > 0
+    ? STARTER_HABITS.filter(h => selectedHabitNames.has(h.name))
     : STARTER_HABITS.slice(0, 3);
 
-  habitsToCreate.forEach(h => addHabit({ ...h }));
+  // Add habits to local storage
+  habitsToCreate.forEach(h => {
+    addHabit({
+      name: h.name,
+      icon: h.icon,
+      category: h.category,
+      frequency: h.frequency || 'daily',
+      difficulty: h.difficulty || 'medium',
+      xpReward: h.xpReward || 20
+    });
+  });
+
+  // Sync to Firebase Cloud Firestore immediately if logged in
+  const authUser = auth?.currentUser;
+  if (authUser && isFirebaseConfigured) {
+    try {
+      await uploadLocalDataToCloud(authUser.uid);
+    } catch (e) {
+      console.warn('Onboarding cloud sync:', e);
+    }
+  }
 
   const overlay = document.getElementById('onboarding-overlay');
   const appShell = document.getElementById('app');
@@ -121,4 +156,6 @@ window.finishOnboarding = function() {
   if (appShell) appShell.classList.remove('hidden');
 
   if (window._appInit) window._appInit();
+  if (window._renderDashboard) window._renderDashboard();
 };
+

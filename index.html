@@ -555,7 +555,7 @@
             <div class="settings-row-label" style="color:var(--danger)">Delete Account &amp; Data</div>
             <div class="settings-row-desc">Permanently delete your account and all saved cloud data</div>
           </div>
-          <button class="btn-danger" id="settings-delete-account-btn">Delete Account</button>
+          <button class="btn-danger" id="settings-delete-account-btn" onclick="openDeleteAccountModal()">Delete Account</button>
         </div>
       </div>
 
@@ -906,6 +906,61 @@
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="confirm-cancel-btn" data-close-modal="modal-confirm">Cancel</button>
         <button type="button" class="btn-primary" id="confirm-action-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Account Warning Modal (Top-notch Danger UI) ───────────────── -->
+<div id="modal-delete-account" class="modal-overlay">
+  <div class="modal delete-account-dialog-modal">
+    <div class="modal-header">
+      <div class="archive-header-title">
+        <div class="archive-icon-badge delete-icon-badge">🗑️</div>
+        <div>
+          <h2 style="color:var(--danger)">Delete Account &amp; Data</h2>
+          <div style="font-size:12px;color:var(--text-3);font-weight:500">Irreversible Action</div>
+        </div>
+      </div>
+      <button class="modal-close" data-close-modal="modal-delete-account">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-warning-hero">
+        <div class="warning-hero-badge">⚠️ PERMANENT DATA DELETION</div>
+        <p class="delete-hero-text">Are you sure you want to permanently delete your account? All of your personal discipline progress will be completely erased.</p>
+      </div>
+
+      <div class="delete-items-checklist">
+        <div class="delete-item-row">
+          <span class="delete-cross">✕</span>
+          <div><strong>All habits &amp; routines</strong> (active &amp; archived)</div>
+        </div>
+        <div class="delete-item-row">
+          <span class="delete-cross">✕</span>
+          <div><strong>Streak records &amp; daily check-ins</strong></div>
+        </div>
+        <div class="delete-item-row">
+          <span class="delete-cross">✕</span>
+          <div><strong>XP level, discipline score &amp; badges</strong></div>
+        </div>
+        <div class="delete-item-row">
+          <span class="delete-cross">✕</span>
+          <div><strong>Cloud account &amp; synced server backups</strong></div>
+        </div>
+      </div>
+
+      <div class="delete-note-callout">
+        <span class="callout-icon">🚨</span>
+        <div class="callout-text">
+          Once confirmed, this action <strong>cannot be undone</strong>. Your cloud profile will be removed and you will return to the welcome screen.
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:22px">
+        <button type="button" class="btn-secondary" data-close-modal="modal-delete-account">Keep My Account</button>
+        <button type="button" class="btn-danger-solid" id="delete-account-confirm-btn" onclick="executeDeleteAccount()">
+          <span>Permanently Delete</span> 🗑️
+        </button>
       </div>
     </div>
   </div>

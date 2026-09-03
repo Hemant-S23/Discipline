@@ -477,25 +477,35 @@ function initAuthUI() {
   }
 
   if (deleteAccountBtn) {
-    deleteAccountBtn.addEventListener('click', () => {
-      showConfirmModal({
-        title: 'Delete Account & Data?',
-        message: '⚠️ This will PERMANENTLY delete your account and all saved cloud habits, streaks, and progress. This action cannot be undone.',
-        icon: '🗑️',
-        confirmText: 'Delete Account & Data',
-        cancelText: 'Cancel',
-        confirmClass: 'btn-danger',
-        onConfirm: async () => {
-          await deleteAccountAndData();
-        }
-      });
-    });
+    deleteAccountBtn.onclick = () => window.openDeleteAccountModal();
   }
 
   initAuth((user) => {
     updateAccountSettingsUI(user);
   });
 }
+
+window.openDeleteAccountModal = function() {
+  openModal('modal-delete-account');
+};
+
+window.executeDeleteAccount = async function() {
+  const confirmBtn = document.getElementById('delete-account-confirm-btn');
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span>Deleting Account...</span> ⏳';
+  }
+  try {
+    await deleteAccountAndData();
+  } catch (e) {
+    console.error('Delete account error:', e);
+    showToast('Failed to delete account. Please try again.', 'error');
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '<span>Permanently Delete</span> 🗑️';
+    }
+  }
+};
 
 function updateAccountSettingsUI(authUser) {
   const statusEl = document.getElementById('settings-account-status');
@@ -602,3 +612,5 @@ window.closeModal = closeModal;
 window.applyReward = (id) => applyReward(id);
 window.calendarPrev = calendarPrev;
 window.calendarNext = calendarNext;
+window.openDeleteAccountModal = window.openDeleteAccountModal;
+window.executeDeleteAccount = window.executeDeleteAccount;
