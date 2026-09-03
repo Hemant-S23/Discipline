@@ -4,7 +4,7 @@
 
 import {
   auth, db, googleProvider, isFirebaseConfigured,
-  signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   doc, setDoc, getDoc, deleteDoc
 } from './firebase-config.js';
@@ -201,18 +201,30 @@ export async function loginWithGoogle() {
       const cred = await signInWithPopup(auth, googleProvider);
       const name = cred.user.displayName || cred.user.email.split('@')[0];
       updateUser({ email: cred.user.email, name, isLoggedIn: true, authDone: true, nameCustomized: true });
-      await uploadLocalDataToCloud(cred.user.uid);
+      await syncCloudData(cred.user.uid);
       showToast('✓ Signed in with Google! 🌐', 'success');
+      if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
-      console.warn('Google Sign-In error:', err.code);
-      showToast(getAuthErrorMessage(err.code), 'error');
+      console.warn('Google Sign-In error:', err.code, err.message);
+      if (err.code === 'auth/popup-blocked') {
+        showToast('Popup was blocked by browser. Redirecting to Google...', 'info');
+        await signInWithRedirect(auth, googleProvider);
+        return null;
+      }
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        showToast('Google sign-in was cancelled.', 'info');
+        return null;
+      }
+      const msg = getAuthErrorMessage(err.code);
+      showToast(msg, 'error');
       throw err;
     }
   } else {
     const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
     updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, nameCustomized: true });
     showToast('✓ Signed in with Google! 🌐', 'success');
+    if (window._updateAccountUI) window._updateAccountUI(getUser());
     return googleUser;
   }
 }
