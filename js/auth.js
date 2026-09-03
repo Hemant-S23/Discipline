@@ -198,21 +198,21 @@ export async function signUpWithEmail(email, password, name) {
 export async function loginWithGoogle() {
   if (isFirebaseConfigured && auth) {
     try {
-      // Use redirect — works reliably everywhere (GitHub Pages, mobile, popup blockers)
-      await signInWithRedirect(auth, googleProvider);
-      // Page will redirect to Google, then come back — result handled in initAuth
+      const cred = await signInWithPopup(auth, googleProvider);
+      const name = cred.user.displayName || cred.user.email.split('@')[0];
+      updateUser({ email: cred.user.email, name, isLoggedIn: true, authDone: true, nameCustomized: true });
+      await uploadLocalDataToCloud(cred.user.uid);
+      showToast('✓ Signed in with Google! 🌐', 'success');
+      return cred.user;
     } catch (err) {
-      console.warn('Google Sign-In redirect error:', err.code);
-      const msg = getAuthErrorMessage(err.code);
-      showToast(msg, 'error');
+      console.warn('Google Sign-In error:', err.code);
+      showToast(getAuthErrorMessage(err.code), 'error');
       throw err;
     }
   } else {
     const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
     updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, nameCustomized: true });
-    closeModal('modal-auth');
     showToast('✓ Signed in with Google! 🌐', 'success');
-    if (window._updateAccountUI) window._updateAccountUI(getUser());
     return googleUser;
   }
 }

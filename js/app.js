@@ -417,12 +417,17 @@ window.handleGoogleLogin = async function() {
   if (googleBtn) {
     googleBtn.disabled = true;
     googleBtn.style.opacity = '0.7';
-    googleBtn.querySelector('span').textContent = 'Redirecting to Google...';
+    googleBtn.querySelector('span').textContent = 'Signing in...';
   }
   try {
-    await loginWithGoogle();
-    // Page will navigate away to Google — no further action needed
+    const user = await loginWithGoogle();
+    if (user) {
+      updateUser({ isLoggedIn: true, authDone: true });
+      proceedAfterAuth();
+    }
   } catch (e) {
+    // error toast already shown in loginWithGoogle
+  } finally {
     if (googleBtn) {
       googleBtn.disabled = false;
       googleBtn.style.opacity = '1';
