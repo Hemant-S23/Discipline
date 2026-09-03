@@ -414,16 +414,20 @@ window.handleLandingAuthSubmit = async function(e) {
 
 window.handleGoogleLogin = async function() {
   const googleBtn = document.querySelector('.btn-google');
-  if (googleBtn) googleBtn.style.opacity = '0.6';
+  if (googleBtn) {
+    googleBtn.disabled = true;
+    googleBtn.style.opacity = '0.7';
+    googleBtn.querySelector('span').textContent = 'Redirecting to Google...';
+  }
   try {
-    const googleUser = await loginWithGoogle();
-    if (googleUser) {
-      updateUser({ isLoggedIn: true, authDone: true });
-      proceedAfterAuth();
-    }
+    await loginWithGoogle();
+    // Page will navigate away to Google — no further action needed
   } catch (e) {
-  } finally {
-    if (googleBtn) googleBtn.style.opacity = '1';
+    if (googleBtn) {
+      googleBtn.disabled = false;
+      googleBtn.style.opacity = '1';
+      googleBtn.querySelector('span').textContent = 'Continue with Google';
+    }
   }
 };
 
@@ -542,6 +546,7 @@ function appInit() {
 
 // ── Boot Entry Pipeline ───────────────────────────────────────
 window._appInit = appInit;
+window._proceedAfterAuth = proceedAfterAuth;
 
 function bootApp() {
   const user = getUser();

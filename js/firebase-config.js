@@ -4,9 +4,9 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser,
-  sendPasswordResetEmail, updateProfile
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection
@@ -34,6 +34,9 @@ try {
     auth = getAuth(app);
     db = getFirestore(app);
     googleProvider = new GoogleAuthProvider();
+    googleProvider.addScope('email');
+    googleProvider.addScope('profile');
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
     isFirebaseConfigured = true;
   }
 } catch (e) {
@@ -42,7 +45,8 @@ try {
 
 export {
   app, auth, db, googleProvider, isFirebaseConfigured,
-  signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signInWithPopup, signInWithRedirect, getRedirectResult,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   doc, setDoc, getDoc, updateDoc, deleteDoc, collection
 };

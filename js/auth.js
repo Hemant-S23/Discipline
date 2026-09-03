@@ -4,7 +4,7 @@
 
 import {
   auth, db, googleProvider, isFirebaseConfigured,
-  signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   doc, setDoc, getDoc, deleteDoc
 } from './firebase-config.js';
@@ -19,6 +19,31 @@ export function getAuthUser() {
 
 export async function initAuth(onUserChange) {
   if (isFirebaseConfigured && auth) {
+    // Handle Google redirect result first (fires after redirect-based Google sign-in)
+    try {
+      const result = await getRedirectResult(auth);
+      if (result && result.user) {
+        currentAuthUser = result.user;
+        updateUser({ email: result.user.email, name: result.user.displayName || 'Google User', isLoggedIn: true, authDone: true });
+        await uploadLocalDataToCloud(result.user.uid);
+        showToast('✓ Signed in with Google! 🌐', 'success');
+        if (typeof window !== 'undefined') {
+          // Hide landing overlay and proceed
+          const landingOverlay = document.getElementById('landing-overlay');
+          if (landingOverlay) landingOverlay.classList.add('hidden');
+          updateUser({ isLoggedIn: true, authDone: true });
+          // Trigger app boot
+          if (window._proceedAfterAuth) window._proceedAfterAuth();
+        }
+      }
+    } catch (err) {
+      if (err.code !== 'auth/no-redirect-operation-pending') {
+        console.warn('Redirect result error:', err.code);
+        const msg = getAuthErrorMessage(err.code);
+        showToast(msg, 'error');
+      }
+    }
+
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         currentAuthUser = firebaseUser;
@@ -166,14 +191,11 @@ export async function signUpWithEmail(email, password, name) {
 export async function loginWithGoogle() {
   if (isFirebaseConfigured && auth) {
     try {
-      const cred = await signInWithPopup(auth, googleProvider);
-      closeModal('modal-auth');
-      showToast('✓ Signed in with Google! 🌐', 'success');
-      updateUser({ email: cred.user.email, name: cred.user.displayName || 'Google User', isLoggedIn: true, authDone: true });
-      if (window._updateAccountUI) window._updateAccountUI(cred.user);
-      return cred.user;
+      // Use redirect — works reliably everywhere (GitHub Pages, mobile, popup blockers)
+      await signInWithRedirect(auth, googleProvider);
+      // Page will redirect to Google, then come back — result handled in initAuth
     } catch (err) {
-      console.warn('Google Sign-In popup error/restriction:', err.code);
+      console.warn('Google Sign-In redirect error:', err.code);
       const msg = getAuthErrorMessage(err.code);
       showToast(msg, 'error');
       throw err;
@@ -236,10 +258,16 @@ function getAuthErrorMessage(code) {
     case 'auth/user-disabled': return '⚠️ This user account has been disabled.';
     case 'auth/user-not-found': return '⚠️ No account found with this email. Please switch to Create Account!';
     case 'auth/wrong-password': return '⚠️ Incorrect password. Please check and try again.';
-    case 'auth/invalid-credential': return '⚠️ No account found with these details. Please switch to Create Account!';
+    case 'auth/invalid-credential': return '⚠️ No account found with these credentials. Please switch to Create Account!';
     case 'auth/email-already-in-use': return '⚠️ An account with this email already exists. Please switch to Sign In!';
     case 'auth/weak-password': return '⚠️ Password should be at least 6 characters.';
-    case 'auth/unauthorized-domain': return '⚠️ Add hemant-s23.github.io in Firebase Console -> Authentication -> Settings -> Authorized Domains';
-    default: return '⚠️ Authentication failed. Please check your credentials.';
+    case 'auth/unauthorized-domain': return '⚠️ Domain not authorized. Go to Firebase Console → Authentication → Settings → Authorized Domains and add your site.';
+    case 'auth/operation-not-allowed': return '⚠️ This sign-in method is not enabled. Please enable it in Firebase Console.';
+    case 'auth/popup-blocked': return '⚠️ Popup was blocked by browser. Redirecting to Google sign-in...';
+    case 'auth/popup-closed-by-user': return '⚠️ Sign-in was cancelled. Please try again.';
+    case 'auth/cancelled-popup-request': return '⚠️ Sign-in cancelled. Please try again.';
+    case 'auth/network-request-failed': return '⚠️ Network error. Please check your internet connection.';
+    case 'auth/too-many-requests': return '⚠️ Too many failed attempts. Please try again later.';
+    default: return `⚠️ Authentication failed. (${code || 'unknown'}). Please check your credentials or try again.`;
   }
 }
