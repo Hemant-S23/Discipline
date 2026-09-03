@@ -15,7 +15,7 @@ import {
 } from './data.js';
 import { awardXP, XP_BONUSES } from './xp.js';
 import {
-  initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData
+  initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult
 } from './auth.js';
 import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
@@ -548,7 +548,16 @@ function appInit() {
 window._appInit = appInit;
 window._proceedAfterAuth = proceedAfterAuth;
 
-function bootApp() {
+async function bootApp() {
+  // FIRST: check if we just came back from a Google sign-in redirect
+  const redirectUser = await handleRedirectResult();
+  if (redirectUser) {
+    // Google redirect returned a user — skip the landing screen entirely
+    updateUser({ isLoggedIn: true, authDone: true });
+    proceedAfterAuth();
+    return;
+  }
+
   const user = getUser();
   const isAuthDone = user.isLoggedIn || user.isGuest || user.authDone || user.email;
 

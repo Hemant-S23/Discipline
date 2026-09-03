@@ -17,33 +17,40 @@ export function getAuthUser() {
   return currentAuthUser;
 }
 
+// Called by bootApp() BEFORE any routing — checks if we just came back from Google redirect
+export async function handleRedirectResult() {
+  if (!isFirebaseConfigured || !auth) return null;
+  try {
+    const result = await getRedirectResult(auth);
+    if (result && result.user) {
+      currentAuthUser = result.user;
+      const name = result.user.displayName || result.user.email.split('@')[0];
+      updateUser({
+        email: result.user.email,
+        name,
+        isLoggedIn: true,
+        authDone: true,
+        nameCustomized: true
+      });
+      await uploadLocalDataToCloud(result.user.uid);
+      showToast('✓ Signed in with Google! 🌐', 'success');
+      return result.user;
+    }
+  } catch (err) {
+    const ignoredCodes = [
+      'auth/no-redirect-operation-pending',
+      'auth/null-user'
+    ];
+    if (!ignoredCodes.includes(err.code)) {
+      console.warn('Redirect result error:', err.code, err.message);
+      showToast(getAuthErrorMessage(err.code), 'error');
+    }
+  }
+  return null;
+}
+
 export async function initAuth(onUserChange) {
   if (isFirebaseConfigured && auth) {
-    // Handle Google redirect result first (fires after redirect-based Google sign-in)
-    try {
-      const result = await getRedirectResult(auth);
-      if (result && result.user) {
-        currentAuthUser = result.user;
-        updateUser({ email: result.user.email, name: result.user.displayName || 'Google User', isLoggedIn: true, authDone: true });
-        await uploadLocalDataToCloud(result.user.uid);
-        showToast('✓ Signed in with Google! 🌐', 'success');
-        if (typeof window !== 'undefined') {
-          // Hide landing overlay and proceed
-          const landingOverlay = document.getElementById('landing-overlay');
-          if (landingOverlay) landingOverlay.classList.add('hidden');
-          updateUser({ isLoggedIn: true, authDone: true });
-          // Trigger app boot
-          if (window._proceedAfterAuth) window._proceedAfterAuth();
-        }
-      }
-    } catch (err) {
-      if (err.code !== 'auth/no-redirect-operation-pending') {
-        console.warn('Redirect result error:', err.code);
-        const msg = getAuthErrorMessage(err.code);
-        showToast(msg, 'error');
-      }
-    }
-
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         currentAuthUser = firebaseUser;
