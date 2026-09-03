@@ -13,7 +13,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyAetNpHUgujZ4dm-IzAVdIvsNpgiVLKPwM",
+  apiKey: "AIzaSyAetNpUHgujZ4dm-IzAVdIvsNpgiVLKPwM",
   authDomain: "discipline-59c8a.firebaseapp.com",
   projectId: "discipline-59c8a",
   storageBucket: "discipline-59c8a.firebasestorage.app",
