@@ -612,7 +612,7 @@ export function openDeleteSafetyModal(e) {
   }
   if (confirmBtn) {
     confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span>Delete Account Permanently</span> 🗑️';
+    confirmBtn.innerHTML = '<span>Delete Account</span>';
   }
 
   const user = getUser();
@@ -640,7 +640,7 @@ export async function executeDeleteSafetyAccount() {
 
   if (confirmBtn) {
     confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span>Deleting Account & Data...</span> ⏳';
+    confirmBtn.innerHTML = '<span>Deleting Account...</span> ⏳';
   }
   if (errorEl) {
     errorEl.textContent = '';
@@ -660,7 +660,7 @@ export async function executeDeleteSafetyAccount() {
     showToast(err.message || 'Error deleting account', 'error');
     if (confirmBtn) {
       confirmBtn.disabled = false;
-      confirmBtn.innerHTML = '<span>Delete Account Permanently</span> 🗑️';
+      confirmBtn.innerHTML = '<span>Delete Account</span>';
     }
   }
 }
