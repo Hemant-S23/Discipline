@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css?v=3.5" />
-  <link rel="stylesheet" href="css/components.css?v=3.5" />
-  <link rel="stylesheet" href="css/animations.css?v=3.5" />
-  <link rel="stylesheet" href="css/responsive.css?v=3.5" />
+  <link rel="stylesheet" href="css/main.css?v=3.6" />
+  <link rel="stylesheet" href="css/components.css?v=3.6" />
+  <link rel="stylesheet" href="css/animations.css?v=3.6" />
+  <link rel="stylesheet" href="css/responsive.css?v=3.6" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -263,7 +263,6 @@
         <span class="mobile-header-title">Discipline</span>
       </div>
       <div class="mobile-header-right">
-        <button class="mobile-menu-btn" onclick="openModal('modal-auth')" title="Cloud Sign In" style="font-size:14px">🔐</button>
         <div class="user-level-badge-sm" id="mobile-header-user-level">Lv.1</div>
         <button class="mobile-menu-btn" id="mobile-menu-toggle-btn" onclick="openMobileDrawer()" title="Open Navigation Menu">
           <span>☰</span>
@@ -501,112 +500,128 @@
 
     <!-- ▸ SETTINGS ─────────────────────────────────────────────── -->
     <section id="page-settings" class="page">
-      <div class="page-header">
+      <div class="page-header" style="margin-bottom:20px">
         <div>
-          <h1>Settings ⚙️</h1>
-          <p class="daily-quote" style="margin-top:4px">Customize your experience</p>
+          <h1 style="font-size:24px;font-weight:800;letter-spacing:-0.5px">Settings ⚙️</h1>
+          <p class="daily-quote" style="margin-top:2px;font-size:13px">Customize your personal discipline workspace</p>
         </div>
       </div>
 
-      <!-- Profile -->
-      <div class="settings-section">
-        <h3>Profile</h3>
-        <div class="card card-sm">
-          <div class="form-group" style="margin-bottom:12px">
-            <label>Your name</label>
-            <input type="text" class="form-input" id="settings-name-input" placeholder="Your name" maxlength="30" />
-          </div>
-          <button class="btn-primary" id="settings-save-name">Save name</button>
-        </div>
-      </div>
+      <div class="settings-container">
 
-      <!-- Theme -->
-      <div class="settings-section">
-        <h3>Appearance</h3>
-        <div class="settings-row">
-          <div>
-            <div class="settings-row-label">Dark Mode</div>
-            <div class="settings-row-desc">Switch between light and dark theme</div>
-          </div>
-          <button class="btn-secondary" id="sidebar-theme-toggle" style="font-size:13px;padding:8px 16px">Toggle Theme</button>
-        </div>
-      </div>
-
-      <!-- Archived Habits -->
-      <div class="settings-section">
-        <h3>Archived Habits</h3>
-        <div class="card card-sm">
-          <div id="archived-habits-list"><p style="color:var(--text-3);font-size:14px">No archived habits.</p></div>
-        </div>
-      </div>
-      <!-- Account & Cloud Sync -->
-      <div class="settings-section">
-        <h3>Cloud Account &amp; Sync</h3>
-        <div class="settings-row">
-          <div>
-            <div class="settings-row-label" id="settings-account-status">Guest Account (Local Storage)</div>
-            <div class="settings-row-desc" id="settings-account-desc">Sign in with Email or Google to sync progress across all your devices</div>
-          </div>
-          <div style="display:flex;gap:8px" id="settings-account-actions">
-            <button class="btn-primary" id="settings-login-btn" onclick="openModal('modal-auth')" style="font-size:13px;padding:8px 16px">🔐 Sign In / Sync</button>
-            <button class="btn-secondary hidden" id="settings-logout-btn" style="font-size:13px;padding:8px 16px">🚪 Log Out</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Data -->
-      <div class="settings-section">
-        <h3>Data</h3>
-        <div class="settings-row">
-          <div>
-            <div class="settings-row-label">Export My Data</div>
-            <div class="settings-row-desc">Download your habits and completions as JSON</div>
-          </div>
-          <button class="btn-secondary" id="settings-export-btn" style="font-size:13px;padding:8px 16px">Export</button>
-        </div>
-        <div class="settings-row" style="margin-top:8px">
-          <div>
-            <div class="settings-row-label" style="color:var(--danger)">Reset All Data</div>
-            <div class="settings-row-desc">Permanently delete all habits and progress</div>
-          </div>
-          <button class="btn-danger" id="settings-reset-btn">Reset</button>
-        </div>
-      </div>
-
-      <!-- Danger Zone (Premium Redesigned Account Deletion) -->
-      <div class="settings-section">
-        <div class="settings-danger-zone">
-          <div class="danger-zone-top">
-            <div class="danger-zone-title-wrap">
-              <span class="danger-badge">⚠️ DANGER ZONE</span>
-              <span class="danger-scope-pill" id="danger-scope-status">Guest Workspace (Local Data)</span>
-            </div>
-          </div>
-          <div class="danger-zone-body">
-            <div class="danger-zone-info">
-              <div class="danger-zone-heading">
-                <span>Delete Account &amp; Wipe Everything</span>
-              </div>
-              <div class="danger-zone-desc">
-                Permanently deletes your account, habits, completions, XP streaks, and all synchronized cloud backups. This action cannot be reversed.
+        <!-- Group 1: Profile & Account -->
+        <div class="settings-group">
+          <div class="settings-group-header">ACCOUNT &amp; PROFILE</div>
+          <div class="settings-card-group">
+            
+            <!-- User Profile Row -->
+            <div class="settings-item settings-item-profile">
+              <div class="settings-profile-avatar" id="settings-avatar-initial">H</div>
+              <div class="settings-profile-input-wrap">
+                <label class="settings-mini-label" for="settings-name-input">Display Name</label>
+                <div class="settings-inline-input-row">
+                  <input type="text" class="settings-seamless-input" id="settings-name-input" placeholder="Your name" maxlength="30" />
+                  <button class="btn-primary-sm" id="settings-save-name">Save</button>
+                </div>
               </div>
             </div>
-            <button class="btn-danger-outline" id="settings-danger-delete-btn" onclick="openDeleteSafetyModal(event)">
-              <span>🗑️ Delete Account...</span>
-            </button>
+
+            <!-- Cloud Sync Row -->
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <div class="settings-item-title-row">
+                  <span class="settings-row-label" id="settings-account-status">Guest Workspace</span>
+                  <span class="settings-pill-badge" id="settings-sync-badge">Local</span>
+                </div>
+                <div class="settings-row-desc" id="settings-account-desc">Sign in with Email or Google to sync progress across devices</div>
+              </div>
+              <div id="settings-account-actions" style="display:flex;gap:8px">
+                <button class="btn-secondary-sm" id="settings-login-btn" onclick="openModal('modal-auth')">Sign In</button>
+                <button class="btn-secondary-sm hidden" id="settings-logout-btn">Log Out</button>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
 
-      <!-- About -->
-      <div class="settings-section">
-        <h3>About</h3>
-        <div class="card card-sm" style="text-align:center;padding:28px">
-          <div style="font-size:36px;margin-bottom:10px">🎯</div>
-          <div style="font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">DISCIPLINE</div>
-          <div style="font-size:13px;color:var(--text-2)">Small promises. Kept every day.</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:12px">v1.0.0 — Built with ❤️ by Hemant Saurkhiya</div>
+        <!-- Group 2: Preferences -->
+        <div class="settings-group">
+          <div class="settings-group-header">PREFERENCES</div>
+          <div class="settings-card-group">
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <div class="settings-row-label">Dark Mode</div>
+                <div class="settings-row-desc">Switch between clean light and dark theme</div>
+              </div>
+              <button class="btn-secondary-sm" id="sidebar-theme-toggle">Toggle Theme</button>
+            </div>
+          </div>
         </div>
+
+        <!-- Group 3: Data Management -->
+        <div class="settings-group">
+          <div class="settings-group-header">DATA &amp; HISTORY</div>
+          <div class="settings-card-group">
+            
+            <!-- Archived Habits -->
+            <div class="settings-item settings-item-stacked">
+              <div class="settings-item-info">
+                <div class="settings-row-label">Archived Habits</div>
+                <div class="settings-row-desc">View or restore previously archived habits</div>
+              </div>
+              <div id="archived-habits-list" class="settings-archived-container">
+                <p style="color:var(--text-3);font-size:13px;margin:0">No archived habits.</p>
+              </div>
+            </div>
+
+            <!-- Export Data -->
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <div class="settings-row-label">Export Data Backup</div>
+                <div class="settings-row-desc">Download habits, streaks, and progress as JSON</div>
+              </div>
+              <button class="btn-secondary-sm" id="settings-export-btn">Export</button>
+            </div>
+
+            <!-- Reset Data -->
+            <div class="settings-item settings-item-danger">
+              <div class="settings-item-info">
+                <div class="settings-row-label" style="color:var(--danger)">Reset All Progress</div>
+                <div class="settings-row-desc">Permanently delete all habits and progress to start fresh</div>
+              </div>
+              <button class="btn-danger-sm" id="settings-reset-btn">Reset</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Group 4: Danger Zone -->
+        <div class="settings-group">
+          <div class="settings-group-header" style="color:var(--danger)">DANGER ZONE</div>
+          <div class="settings-card-group settings-danger-card">
+            <div class="settings-item settings-item-danger-zone">
+              <div class="settings-item-info">
+                <div class="danger-zone-title-wrap" style="margin-bottom:4px">
+                  <span class="danger-badge" style="font-size:10px;padding:2px 8px">⚠️ PERMANENT</span>
+                  <span class="danger-scope-pill" id="danger-scope-status" style="font-size:10px;padding:2px 8px">Local Data</span>
+                </div>
+                <div class="settings-row-label" style="color:var(--danger);font-weight:700">Delete Account &amp; Wipe Everything</div>
+                <div class="settings-row-desc">Permanently erases habits, completions, XP streaks, and all synchronized cloud backups.</div>
+              </div>
+              <button class="btn-danger-outline-sm" id="settings-danger-delete-btn" onclick="openDeleteSafetyModal(event)">
+                <span>🗑️ Delete Account...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Minimal Clean Footer -->
+        <div class="settings-minimal-footer">
+          <div class="footer-brand">🎯 <strong>DISCIPLINE</strong> <span class="footer-version">v1.0.0</span></div>
+          <div class="footer-quote">Small promises. Kept every day.</div>
+          <div class="footer-credits">Built with ❤️ by Hemant Saurkhiya</div>
+        </div>
+
       </div>
     </section>
 
@@ -1077,7 +1092,7 @@
     }, 500);
   };
 </script>
-<script type="module" src="js/app.js?v=3.5"></script>
+<script type="module" src="js/app.js?v=3.6"></script>
 
 </body>
 </html>

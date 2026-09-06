@@ -309,6 +309,11 @@ function renderSettingsPage() {
   const user = getUser();
   const nameInput = document.getElementById('settings-name-input');
   if (nameInput) nameInput.value = user.name || '';
+  const avatarInitial = document.getElementById('settings-avatar-initial');
+  if (avatarInitial) {
+    const initial = (user.name || user.email || 'D').trim().charAt(0).toUpperCase() || 'D';
+    avatarInitial.textContent = initial;
+  }
   renderArchivedHabits();
 }
 
@@ -318,6 +323,8 @@ function initSettings() {
     const name = document.getElementById('settings-name-input')?.value?.trim();
     if (name) {
       updateUser({ name });
+      const avatarInitial = document.getElementById('settings-avatar-initial');
+      if (avatarInitial) avatarInitial.textContent = name.charAt(0).toUpperCase();
       showToast('✓ Profile updated!', 'success');
       renderDashboard();
     }
@@ -547,17 +554,35 @@ function updateAccountSettingsUI(authUser) {
   const descEl   = document.getElementById('settings-account-desc');
   const loginBtn = document.getElementById('settings-login-btn');
   const logoutBtn = document.getElementById('settings-logout-btn');
+  const syncBadge = document.getElementById('settings-sync-badge');
+  const avatarEl  = document.getElementById('settings-avatar-initial');
 
   const user = getUser();
+  const rawEmail = (authUser && authUser.email) || user.email;
+  const displayName = (authUser && authUser.displayName) || user.name;
+  const accountIdentifier = rawEmail || (displayName ? `${displayName}` : null);
+
+  if (avatarEl) {
+    const initial = (user.name || rawEmail || 'D').trim().charAt(0).toUpperCase() || 'D';
+    avatarEl.textContent = initial;
+  }
+
   if (authUser || user.email) {
-    const email = authUser ? authUser.email : user.email;
-    if (statusEl) statusEl.textContent = `Cloud Account: ${email}`;
+    if (statusEl) statusEl.textContent = accountIdentifier ? `Cloud: ${accountIdentifier}` : 'Cloud Account';
     if (descEl) descEl.textContent = '✓ Progress is automatically synced to the cloud';
+    if (syncBadge) {
+      syncBadge.textContent = 'Synced';
+      syncBadge.className = 'settings-pill-badge badge-synced';
+    }
     if (loginBtn) loginBtn.classList.add('hidden');
     if (logoutBtn) logoutBtn.classList.remove('hidden');
   } else {
-    if (statusEl) statusEl.textContent = 'Guest Account (Local Storage)';
-    if (descEl) descEl.textContent = 'Sign in with Email or Google to sync progress across all your devices';
+    if (statusEl) statusEl.textContent = 'Guest Workspace';
+    if (descEl) descEl.textContent = 'Sign in with Email or Google to sync across devices';
+    if (syncBadge) {
+      syncBadge.textContent = 'Local';
+      syncBadge.className = 'settings-pill-badge';
+    }
     if (loginBtn) loginBtn.classList.remove('hidden');
     if (logoutBtn) logoutBtn.classList.add('hidden');
   }
@@ -565,7 +590,7 @@ function updateAccountSettingsUI(authUser) {
   const dangerScopeEl = document.getElementById('danger-scope-status');
   if (dangerScopeEl) {
     if (authUser || user.email) {
-      dangerScopeEl.textContent = `Cloud Account (${authUser ? authUser.email : user.email})`;
+      dangerScopeEl.textContent = `Cloud Account (${accountIdentifier || 'Synced'})`;
     } else {
       dangerScopeEl.textContent = 'Guest Workspace (Local Data)';
     }

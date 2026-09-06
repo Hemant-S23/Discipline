@@ -324,6 +324,31 @@
     width: 100% !important;
     justify-content: center !important;
   }
+
+  /* Minimal Settings on Mobile */
+  .settings-container { gap: 16px !important; }
+  .settings-item {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+  .settings-item-profile {
+    padding: 12px 14px !important;
+  }
+  .settings-profile-avatar {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 16px !important;
+  }
+  .settings-item-danger-zone {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .btn-danger-outline-sm {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 16px !important;
+  }
 }
 
 /* ── Very small screens: 375px and under ─────────────────────── */
