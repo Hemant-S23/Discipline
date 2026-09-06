@@ -6,10 +6,11 @@ import {
   auth, db, googleProvider, isFirebaseConfigured,
   signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
+  EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
   doc, setDoc, getDoc, deleteDoc
-} from './firebase-config.js';
-import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js';
-import { showToast, closeModal } from './ui.js';
+} from './firebase-config.js?v=3.2';
+import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=3.2';
+import { showToast, closeModal } from './ui.js?v=3.2';
 
 let currentAuthUser = null;
 
@@ -273,36 +274,94 @@ export async function logoutUser() {
   if (window._updateAccountUI) window._updateAccountUI(null);
 }
 
-export async function deleteAccountAndData() {
+export async function deleteAccountAndData(password = null) {
   const user = auth?.currentUser;
-  if (user && isFirebaseConfigured && db) {
-    try {
-      await deleteDoc(doc(db, 'users', user.uid));
-      await deleteUser(user);
-    } catch (e) {
-      console.warn('Error deleting cloud account:', e.code, e);
-      if (e.code === 'auth/requires-recent-login') {
-        showToast('⚠️ Security check: Please sign in again before deleting your account.', 'error');
-        return false;
+
+  if (user && isFirebaseConfigured) {
+    // If password provided for email user, re-authenticate first to prevent 'auth/requires-recent-login'
+    if (password && user.email) {
+      try {
+        const credential = EmailAuthProvider.credential(user.email, password);
+        await reauthenticateWithCredential(user, credential);
+      } catch (reauthErr) {
+        console.warn('Password re-authentication failed:', reauthErr?.code);
+        if (reauthErr?.code === 'auth/wrong-password' || reauthErr?.code === 'auth/invalid-credential') {
+          throw new Error('Incorrect password. Please verify your password and try again.');
+        }
       }
     }
+
+    // 1. Delete user's document in Firestore (best-effort)
+    if (db) {
+      try {
+        await deleteDoc(doc(db, 'users', user.uid));
+      } catch (docErr) {
+        console.warn('Could not delete user Firestore doc (permissions or non-existent):', docErr?.code, docErr);
+      }
+    }
+
+    // 2. Delete the user from Firebase Authentication
+    try {
+      await deleteUser(user);
+    } catch (authErr) {
+      console.warn('deleteUser error:', authErr?.code, authErr?.message);
+
+      if (authErr?.code === 'auth/requires-recent-login') {
+        const isGoogleUser = user.providerData?.some(p => p.providerId === 'google.com');
+        if (isGoogleUser) {
+          try {
+            await reauthenticateWithPopup(user, googleProvider);
+            await deleteUser(user);
+          } catch (googleReauthErr) {
+            console.warn('Google re-auth failed or cancelled:', googleReauthErr?.code);
+            throw new Error('Google security verification failed. Please try again.');
+          }
+        } else if (password) {
+          try {
+            const credential = EmailAuthProvider.credential(user.email, password);
+            await reauthenticateWithCredential(user, credential);
+            await deleteUser(user);
+          } catch (passErr) {
+            throw new Error('Incorrect password. Could not delete account.');
+          }
+        } else {
+          throw new Error('Please enter your password to authorize account deletion.');
+        }
+      }
+    }
+
+    // Guarantee Firebase session is signed out so user is never kept logged in
+    try {
+      await signOut(auth);
+    } catch (e) {}
   }
 
-  // Also remove from local registered accounts if any
+  // Remove from local registered accounts list if stored
   const currentUser = getUser();
   if (currentUser?.email) {
     const accounts = load('discipline_accounts', []).filter(a => a.email.toLowerCase() !== currentUser.email.toLowerCase());
     save('discipline_accounts', accounts);
   }
 
+  // Clear all local app state & active reward
+  try {
+    localStorage.removeItem('discipline_active_reward');
+    localStorage.removeItem('discipline_accounts');
+  } catch(e) {}
   resetAllData();
-  updateUser({ email: null, isLoggedIn: false, authDone: false, isGuest: false });
+  localStorage.removeItem(KEYS.USER);
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch(e) {}
+
   showToast('✓ Account and all data permanently deleted.', 'info');
   setTimeout(() => {
     location.hash = '';
     location.reload();
-  }, 1000);
-  return true;
+  }, 500);
+
+  return { success: true };
 }
 
 function getAuthErrorMessage(code) {

@@ -2,24 +2,24 @@
 // app.js — Bootstrap, router, global events
 // ============================================================
 
-import { initOnboarding } from './onboarding.js';
-import { renderDashboard } from './dashboard.js';
-import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js';
-import { renderAnalyticsPage } from './analytics.js';
-import { renderCalendarPage, calendarPrev, calendarNext } from './calendar.js';
-import { renderAchievementsPage } from './achievements.js';
-import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js';
-import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js';
+import { initOnboarding } from './onboarding.js?v=3.2';
+import { renderDashboard } from './dashboard.js?v=3.2';
+import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=3.2';
+import { renderAnalyticsPage } from './analytics.js?v=3.2';
+import { renderCalendarPage, calendarPrev, calendarNext } from './calendar.js?v=3.2';
+import { renderAchievementsPage } from './achievements.js?v=3.2';
+import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=3.2';
+import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=3.2';
 import {
   getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, hasAwardedXpToday, today, resetAllData, exportData
-} from './data.js';
-import { awardXP, XP_BONUSES } from './xp.js';
+} from './data.js?v=3.2';
+import { awardXP, XP_BONUSES } from './xp.js?v=3.2';
 import {
   initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult
-} from './auth.js';
+} from './auth.js?v=3.2';
 import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
-} from './ui.js';
+} from './ui.js?v=3.2';
 
 // ── Pages ─────────────────────────────────────────────────────
 const PAGES = ['dashboard', 'habits', 'streaks', 'analytics', 'achievements', 'rewards', 'calendar', 'settings'];
@@ -355,6 +355,13 @@ function initSettings() {
 
   const sidebarThemeBtn = document.getElementById('sidebar-theme-toggle');
   if (sidebarThemeBtn) sidebarThemeBtn.addEventListener('click', toggleTheme);
+
+  const dangerDeleteBtn = document.getElementById('settings-danger-delete-btn');
+  if (dangerDeleteBtn) {
+    dangerDeleteBtn.addEventListener('click', (e) => {
+      openDeleteSafetyModal(e);
+    });
+  }
 }
 
 window.setLandingTab = function(m) {
@@ -373,6 +380,61 @@ window.setLandingTab = function(m) {
     tabSignin?.classList.remove('active');
     nameGroup?.classList.remove('hidden');
     if (submitBtn) submitBtn.textContent = 'Create Free Account';
+  }
+};
+
+window.setAuthTab = function(m) {
+  const tabSignin = document.getElementById('auth-tab-signin');
+  const tabSignup = document.getElementById('auth-tab-signup');
+  const nameGroup = document.getElementById('auth-name-group');
+  const submitBtn = document.getElementById('auth-submit-btn');
+
+  if (m === 'signin') {
+    tabSignin?.classList.add('active');
+    tabSignup?.classList.remove('active');
+    nameGroup?.classList.add('hidden');
+    if (submitBtn) submitBtn.textContent = 'Sign In with Email';
+  } else {
+    tabSignup?.classList.add('active');
+    tabSignin?.classList.remove('active');
+    nameGroup?.classList.remove('hidden');
+    if (submitBtn) submitBtn.textContent = 'Create Free Account';
+  }
+};
+
+window.submitAuthForm = async function(e) {
+  if (e) e.preventDefault();
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const email = document.getElementById('auth-email-input')?.value?.trim();
+  const password = document.getElementById('auth-password-input')?.value;
+  const name = document.getElementById('auth-name-input')?.value?.trim();
+
+  if (!email || !password) {
+    showToast('Please enter your email and password', 'error');
+    return;
+  }
+
+  const isSignUp = document.getElementById('auth-tab-signup')?.classList.contains('active');
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Please wait...';
+  }
+
+  try {
+    if (isSignUp) {
+      await signUpWithEmail(email, password, name);
+    } else {
+      await loginWithEmail(email, password);
+    }
+    updateUser({ isLoggedIn: true, authDone: true });
+    closeModal('modal-auth');
+  } catch (err) {
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = isSignUp ? 'Create Free Account' : 'Sign In with Email';
+    }
   }
 };
 
@@ -466,7 +528,6 @@ window.handleForgotPass = async function() {
 // ── Authentication & Account UI ───────────────────────────────
 function initAuthUI() {
   const logoutBtn = document.getElementById('settings-logout-btn');
-  const deleteAccountBtn = document.getElementById('settings-delete-account-btn');
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -476,36 +537,10 @@ function initAuthUI() {
     });
   }
 
-  if (deleteAccountBtn) {
-    deleteAccountBtn.onclick = () => window.openDeleteAccountModal();
-  }
-
   initAuth((user) => {
     updateAccountSettingsUI(user);
   });
 }
-
-window.openDeleteAccountModal = function() {
-  openModal('modal-delete-account');
-};
-
-window.executeDeleteAccount = async function() {
-  const confirmBtn = document.getElementById('delete-account-confirm-btn');
-  if (confirmBtn) {
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span>Deleting Account...</span> ⏳';
-  }
-  try {
-    await deleteAccountAndData();
-  } catch (e) {
-    console.error('Delete account error:', e);
-    showToast('Failed to delete account. Please try again.', 'error');
-    if (confirmBtn) {
-      confirmBtn.disabled = false;
-      confirmBtn.innerHTML = '<span>Permanently Delete</span> 🗑️';
-    }
-  }
-};
 
 function updateAccountSettingsUI(authUser) {
   const statusEl = document.getElementById('settings-account-status');
@@ -526,8 +561,115 @@ function updateAccountSettingsUI(authUser) {
     if (loginBtn) loginBtn.classList.remove('hidden');
     if (logoutBtn) logoutBtn.classList.add('hidden');
   }
+
+  const dangerScopeEl = document.getElementById('danger-scope-status');
+  if (dangerScopeEl) {
+    if (authUser || user.email) {
+      dangerScopeEl.textContent = `Cloud Account (${authUser ? authUser.email : user.email})`;
+    } else {
+      dangerScopeEl.textContent = 'Guest Workspace (Local Data)';
+    }
+  }
 }
 window._updateAccountUI = updateAccountSettingsUI;
+
+// ── Safety Verification Modal Logic ───────────────────────────
+export function openDeleteSafetyModal(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const keywordInput = document.getElementById('delete-safety-keyword-input');
+  const passInput = document.getElementById('delete-safety-password-input');
+  const passBox = document.getElementById('delete-safety-password-box');
+  const guestBox = document.getElementById('delete-safety-guest-box');
+  const confirmBtn = document.getElementById('delete-safety-confirm-btn');
+  const errorEl = document.getElementById('delete-safety-error-msg');
+
+  if (keywordInput) keywordInput.value = '';
+  if (passInput) passInput.value = '';
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+  }
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span>Delete Account Permanently</span> 🗑️';
+  }
+
+  const user = getUser();
+  const isCloudEmailUser = !!(user?.email && !user?.isGuest);
+
+  if (isCloudEmailUser && passBox && guestBox) {
+    passBox.classList.remove('hidden');
+    guestBox.classList.add('hidden');
+  } else if (passBox && guestBox) {
+    passBox.classList.add('hidden');
+    guestBox.classList.remove('hidden');
+  }
+
+  openModal('modal-delete-safety');
+  setTimeout(() => {
+    if (isCloudEmailUser) passInput?.focus();
+    else keywordInput?.focus();
+  }, 120);
+}
+
+export async function executeDeleteSafetyAccount() {
+  const confirmBtn = document.getElementById('delete-safety-confirm-btn');
+  const passInput = document.getElementById('delete-safety-password-input');
+  const errorEl = document.getElementById('delete-safety-error-msg');
+
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span>Deleting Account & Data...</span> ⏳';
+  }
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+  }
+
+  const password = passInput?.value || null;
+
+  try {
+    await deleteAccountAndData(password);
+  } catch (err) {
+    console.error('Account deletion error:', err);
+    if (errorEl) {
+      errorEl.textContent = err.message || 'Error deleting account. Please try again.';
+      errorEl.classList.remove('hidden');
+    }
+    showToast(err.message || 'Error deleting account', 'error');
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '<span>Delete Account Permanently</span> 🗑️';
+    }
+  }
+}
+
+function initDeleteSafetyInputs() {
+  const keywordInput = document.getElementById('delete-safety-keyword-input');
+  const passInput = document.getElementById('delete-safety-password-input');
+  const confirmBtn = document.getElementById('delete-safety-confirm-btn');
+
+  if (keywordInput) {
+    keywordInput.addEventListener('input', () => {
+      const matches = keywordInput.value.trim().toUpperCase() === 'DELETE';
+      const guestBox = document.getElementById('delete-safety-guest-box');
+      if (confirmBtn && guestBox && !guestBox.classList.contains('hidden')) {
+        confirmBtn.disabled = !matches;
+      }
+    });
+  }
+
+  if (passInput) {
+    passInput.addEventListener('input', () => {
+      const hasPass = passInput.value.length >= 6;
+      const passBox = document.getElementById('delete-safety-password-box');
+      if (confirmBtn && passBox && !passBox.classList.contains('hidden')) {
+        confirmBtn.disabled = !hasPass;
+      }
+    });
+  }
+}
 
 // ── Global add habit button ───────────────────────────────────
 function initGlobalButtons() {
@@ -545,6 +687,7 @@ function appInit() {
   initHabitForm();
   initCheckin();
   initModalClose();
+  initDeleteSafetyInputs();
   initSettings();
   initAuthUI();
   initGlobalButtons();
@@ -612,5 +755,7 @@ window.closeModal = closeModal;
 window.applyReward = (id) => applyReward(id);
 window.calendarPrev = calendarPrev;
 window.calendarNext = calendarNext;
-window.openDeleteAccountModal = window.openDeleteAccountModal;
-window.executeDeleteAccount = window.executeDeleteAccount;
+window.setAuthTab = window.setAuthTab;
+window.submitAuthForm = window.submitAuthForm;
+window.openDeleteSafetyModal = openDeleteSafetyModal;
+window.executeDeleteSafetyAccount = executeDeleteSafetyAccount;

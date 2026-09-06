@@ -314,6 +314,16 @@
     align-items: flex-end !important;
     padding: 0 !important;
   }
+
+  /* Danger Zone on Mobile */
+  .danger-zone-body {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .btn-danger-outline {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
 /* ── Very small screens: 375px and under ─────────────────────── */

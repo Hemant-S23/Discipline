@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/main.css?v=3.5" />
+  <link rel="stylesheet" href="css/components.css?v=3.5" />
+  <link rel="stylesheet" href="css/animations.css?v=3.5" />
+  <link rel="stylesheet" href="css/responsive.css?v=3.5" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -537,6 +537,8 @@
         <h3>Archived Habits</h3>
         <div class="card card-sm">
           <div id="archived-habits-list"><p style="color:var(--text-3);font-size:14px">No archived habits.</p></div>
+        </div>
+      </div>
       <!-- Account & Cloud Sync -->
       <div class="settings-section">
         <h3>Cloud Account &amp; Sync</h3>
@@ -549,13 +551,6 @@
             <button class="btn-primary" id="settings-login-btn" onclick="openModal('modal-auth')" style="font-size:13px;padding:8px 16px">🔐 Sign In / Sync</button>
             <button class="btn-secondary hidden" id="settings-logout-btn" style="font-size:13px;padding:8px 16px">🚪 Log Out</button>
           </div>
-        </div>
-        <div class="settings-row" style="margin-top:8px">
-          <div>
-            <div class="settings-row-label" style="color:var(--danger)">Delete Account &amp; Data</div>
-            <div class="settings-row-desc">Permanently delete your account and all saved cloud data</div>
-          </div>
-          <button class="btn-danger" id="settings-delete-account-btn" onclick="openDeleteAccountModal()">Delete Account</button>
         </div>
       </div>
 
@@ -575,6 +570,31 @@
             <div class="settings-row-desc">Permanently delete all habits and progress</div>
           </div>
           <button class="btn-danger" id="settings-reset-btn">Reset</button>
+        </div>
+      </div>
+
+      <!-- Danger Zone (Premium Redesigned Account Deletion) -->
+      <div class="settings-section">
+        <div class="settings-danger-zone">
+          <div class="danger-zone-top">
+            <div class="danger-zone-title-wrap">
+              <span class="danger-badge">⚠️ DANGER ZONE</span>
+              <span class="danger-scope-pill" id="danger-scope-status">Guest Workspace (Local Data)</span>
+            </div>
+          </div>
+          <div class="danger-zone-body">
+            <div class="danger-zone-info">
+              <div class="danger-zone-heading">
+                <span>Delete Account &amp; Wipe Everything</span>
+              </div>
+              <div class="danger-zone-desc">
+                Permanently deletes your account, habits, completions, XP streaks, and all synchronized cloud backups. This action cannot be reversed.
+              </div>
+            </div>
+            <button class="btn-danger-outline" id="settings-danger-delete-btn" onclick="openDeleteSafetyModal(event)">
+              <span>🗑️ Delete Account...</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -800,6 +820,8 @@
     <p style="color:var(--text-2);margin:8px 0 20px">Keep up the incredible work!</p>
     <button class="btn-primary" style="width:100%" data-close-modal="modal-levelup">Continue 🔥</button>
   </div>
+</div>
+
 <!-- ── Custom Authentication Modal (Login / Sign Up) ────────── -->
 <div id="modal-auth" class="modal-overlay">
   <div class="modal auth-modal">
@@ -911,55 +933,66 @@
   </div>
 </div>
 
-<!-- ── Delete Account Warning Modal (Top-notch Danger UI) ───────────────── -->
-<div id="modal-delete-account" class="modal-overlay">
-  <div class="modal delete-account-dialog-modal">
+<!-- ── Modern Safety Verification Modal (0-Error Danger UI) ───────────────── -->
+<div id="modal-delete-safety" class="modal-overlay">
+  <div class="modal modal-delete-safety">
     <div class="modal-header">
-      <div class="archive-header-title">
-        <div class="archive-icon-badge delete-icon-badge">🗑️</div>
-        <div>
-          <h2 style="color:var(--danger)">Delete Account &amp; Data</h2>
-          <div style="font-size:12px;color:var(--text-3);font-weight:500">Irreversible Action</div>
-        </div>
+      <div class="danger-zone-title-wrap">
+        <span class="danger-badge">⚠️ PERMANENT ACTION</span>
+        <h2 style="color:var(--danger);font-size:17px;margin:0">Delete Account &amp; Data</h2>
       </div>
-      <button class="modal-close" data-close-modal="modal-delete-account">✕</button>
+      <button class="modal-close" data-close-modal="modal-delete-safety" onclick="closeModal('modal-delete-safety')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="delete-warning-hero">
-        <div class="warning-hero-badge">⚠️ PERMANENT DATA DELETION</div>
-        <p class="delete-hero-text">Are you sure you want to permanently delete your account? All of your personal discipline progress will be completely erased.</p>
+      <div class="delete-safety-hero">
+        <div style="font-weight:700;color:var(--danger);font-size:13px;margin-bottom:4px">Are you absolutely sure?</div>
+        <p style="font-size:12.5px;color:var(--text);margin:0;line-height:1.45">
+          This operation is completely destructive and cannot be undone. All your personal discipline records will be permanently erased.
+        </p>
       </div>
 
-      <div class="delete-items-checklist">
-        <div class="delete-item-row">
-          <span class="delete-cross">✕</span>
-          <div><strong>All habits &amp; routines</strong> (active &amp; archived)</div>
+      <div class="delete-safety-checklist">
+        <div class="delete-safety-checklist-item">
+          <span class="delete-safety-cross">✕</span>
+          <span>All daily habits, custom routines &amp; history</span>
         </div>
-        <div class="delete-item-row">
-          <span class="delete-cross">✕</span>
-          <div><strong>Streak records &amp; daily check-ins</strong></div>
+        <div class="delete-safety-checklist-item">
+          <span class="delete-safety-cross">✕</span>
+          <span>Active streaks, highest streaks &amp; completion logs</span>
         </div>
-        <div class="delete-item-row">
-          <span class="delete-cross">✕</span>
-          <div><strong>XP level, discipline score &amp; badges</strong></div>
+        <div class="delete-safety-checklist-item">
+          <span class="delete-safety-cross">✕</span>
+          <span>Earned XP, level badges &amp; unlocked rewards</span>
         </div>
-        <div class="delete-item-row">
-          <span class="delete-cross">✕</span>
-          <div><strong>Cloud account &amp; synced server backups</strong></div>
-        </div>
-      </div>
-
-      <div class="delete-note-callout">
-        <span class="callout-icon">🚨</span>
-        <div class="callout-text">
-          Once confirmed, this action <strong>cannot be undone</strong>. Your cloud profile will be removed and you will return to the welcome screen.
+        <div class="delete-safety-checklist-item">
+          <span class="delete-safety-cross">✕</span>
+          <span>Cloud profile &amp; remote database backups</span>
         </div>
       </div>
 
-      <div class="modal-actions" style="margin-top:22px">
-        <button type="button" class="btn-secondary" data-close-modal="modal-delete-account">Keep My Account</button>
-        <button type="button" class="btn-danger-solid" id="delete-account-confirm-btn" onclick="executeDeleteAccount()">
-          <span>Permanently Delete</span> 🗑️
+      <!-- Guest mode keyword confirmation prompt -->
+      <div id="delete-safety-guest-box">
+        <p style="font-size:12.5px;color:var(--text-2);margin:0 0 6px 0;line-height:1.4">
+          To confirm permanent deletion, type <code class="danger-code-badge">DELETE</code> below:
+        </p>
+        <input type="text" id="delete-safety-keyword-input" class="delete-safety-input" placeholder="Type DELETE to confirm" autocomplete="off" oninput="if(this.value.trim().toUpperCase()==='DELETE'){document.getElementById('delete-safety-confirm-btn').disabled=false}else{document.getElementById('delete-safety-confirm-btn').disabled=true}" />
+      </div>
+
+      <!-- Email / Password user prompt -->
+      <div id="delete-safety-password-box" class="hidden" style="margin-top:12px">
+        <p style="font-size:12.5px;color:var(--text-2);margin:0 0 6px 0;line-height:1.4">
+          Enter your account password to authorize deletion:
+        </p>
+        <input type="password" id="delete-safety-password-input" class="form-input" placeholder="Enter account password" style="width:100%" autocomplete="current-password" oninput="if(this.value.length>=6){document.getElementById('delete-safety-confirm-btn').disabled=false}else{document.getElementById('delete-safety-confirm-btn').disabled=true}" />
+      </div>
+
+      <!-- Error message banner if any -->
+      <div id="delete-safety-error-msg" class="hidden" style="margin-top:10px;padding:8px 12px;background:rgba(239,68,68,0.1);border-radius:var(--radius-sm);color:var(--danger);font-size:12px;font-weight:600"></div>
+
+      <div class="modal-actions" style="margin-top:20px">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-delete-safety')">Keep Account</button>
+        <button type="button" class="btn-danger-glow" id="delete-safety-confirm-btn" disabled onclick="executeDeleteSafetyAccount()">
+          <span>Delete Account Permanently</span> 🗑️
         </button>
       </div>
     </div>
@@ -977,7 +1010,74 @@
 <!-- ═══════════════════════════════════════════════════════════
      SCRIPTS
      ═══════════════════════════════════════════════════════════ -->
-<script type="module" src="js/app.js"></script>
+<script>
+  // Bulletproof modal helper — works even before ES module loads
+  function _openModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('modal-open');
+    document.body.classList.add('body-modal');
+    el.onclick = function(e) { if (e.target === el) _closeModal(id); };
+  }
+  function _closeModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('modal-open');
+    document.body.classList.remove('body-modal');
+  }
+
+  window.closeModal = window.closeModal || function(id) {
+    _closeModal(id);
+  };
+
+  window.openDeleteSafetyModal = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var keyIn = document.getElementById('delete-safety-keyword-input');
+    var passIn = document.getElementById('delete-safety-password-input');
+    var btn = document.getElementById('delete-safety-confirm-btn');
+    var err = document.getElementById('delete-safety-error-msg');
+    var gBox = document.getElementById('delete-safety-guest-box');
+    var pBox = document.getElementById('delete-safety-password-box');
+    
+    if (keyIn) keyIn.value = '';
+    if (passIn) passIn.value = '';
+    if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Delete Account Permanently</span> 🗑️';
+    }
+
+    try {
+      var rawUser = localStorage.getItem('discipline_user');
+      var user = rawUser ? JSON.parse(rawUser) : null;
+      var isCloudEmail = !!(user && user.email && !user.isGuest);
+      if (isCloudEmail && pBox && gBox) {
+        pBox.classList.remove('hidden');
+        gBox.classList.add('hidden');
+      } else if (pBox && gBox) {
+        pBox.classList.add('hidden');
+        gBox.classList.remove('hidden');
+      }
+    } catch(err) {}
+
+    _openModal('modal-delete-safety');
+  };
+
+  window.executeDeleteSafetyAccount = window.executeDeleteSafetyAccount || async function() {
+    var btn = document.getElementById('delete-safety-confirm-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Deleting Account & Data...</span> ⏳';
+    }
+    try { localStorage.clear(); } catch(e) {}
+    try { sessionStorage.clear(); } catch(e) {}
+    setTimeout(function() {
+      location.hash = '';
+      location.reload();
+    }, 500);
+  };
+</script>
+<script type="module" src="js/app.js?v=3.5"></script>
 
 </body>
 </html>
