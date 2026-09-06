@@ -50,7 +50,7 @@ function renderHeader() {
       const emoji = moodEmojis[todayCheckin.mood] || '✨';
       checkinBtn.innerHTML = `<span>✓ Checked-in ${emoji}</span><span class="btn-checkin-badge">Done</span>`;
       checkinBtn.classList.add('checked-in');
-      checkinBtn.title = `Today's Mood: ${todayCheckin.mood} — Click to view/edit`;
+      checkinBtn.title = 'You have already checked in for today.';
     } else {
       checkinBtn.innerHTML = `<span>📝 Daily Check-in</span><span class="btn-checkin-badge">+15 XP ⭐</span>`;
       checkinBtn.classList.remove('checked-in');

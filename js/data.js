@@ -155,9 +155,12 @@ export function getCheckins() { return load(KEYS.CHECKINS, []); }
 export function saveCheckin(checkin) {
   const checkins = getCheckins();
   const idx = checkins.findIndex(c => c.date === checkin.date);
-  if (idx !== -1) checkins[idx] = checkin;
-  else checkins.push(checkin);
+  if (idx !== -1) {
+    return false; // Only 1 check-in per day allowed
+  }
+  checkins.push(checkin);
   save(KEYS.CHECKINS, checkins);
+  return true;
 }
 export function getCheckinForDate(date) {
   return getCheckins().find(c => c.date === date) || null;

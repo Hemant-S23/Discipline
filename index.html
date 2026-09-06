@@ -279,7 +279,7 @@
           <h1 class="greeting" id="dash-greeting">Good morning 👋</h1>
           <p class="daily-quote" id="dash-quote">"Consistency beats motivation."</p>
         </div>
-        <button class="btn-checkin" id="dash-checkin-btn" onclick="openModal('modal-checkin')"><span>📝 Daily Check-in</span><span class="btn-checkin-badge">+15 XP ⭐</span></button>
+        <button class="btn-checkin" id="dash-checkin-btn" onclick="handleCheckinClick(event)"><span>📝 Daily Check-in</span><span class="btn-checkin-badge">+15 XP ⭐</span></button>
       </div>
 
       <!-- Stats Row -->
@@ -1144,7 +1144,7 @@
     if (overlay) overlay.classList.remove('active');
   };
 </script>
-<script type="module" src="js/app.js?v=4.1"></script>
+<script type="module" src="js/app.js?v=4.2"></script>
 
 </body>
 </html>

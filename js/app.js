@@ -185,27 +185,27 @@ function initHabitForm() {
 }
 
 // ── Check-in Modal ────────────────────────────────────────────
+function handleCheckinClick(e) {
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  const todayStr = today();
+  const existing = getCheckinForDate(todayStr);
+  if (existing) {
+    showToast('You have already checked in for today.', 'info');
+    return;
+  }
+  const noteInput = document.getElementById('checkin-note');
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  if (noteInput) noteInput.value = '';
+  openModal('modal-checkin');
+}
+window.handleCheckinClick = handleCheckinClick;
+
 function initCheckin() {
   let selectedMood = null;
 
   const checkinBtn = document.getElementById('dash-checkin-btn');
   if (checkinBtn) {
-    checkinBtn.addEventListener('click', () => {
-      const todayStr = today();
-      const existing = getCheckinForDate(todayStr);
-      const noteInput = document.getElementById('checkin-note');
-      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-
-      if (existing) {
-        selectedMood = existing.mood;
-        const moodBtn = document.querySelector(`.mood-btn[data-mood="${existing.mood}"]`);
-        if (moodBtn) moodBtn.classList.add('selected');
-        if (noteInput) noteInput.value = existing.note || '';
-      } else {
-        selectedMood = null;
-        if (noteInput) noteInput.value = '';
-      }
-    });
+    checkinBtn.onclick = handleCheckinClick;
   }
 
   document.querySelectorAll('.mood-btn').forEach(btn => {
@@ -218,9 +218,21 @@ function initCheckin() {
 
   const saveBtn = document.getElementById('save-checkin-btn');
   if (saveBtn) saveBtn.addEventListener('click', () => {
-    const note = document.getElementById('checkin-note')?.value || '';
     const todayStr = today();
-    saveCheckin({ date: todayStr, mood: selectedMood || 'good', note, completionPct: 0 });
+    const existing = getCheckinForDate(todayStr);
+    if (existing) {
+      showToast('You have already checked in for today.', 'info');
+      closeModal('modal-checkin');
+      return;
+    }
+
+    const note = document.getElementById('checkin-note')?.value || '';
+    const saved = saveCheckin({ date: todayStr, mood: selectedMood || 'good', note, completionPct: 0 });
+    if (!saved) {
+      showToast('You have already checked in for today.', 'info');
+      closeModal('modal-checkin');
+      return;
+    }
 
     const xpKey = `daily_checkin_${todayStr}`;
     let xpAwarded = 0;
@@ -912,8 +924,18 @@ window.addEventListener('popstate', () => {
 
 // Make key functions global for inline onclick
 window.openAddHabitModal = openAddHabitModal;
-window.openModal  = openModal;
+window.openModal = (id) => {
+  if (id === 'modal-checkin') {
+    const todayStr = today();
+    if (getCheckinForDate(todayStr)) {
+      showToast('You have already checked in for today.', 'info');
+      return;
+    }
+  }
+  openModal(id);
+};
 window.closeModal = closeModal;
+window.handleCheckinClick = handleCheckinClick;
 window.applyReward = (id) => applyReward(id);
 window.calendarPrev = calendarPrev;
 window.calendarNext = calendarNext;
