@@ -509,12 +509,29 @@
   white-space: nowrap;
   border: none;
 }
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(124, 111, 247, 0.55);
 }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:active:not(:disabled) { transform: scale(0.97); }
+.btn-primary:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none !important;
+}
 .btn-primary.full-width { width: 100%; text-align: center; display: block; }
+
+@keyframes inputErrorShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.input-error-shake {
+  animation: inputErrorShake 0.4s ease-in-out;
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
 .btn-primary.btn-completed {
   background: var(--success-10);
   border: 1px solid var(--success);

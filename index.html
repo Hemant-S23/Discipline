@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css?v=3.9" />
-  <link rel="stylesheet" href="css/components.css?v=3.9" />
-  <link rel="stylesheet" href="css/animations.css?v=3.9" />
-  <link rel="stylesheet" href="css/responsive.css?v=3.9" />
+  <link rel="stylesheet" href="css/main.css?v=4.0" />
+  <link rel="stylesheet" href="css/components.css?v=4.0" />
+  <link rel="stylesheet" href="css/animations.css?v=4.0" />
+  <link rel="stylesheet" href="css/responsive.css?v=4.0" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -150,12 +150,13 @@
       <div class="onboarding-logo">👋</div>
       <h2>What should we call you?</h2>
       <p>So we can personalize your experience.</p>
-      <div class="form-group" style="margin-bottom:28px">
-        <input type="text" class="form-input" id="ob-name-input" placeholder="Your name" maxlength="30" style="font-size:18px;text-align:center;font-weight:700" />
+      <div class="form-group" style="margin-bottom:24px">
+        <input type="text" class="form-input" id="ob-name-input" placeholder="Your name" maxlength="30" required style="font-size:18px;text-align:center;font-weight:700" autocomplete="given-name" />
+        <div id="ob-name-error" class="hidden" style="font-size:12.5px;color:var(--danger);margin-top:8px;font-weight:600;text-align:center">Please enter your name to continue</div>
       </div>
       <div class="onboarding-step-footer">
         <button class="step-back" onclick="onboardingBack()">← Back</button>
-        <button class="btn-primary" style="flex:1" onclick="onboardingNext()">Continue →</button>
+        <button class="btn-primary" id="ob-step2-next-btn" style="flex:1" onclick="onboardingNext()" disabled>Continue →</button>
       </div>
     </div>
 
@@ -1139,7 +1140,7 @@
     if (overlay) overlay.classList.remove('active');
   };
 </script>
-<script type="module" src="js/app.js?v=3.9"></script>
+<script type="module" src="js/app.js?v=4.0"></script>
 
 </body>
 </html>

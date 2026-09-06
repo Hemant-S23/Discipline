@@ -2,7 +2,7 @@
 // app.js — Bootstrap, router, global events
 // ============================================================
 
-import { initOnboarding } from './onboarding.js?v=3.2';
+import { initOnboarding } from './onboarding.js?v=4.0';
 import { renderDashboard } from './dashboard.js?v=3.2';
 import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=3.2';
 import { renderAnalyticsPage } from './analytics.js?v=3.2';
@@ -417,6 +417,11 @@ window.submitAuthForm = async function(e) {
   }
 
   const isSignUp = document.getElementById('auth-tab-signup')?.classList.contains('active');
+  if (isSignUp && !name) {
+    showToast('Please enter your name', 'error');
+    document.getElementById('auth-name-input')?.focus();
+    return;
+  }
 
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -453,6 +458,11 @@ window.handleLandingAuthSubmit = async function(e) {
   }
 
   const isSignUp = document.getElementById('landing-tab-signup')?.classList.contains('active');
+  if (isSignUp && !name) {
+    showToast('Please enter your name', 'error');
+    document.getElementById('landing-name-input')?.focus();
+    return;
+  }
 
   if (submitBtn) {
     submitBtn.disabled = true;

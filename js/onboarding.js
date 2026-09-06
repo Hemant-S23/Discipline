@@ -5,6 +5,7 @@
 import { getUser, updateUser, addHabit } from './data.js';
 import { uploadLocalDataToCloud } from './auth.js';
 import { auth, isFirebaseConfigured } from './firebase-config.js';
+import { showToast } from './ui.js';
 
 const STARTER_HABITS = [
   { icon: '📚', name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['learning'] },
@@ -39,7 +40,46 @@ export function showStep(step) {
     else if (idx + 1 < step) dot.classList.add('done');
   });
 
-  if (step === 4) renderStarterHabits();
+  if (step === 2) setupNameStep();
+  else if (step === 4) renderStarterHabits();
+}
+
+function setupNameStep() {
+  const input = document.getElementById('ob-name-input');
+  const nextBtn = document.getElementById('ob-step2-next-btn');
+  const errorEl = document.getElementById('ob-name-error');
+  if (!input) return;
+
+  const user = getUser();
+  // Pre-fill if a real display name was provided (e.g. from Google login)
+  if (!input.value.trim() && user.name && user.name !== 'Friend' && user.name !== 'Google User') {
+    input.value = user.name;
+  }
+
+  const checkValidity = () => {
+    const val = input.value.trim();
+    if (nextBtn) {
+      nextBtn.disabled = val.length === 0;
+    }
+    if (val.length > 0) {
+      if (errorEl) errorEl.classList.add('hidden');
+      input.classList.remove('input-error-shake');
+    }
+  };
+
+  if (!input.dataset.listenerAttached) {
+    input.dataset.listenerAttached = 'true';
+    input.addEventListener('input', checkValidity);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onboardingNext();
+      }
+    });
+  }
+
+  checkValidity();
+  setTimeout(() => input.focus(), 150);
 }
 
 export function initOnboarding() {
@@ -108,8 +148,25 @@ window.toggleGoal = function(goal, el) {
 window.onboardingNext = function() {
   if (currentStep === 2) {
     const input = document.getElementById('ob-name-input');
-    userName = (input?.value || '').trim() || 'Friend';
+    const nextBtn = document.getElementById('ob-step2-next-btn');
+    const errorEl = document.getElementById('ob-name-error');
+    const val = (input?.value || '').trim();
+
+    if (!val) {
+      input?.focus();
+      input?.classList.add('input-error-shake');
+      setTimeout(() => input?.classList.remove('input-error-shake'), 600);
+      if (errorEl) errorEl.classList.remove('hidden');
+      if (nextBtn) nextBtn.disabled = true;
+      showToast('Please enter your name to continue 😊', 'warning');
+      return; // Cannot proceed without entering name!
+    }
+
+    if (errorEl) errorEl.classList.add('hidden');
+    userName = val;
+    updateUser({ name: userName });
   }
+
   if (currentStep < TOTAL_STEPS) {
     showStep(currentStep + 1);
   }
@@ -122,7 +179,19 @@ window.onboardingBack = function() {
 };
 
 window.finishOnboarding = async function() {
-  updateUser({ name: userName || 'Friend', onboardingDone: true });
+  if (!userName || userName.trim() === '' || userName === 'Friend') {
+    const input = document.getElementById('ob-name-input');
+    const val = (input?.value || '').trim();
+    if (val) {
+      userName = val;
+    } else {
+      showStep(2);
+      showToast('Please enter your name to complete setup', 'warning');
+      return;
+    }
+  }
+
+  updateUser({ name: userName, onboardingDone: true });
 
   const habitsToCreate = selectedHabitNames.size > 0
     ? STARTER_HABITS.filter(h => selectedHabitNames.has(h.name))
