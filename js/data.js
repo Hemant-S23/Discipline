@@ -48,7 +48,18 @@ export function saveUser(user) { save(KEYS.USER, user); }
 export function updateUser(updates) { saveUser({ ...getUser(), ...updates }); }
 
 // ── Habits ───────────────────────────────────────────────────
-export function getHabits() { return load(KEYS.HABITS, []); }
+export function getHabits() {
+  const habits = load(KEYS.HABITS, []);
+  let modified = false;
+  habits.forEach(h => {
+    if ((h.name === 'Study / Practice' || h.name === 'Deep work 1 hr') && h.frequency === 'weekdays' && (!h.customDays || !h.customDays.length)) {
+      h.frequency = 'daily';
+      modified = true;
+    }
+  });
+  if (modified) saveHabits(habits);
+  return habits;
+}
 export function saveHabits(habits) { save(KEYS.HABITS, habits); }
 export function getActiveHabits() { return getHabits().filter(h => !h.archivedAt); }
 export function getArchivedHabits() { return getHabits().filter(h => !!h.archivedAt); }
@@ -201,6 +212,11 @@ export function getDailyStats(daysBack = 7) {
 }
 
 export function isHabitScheduledForDate(habit, dateString) {
+  if (!habit) return false;
+  if (habit.createdAt) {
+    const createdDateStr = habit.createdAt.slice(0, 10);
+    if (dateString < createdDateStr) return false;
+  }
   const d = new Date(dateString + 'T00:00:00');
   const day = d.getDay(); // 0=Sun, 6=Sat
   switch (habit.frequency) {

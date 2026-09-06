@@ -1198,16 +1198,43 @@
 
 .matrix-cell.not-scheduled .matrix-dot {
   background: transparent;
+  border: 1px dashed var(--border);
+  opacity: 0.35;
+}
+
+.matrix-cell.before-created .matrix-dot {
+  background: transparent;
   border: none;
-  opacity: 0.3;
+  opacity: 0.15;
+}
+
+.matrix-cell.past-missed .matrix-dot {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.08);
+  opacity: 0.75;
 }
 
 .matrix-cell.today { cursor: pointer; }
-.matrix-cell.today .matrix-dot { border-color: var(--accent); box-shadow: 0 0 8px rgba(124, 111, 247, 0.4); }
-.matrix-cell.today:hover .matrix-dot { border-color: var(--accent); transform: scale(1.2); }
+.matrix-cell.today .matrix-dot {
+  border: 2px solid var(--accent) !important;
+  background: var(--surface-2) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 10px rgba(124, 111, 247, 0.45);
+  cursor: pointer;
+}
+.matrix-cell.today:hover .matrix-dot {
+  border-color: var(--accent-light) !important;
+  transform: scale(1.2);
+}
+.matrix-cell.today.done .matrix-dot {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(124, 111, 247, 0.5) !important;
+}
 
-.matrix-cell.future .matrix-dot { opacity: 0.25; cursor: not-allowed; }
-.matrix-cell.past-locked .matrix-dot { opacity: 0.7; cursor: not-allowed; }
+.matrix-cell.future .matrix-dot { opacity: 0.25; cursor: default; }
+.matrix-cell.past-locked .matrix-dot { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Mood Picker ─────────────────────────────────────────────── */
 .mood-picker {

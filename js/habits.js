@@ -98,9 +98,24 @@ export function renderTodayHabits(containerId = 'today-habits-list') {
 
   const emptyEl = document.getElementById('habits-empty');
 
-  if (!todayHabits.length) {
+  if (!habits.length) {
     container.innerHTML = '';
     if (emptyEl) emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  if (!todayHabits.length) {
+    if (emptyEl) emptyEl.classList.add('hidden');
+    container.innerHTML = `
+      <div class="empty-state" style="padding:28px 16px">
+        <div class="empty-icon" style="font-size:32px;margin-bottom:8px">🏖️</div>
+        <p style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:4px">No habits scheduled for today</p>
+        <p style="font-size:13px;color:var(--text-3);margin-bottom:16px">You have ${habits.length} active habit${habits.length > 1 ? 's' : ''} scheduled for other days.</p>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <a href="#habits" class="btn-secondary" style="font-size:12.5px;padding:8px 16px">Manage Habits</a>
+        </div>
+      </div>
+    `;
     return;
   }
   if (emptyEl) emptyEl.classList.add('hidden');

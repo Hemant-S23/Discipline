@@ -7,18 +7,18 @@ import { uploadLocalDataToCloud } from './auth.js';
 import { auth, isFirebaseConfigured } from './firebase-config.js';
 
 const STARTER_HABITS = [
-  { icon: '📚', name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily',    cats: ['learning'] },
-  { icon: '🧘', name: 'Meditate',           category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily',    cats: ['mind'] },
-  { icon: '💻', name: 'Study / Practice',   category: 'learning', difficulty: 'hard',   xpReward: 30, frequency: 'weekdays', cats: ['learning', 'work'] },
-  { icon: '🏃', name: 'Exercise',           category: 'fitness',  difficulty: 'hard',   xpReward: 30, frequency: 'daily',    cats: ['fitness'] },
-  { icon: '📝', name: 'Plan tomorrow',      category: 'work',     difficulty: 'easy',   xpReward: 10, frequency: 'daily',    cats: ['work', 'routine'] },
-  { icon: '🌙', name: 'Sleep by 11pm',      category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily',    cats: ['routine'] },
-  { icon: '🚶', name: 'Walk 10 min',        category: 'fitness',  difficulty: 'easy',   xpReward: 10, frequency: 'daily',    cats: ['fitness'] },
-  { icon: '✍️', name: 'Journal',            category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily',    cats: ['mind', 'personal'] },
-  { icon: '💧', name: 'Drink 8 glasses',    category: 'routine',  difficulty: 'easy',   xpReward: 10, frequency: 'daily',    cats: ['routine', 'fitness'] },
-  { icon: '🎯', name: 'Deep work 1 hr',     category: 'work',     difficulty: 'hard',   xpReward: 30, frequency: 'weekdays', cats: ['work'] },
-  { icon: '🌱', name: 'Personal project',   category: 'personal', difficulty: 'medium', xpReward: 20, frequency: 'daily',    cats: ['personal'] },
-  { icon: '📖', name: 'No phone after 9pm', category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily',    cats: ['routine', 'mind'] },
+  { icon: '📚', name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['learning'] },
+  { icon: '🧘', name: 'Meditate',           category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['mind'] },
+  { icon: '💻', name: 'Study / Practice',   category: 'learning', difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['learning', 'work'] },
+  { icon: '🏃', name: 'Exercise',           category: 'fitness',  difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['fitness'] },
+  { icon: '📝', name: 'Plan tomorrow',      category: 'work',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['work', 'routine'] },
+  { icon: '🌙', name: 'Sleep by 11pm',      category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['routine'] },
+  { icon: '🚶', name: 'Walk 10 min',        category: 'fitness',  difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['fitness'] },
+  { icon: '✍️', name: 'Journal',            category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['mind', 'personal'] },
+  { icon: '💧', name: 'Drink 8 glasses',    category: 'routine',  difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['routine', 'fitness'] },
+  { icon: '🎯', name: 'Deep work 1 hr',     category: 'work',     difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['work'] },
+  { icon: '🌱', name: 'Personal project',   category: 'personal', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['personal'] },
+  { icon: '📖', name: 'No phone after 9pm', category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['routine', 'mind'] },
 ];
 
 let currentStep = 1;
