@@ -7,7 +7,8 @@ import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
   onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
-  EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup
+  EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
+  sendEmailVerification
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection
@@ -50,5 +51,6 @@ export {
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
+  sendEmailVerification,
   doc, setDoc, getDoc, updateDoc, deleteDoc, collection
 };

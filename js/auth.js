@@ -7,10 +7,12 @@ import {
   signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
+  sendEmailVerification,
   doc, setDoc, getDoc, deleteDoc
-} from './firebase-config.js?v=3.2';
-import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=3.2';
-import { showToast, closeModal } from './ui.js?v=3.2';
+} from './firebase-config.js?v=4.2';
+import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=4.2';
+import { showToast, closeModal, openModal } from './ui.js?v=4.2';
+import { validateEmail } from './email-validator.js?v=4.2';
 
 let currentAuthUser = null;
 
@@ -56,6 +58,14 @@ export async function initAuth(onUserChange) {
       if (firebaseUser) {
         currentAuthUser = firebaseUser;
         const user = getUser();
+        const isPasswordProvider = firebaseUser.providerData && firebaseUser.providerData.some(p => p.providerId === 'password');
+
+        if (isPasswordProvider && !firebaseUser.emailVerified) {
+          console.log('Firebase user email is unverified:', firebaseUser.email);
+          if (typeof onUserChange === 'function') onUserChange(null);
+          return;
+        }
+
         if (firebaseUser.displayName && !user.nameCustomized) {
           updateUser({ name: firebaseUser.displayName, email: firebaseUser.email, isLoggedIn: true, authDone: true });
         } else {
@@ -132,10 +142,27 @@ export async function uploadLocalDataToCloud(uid) {
   }
 }
 
-export async function loginWithEmail(email, password) {
+export async function loginWithEmail(rawEmail, password) {
+  const validation = validateEmail(rawEmail);
+  if (!validation.isValid) {
+    showToast(validation.error, 'error', 5000);
+    throw new Error(validation.error);
+  }
+  const email = validation.normalizedEmail;
+
   if (isFirebaseConfigured && auth) {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
+      currentAuthUser = cred.user;
+
+      // Check if email is verified for password users
+      if (!cred.user.emailVerified) {
+        showEmailVerificationModal(cred.user.email);
+        showToast('⚠️ Please verify your email first! We sent a link to your inbox.', 'warning', 5000);
+        throw new Error('Email not verified. Please check your inbox.');
+      }
+
+      await syncCloudData(cred.user.uid);
       closeModal('modal-auth');
       showToast('✓ Successfully signed in! ☁️', 'success');
       updateUser({ email: cred.user.email, name: cred.user.displayName || email.split('@')[0], isLoggedIn: true, authDone: true });
@@ -143,6 +170,9 @@ export async function loginWithEmail(email, password) {
       return cred.user;
     } catch (err) {
       console.warn('Firebase signIn error:', err.code);
+      if (err.message && err.message.includes('Email not verified')) {
+        throw err;
+      }
       const msg = getAuthErrorMessage(err.code);
       showToast(msg, 'error');
       throw err;
@@ -172,17 +202,35 @@ export async function loginWithEmail(email, password) {
   }
 }
 
-export async function signUpWithEmail(email, password, name) {
+export async function signUpWithEmail(rawEmail, password, name) {
+  // Validate email with smart format, disposable domain blocker & typo suggestions
+  const validation = validateEmail(rawEmail);
+  if (!validation.isValid) {
+    showToast(validation.error, 'error', 5000);
+    throw new Error(validation.error);
+  }
+  const email = validation.normalizedEmail;
+
   if (isFirebaseConfigured && auth) {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const userName = name || email.split('@')[0];
       await updateProfile(cred.user, { displayName: userName });
-      updateUser({ name: userName, email: cred.user.email, isLoggedIn: true, authDone: true, nameCustomized: true });
-      await uploadLocalDataToCloud(cred.user.uid);
+      currentAuthUser = cred.user;
+
+      // Automatically dispatch verification email
+      try {
+        await sendEmailVerification(cred.user);
+      } catch (evErr) {
+        console.warn('sendEmailVerification note:', evErr);
+      }
+
       closeModal('modal-auth');
-      showToast('✓ Account created! Cloud sync activated 🚀', 'success');
-      if (window._updateAccountUI) window._updateAccountUI(cred.user);
+      const landing = document.getElementById('landing-overlay');
+      if (landing) landing.classList.add('hidden');
+
+      showEmailVerificationModal(email);
+      showToast('✓ Activation link sent to your email! ✉️', 'success', 5000);
       return cred.user;
     } catch (err) {
       console.warn('Firebase signUp error:', err.code);
@@ -362,6 +410,102 @@ export async function deleteAccountAndData(password = null) {
   }, 500);
 
   return { success: true };
+}
+
+export function showEmailVerificationModal(email) {
+  const display = document.getElementById('verify-email-display');
+  if (display) display.textContent = email || auth?.currentUser?.email || 'your email';
+  closeModal('modal-auth');
+  const landing = document.getElementById('landing-overlay');
+  if (landing) landing.classList.add('hidden');
+  openModal('modal-verify-email');
+}
+
+export async function checkEmailVerification() {
+  if (!auth || !auth.currentUser) {
+    showToast('No active session found. Please sign in.', 'error');
+    return false;
+  }
+
+  try {
+    await auth.currentUser.reload();
+    const user = auth.currentUser;
+
+    if (user.emailVerified) {
+      const userName = user.displayName || user.email.split('@')[0];
+      updateUser({
+        name: userName,
+        email: user.email,
+        isLoggedIn: true,
+        authDone: true,
+        nameCustomized: true
+      });
+      await uploadLocalDataToCloud(user.uid);
+      closeModal('modal-verify-email');
+      showToast('✓ Email verified! Welcome to Discipline 🚀', 'success');
+      if (window._updateAccountUI) window._updateAccountUI(user);
+      if (typeof window.proceedAfterAuth === 'function') {
+        window.proceedAfterAuth();
+      }
+      return true;
+    } else {
+      showToast('⚠️ Email not verified yet. Please check your inbox and click the verification link.', 'warning', 4500);
+      return false;
+    }
+  } catch (err) {
+    console.warn('Error checking verification:', err);
+    showToast('Failed to check verification status. Please try again.', 'error');
+    return false;
+  }
+}
+
+let resendCooldown = 0;
+export async function resendVerification() {
+  if (!auth || !auth.currentUser) {
+    showToast('No active session. Please sign in.', 'error');
+    return;
+  }
+  if (resendCooldown > 0) {
+    showToast(`Please wait ${resendCooldown}s before resending.`, 'info');
+    return;
+  }
+
+  try {
+    await sendEmailVerification(auth.currentUser);
+    showToast('✓ Verification email resent! Check your inbox.', 'success');
+    
+    resendCooldown = 30;
+    const btn = document.getElementById('btn-resend-verification');
+    const timer = setInterval(() => {
+      resendCooldown--;
+      if (btn) {
+        btn.textContent = resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email';
+        btn.disabled = resendCooldown > 0;
+      }
+      if (resendCooldown <= 0) clearInterval(timer);
+    }, 1000);
+  } catch (err) {
+    console.warn('Resend verification error:', err);
+    if (err.code === 'auth/too-many-requests') {
+      showToast('Too many requests. Please check your spam folder or wait a bit.', 'warning');
+    } else {
+      showToast('Could not resend email. Please try again shortly.', 'error');
+    }
+  }
+}
+
+export async function cancelEmailVerification() {
+  if (auth && auth.currentUser) {
+    try {
+      await signOut(auth);
+    } catch (e) {}
+  }
+  closeModal('modal-verify-email');
+  const landing = document.getElementById('landing-overlay');
+  const user = getUser();
+  if (!user.authDone && landing) {
+    landing.classList.remove('hidden');
+  }
 }
 
 function getAuthErrorMessage(code) {

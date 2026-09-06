@@ -15,8 +15,9 @@ import {
 } from './data.js?v=3.2';
 import { awardXP, XP_BONUSES } from './xp.js?v=3.2';
 import {
-  initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult
-} from './auth.js?v=3.2';
+  initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult,
+  checkEmailVerification, resendVerification, cancelEmailVerification
+} from './auth.js?v=4.2';
 import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
 } from './ui.js?v=3.2';
@@ -445,9 +446,9 @@ window.submitAuthForm = async function(e) {
       await signUpWithEmail(email, password, name);
     } else {
       await loginWithEmail(email, password);
+      updateUser({ isLoggedIn: true, authDone: true });
+      closeModal('modal-auth');
     }
-    updateUser({ isLoggedIn: true, authDone: true });
-    closeModal('modal-auth');
   } catch (err) {
   } finally {
     if (submitBtn) {
@@ -486,9 +487,9 @@ window.handleLandingAuthSubmit = async function(e) {
       await signUpWithEmail(email, password, name);
     } else {
       await loginWithEmail(email, password);
+      updateUser({ isLoggedIn: true, authDone: true });
+      proceedAfterAuth();
     }
-    updateUser({ isLoggedIn: true, authDone: true });
-    proceedAfterAuth();
   } catch (err) {
   } finally {
     if (submitBtn) {
@@ -943,3 +944,6 @@ window.setAuthTab = window.setAuthTab;
 window.submitAuthForm = window.submitAuthForm;
 window.openDeleteSafetyModal = openDeleteSafetyModal;
 window.executeDeleteSafetyAccount = executeDeleteSafetyAccount;
+window.checkEmailVerificationStatus = checkEmailVerification;
+window.resendEmailVerificationLink = resendVerification;
+window.cancelEmailVerification = cancelEmailVerification;

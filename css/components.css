@@ -2675,7 +2675,38 @@
   }
 }
 
-
-
-
-
+/* ── Email Verification Modal ────────────────────────────────── */
+.verify-email-modal {
+  max-width: 440px !important;
+  text-align: center;
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+}
+.verify-email-icon-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124, 111, 247, 0.16), rgba(124, 111, 247, 0.05));
+  border: 1px solid rgba(124, 111, 247, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin: 0 auto 10px;
+  box-shadow: 0 4px 16px rgba(124, 111, 247, 0.15);
+}
+.verify-email-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--accent-10);
+  border: 1px solid var(--accent-20);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  word-break: break-all;
+  max-width: 100%;
+}
