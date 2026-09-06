@@ -309,11 +309,7 @@ function renderSettingsPage() {
   const user = getUser();
   const nameInput = document.getElementById('settings-name-input');
   if (nameInput) nameInput.value = user.name || '';
-  const avatarInitial = document.getElementById('settings-avatar-initial');
-  if (avatarInitial) {
-    const initial = (user.name || user.email || 'D').trim().charAt(0).toUpperCase() || 'D';
-    avatarInitial.textContent = initial;
-  }
+  updateAllAvatars();
   renderArchivedHabits();
 }
 
@@ -323,8 +319,7 @@ function initSettings() {
     const name = document.getElementById('settings-name-input')?.value?.trim();
     if (name) {
       updateUser({ name });
-      const avatarInitial = document.getElementById('settings-avatar-initial');
-      if (avatarInitial) avatarInitial.textContent = name.charAt(0).toUpperCase();
+      updateAllAvatars();
       showToast('✓ Profile updated!', 'success');
       renderDashboard();
     }
@@ -696,6 +691,137 @@ function initDeleteSafetyInputs() {
   }
 }
 
+// ── Profile Photo & Avatar Management ─────────────────────────
+export function updateAllAvatars() {
+  const user = getUser();
+  const photoUrl = user.photoUrl || user.avatarImage || null;
+  const initial = (user.name || user.email || 'D').trim().charAt(0).toUpperCase() || 'D';
+
+  const avatarTargets = [
+    document.getElementById('mobile-header-avatar'),
+    document.getElementById('profile-menu-avatar'),
+    document.getElementById('settings-avatar-initial'),
+    document.getElementById('sidebar-avatar'),
+    document.getElementById('drawer-avatar')
+  ];
+
+  avatarTargets.forEach(el => {
+    if (!el) return;
+    if (photoUrl) {
+      el.innerHTML = `<img src="${photoUrl}" alt="Profile" class="avatar-img-element" />`;
+      el.classList.add('has-photo');
+    } else {
+      el.innerHTML = initial;
+      el.classList.remove('has-photo');
+    }
+  });
+
+  const removeBtn = document.getElementById('profile-menu-remove-photo-btn');
+  if (removeBtn) {
+    if (photoUrl) removeBtn.classList.remove('hidden');
+    else removeBtn.classList.add('hidden');
+  }
+}
+window.updateAllAvatars = updateAllAvatars;
+
+export function triggerProfilePhotoUpload() {
+  const input = document.getElementById('profile-photo-file-input');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+window.triggerProfilePhotoUpload = triggerProfilePhotoUpload;
+
+export function handleProfilePhotoUpload(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // Compress & crop to square 256x256
+      const canvas = document.createElement('canvas');
+      const size = 256;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Center-crop square math
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      updateUser({ photoUrl: compressedDataUrl });
+      updateAllAvatars();
+      showToast('✓ Profile photo updated! 📸', 'success');
+      closeProfileQuickMenu();
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+window.handleProfilePhotoUpload = handleProfilePhotoUpload;
+
+export function removeProfilePhoto() {
+  updateUser({ photoUrl: null, avatarImage: null });
+  updateAllAvatars();
+  showToast('Profile photo removed', 'info');
+  closeProfileQuickMenu();
+}
+window.removeProfilePhoto = removeProfilePhoto;
+
+export function toggleProfileQuickMenu(e) {
+  if (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+  const menu = document.getElementById('profile-quick-menu');
+  if (!menu) return;
+  const isOpen = menu.classList.contains('active');
+  if (isOpen) closeProfileQuickMenu();
+  else openProfileQuickMenu();
+}
+window.toggleProfileQuickMenu = toggleProfileQuickMenu;
+
+export function openProfileQuickMenu() {
+  const menu = document.getElementById('profile-quick-menu');
+  const overlay = document.getElementById('profile-quick-overlay');
+  if (!menu) return;
+
+  const user = getUser();
+  const nameEl = document.getElementById('profile-menu-name');
+  const emailEl = document.getElementById('profile-menu-email');
+  const levelEl = document.getElementById('profile-menu-level');
+
+  if (nameEl) nameEl.textContent = user.name || 'Friend';
+  if (emailEl) emailEl.textContent = user.email || 'Guest Workspace';
+  if (levelEl) levelEl.textContent = `Level ${user.level || 1} · ${user.totalXP || 0} XP`;
+
+  updateAllAvatars();
+
+  menu.classList.add('active');
+  if (overlay) overlay.classList.add('active');
+}
+window.openProfileQuickMenu = openProfileQuickMenu;
+
+export function closeProfileQuickMenu() {
+  const menu = document.getElementById('profile-quick-menu');
+  const overlay = document.getElementById('profile-quick-overlay');
+  if (menu) menu.classList.remove('active');
+  if (overlay) overlay.classList.remove('active');
+}
+window.closeProfileQuickMenu = closeProfileQuickMenu;
+
 // ── Global add habit button ───────────────────────────────────
 function initGlobalButtons() {
   document.querySelectorAll('[data-action="add-habit"]').forEach(btn => {
@@ -717,6 +843,7 @@ function appInit() {
   initAuthUI();
   initGlobalButtons();
   restoreActiveReward();
+  updateAllAvatars();
 
   // Expose global render function for cross-module use
   window._renderDashboard = renderDashboard;

@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css?v=3.6" />
-  <link rel="stylesheet" href="css/components.css?v=3.6" />
-  <link rel="stylesheet" href="css/animations.css?v=3.6" />
-  <link rel="stylesheet" href="css/responsive.css?v=3.6" />
+  <link rel="stylesheet" href="css/main.css?v=3.7" />
+  <link rel="stylesheet" href="css/components.css?v=3.7" />
+  <link rel="stylesheet" href="css/animations.css?v=3.7" />
+  <link rel="stylesheet" href="css/responsive.css?v=3.7" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -264,8 +264,8 @@
       </div>
       <div class="mobile-header-right">
         <div class="user-level-badge-sm" id="mobile-header-user-level">Lv.1</div>
-        <button class="mobile-menu-btn" id="mobile-menu-toggle-btn" onclick="openMobileDrawer()" title="Open Navigation Menu">
-          <span>☰</span>
+        <button class="mobile-header-avatar-btn" id="mobile-header-avatar-btn" onclick="toggleProfileQuickMenu(event)" title="Profile &amp; Photo">
+          <div class="header-avatar-circle" id="mobile-header-avatar">H</div>
         </button>
       </div>
     </header>
@@ -516,9 +516,15 @@
             
             <!-- User Profile Row -->
             <div class="settings-item settings-item-profile">
-              <div class="settings-profile-avatar" id="settings-avatar-initial">H</div>
+              <div class="settings-profile-avatar-wrap" onclick="triggerProfilePhotoUpload()" title="Tap to upload profile photo">
+                <div class="settings-profile-avatar" id="settings-avatar-initial">H</div>
+                <div class="avatar-camera-badge">📷</div>
+              </div>
               <div class="settings-profile-input-wrap">
-                <label class="settings-mini-label" for="settings-name-input">Display Name</label>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                  <label class="settings-mini-label" for="settings-name-input" style="margin:0">Display Name</label>
+                  <button type="button" class="settings-change-photo-btn" onclick="triggerProfilePhotoUpload()">Change Photo 📸</button>
+                </div>
                 <div class="settings-inline-input-row">
                   <input type="text" class="settings-seamless-input" id="settings-name-input" placeholder="Your name" maxlength="30" />
                   <button class="btn-primary-sm" id="settings-save-name">Save</button>
@@ -1022,6 +1028,39 @@
 <div id="xp-float-container"></div>
 <canvas id="confetti-canvas"></canvas>
 
+<!-- ── Profile Photo File Input (Universal) ──────────────────── -->
+<input type="file" id="profile-photo-file-input" accept="image/*" style="display:none" onchange="handleProfilePhotoUpload(event)" />
+
+<!-- ── Google-style Profile Quick Menu Popover (Mobile Top-Right) ── -->
+<div id="profile-quick-overlay" class="profile-quick-overlay" onclick="closeProfileQuickMenu()"></div>
+<div id="profile-quick-menu" class="profile-quick-menu">
+  <div class="profile-quick-card">
+    <div class="profile-quick-header">
+      <div class="profile-quick-avatar-wrap" onclick="triggerProfilePhotoUpload()" title="Tap to change photo">
+        <div class="profile-quick-avatar" id="profile-menu-avatar">H</div>
+        <div class="profile-avatar-badge">📷</div>
+      </div>
+      <div class="profile-quick-user-info">
+        <div class="profile-quick-name" id="profile-menu-name">Friend</div>
+        <div class="profile-quick-email" id="profile-menu-email">Guest Workspace</div>
+        <div class="profile-quick-level" id="profile-menu-level">Level 1 · 0 XP</div>
+      </div>
+    </div>
+
+    <div class="profile-quick-actions">
+      <button type="button" class="profile-quick-btn profile-btn-upload" onclick="triggerProfilePhotoUpload()">
+        <span>📸 Upload Profile Photo</span>
+      </button>
+      <button type="button" class="profile-quick-btn profile-btn-remove hidden" id="profile-menu-remove-photo-btn" onclick="removeProfilePhoto()">
+        <span>🗑️ Remove Photo</span>
+      </button>
+      <a href="#settings" class="profile-quick-btn profile-btn-settings" onclick="closeProfileQuickMenu()">
+        <span>⚙️ Account Settings</span>
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════
      SCRIPTS
      ═══════════════════════════════════════════════════════════ -->
@@ -1091,8 +1130,33 @@
       location.reload();
     }, 500);
   };
+
+  window.triggerProfilePhotoUpload = window.triggerProfilePhotoUpload || function() {
+    var input = document.getElementById('profile-photo-file-input');
+    if (input) { input.value = ''; input.click(); }
+  };
+  window.toggleProfileQuickMenu = window.toggleProfileQuickMenu || function(e) {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    var menu = document.getElementById('profile-quick-menu');
+    var overlay = document.getElementById('profile-quick-overlay');
+    if (!menu) return;
+    var isActive = menu.classList.contains('active');
+    if (isActive) {
+      menu.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+    } else {
+      menu.classList.add('active');
+      if (overlay) overlay.classList.add('active');
+    }
+  };
+  window.closeProfileQuickMenu = window.closeProfileQuickMenu || function() {
+    var menu = document.getElementById('profile-quick-menu');
+    var overlay = document.getElementById('profile-quick-overlay');
+    if (menu) menu.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+  };
 </script>
-<script type="module" src="js/app.js?v=3.6"></script>
+<script type="module" src="js/app.js?v=3.7"></script>
 
 </body>
 </html>
