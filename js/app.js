@@ -621,14 +621,10 @@ export function openDeleteSafetyModal(e) {
   if (e && e.preventDefault) e.preventDefault();
 
   const keywordInput = document.getElementById('delete-safety-keyword-input');
-  const passInput = document.getElementById('delete-safety-password-input');
-  const passBox = document.getElementById('delete-safety-password-box');
-  const guestBox = document.getElementById('delete-safety-guest-box');
   const confirmBtn = document.getElementById('delete-safety-confirm-btn');
   const errorEl = document.getElementById('delete-safety-error-msg');
 
   if (keywordInput) keywordInput.value = '';
-  if (passInput) passInput.value = '';
   if (errorEl) {
     errorEl.textContent = '';
     errorEl.classList.add('hidden');
@@ -638,28 +634,24 @@ export function openDeleteSafetyModal(e) {
     confirmBtn.innerHTML = '<span>Delete Account</span>';
   }
 
-  const user = getUser();
-  const isCloudEmailUser = !!(user?.email && !user?.isGuest);
-
-  if (isCloudEmailUser && passBox && guestBox) {
-    passBox.classList.remove('hidden');
-    guestBox.classList.add('hidden');
-  } else if (passBox && guestBox) {
-    passBox.classList.add('hidden');
-    guestBox.classList.remove('hidden');
-  }
-
   openModal('modal-delete-safety');
   setTimeout(() => {
-    if (isCloudEmailUser) passInput?.focus();
-    else keywordInput?.focus();
+    keywordInput?.focus();
   }, 120);
 }
 
 export async function executeDeleteSafetyAccount() {
   const confirmBtn = document.getElementById('delete-safety-confirm-btn');
-  const passInput = document.getElementById('delete-safety-password-input');
+  const keywordInput = document.getElementById('delete-safety-keyword-input');
   const errorEl = document.getElementById('delete-safety-error-msg');
+
+  if (keywordInput && keywordInput.value.trim().toUpperCase() !== 'DELETE') {
+    if (errorEl) {
+      errorEl.textContent = 'Please type DELETE to confirm.';
+      errorEl.classList.remove('hidden');
+    }
+    return;
+  }
 
   if (confirmBtn) {
     confirmBtn.disabled = true;
@@ -670,10 +662,8 @@ export async function executeDeleteSafetyAccount() {
     errorEl.classList.add('hidden');
   }
 
-  const password = passInput?.value || null;
-
   try {
-    await deleteAccountAndData(password);
+    await deleteAccountAndData();
   } catch (err) {
     console.error('Account deletion error:', err);
     if (errorEl) {
@@ -690,25 +680,13 @@ export async function executeDeleteSafetyAccount() {
 
 function initDeleteSafetyInputs() {
   const keywordInput = document.getElementById('delete-safety-keyword-input');
-  const passInput = document.getElementById('delete-safety-password-input');
   const confirmBtn = document.getElementById('delete-safety-confirm-btn');
 
   if (keywordInput) {
     keywordInput.addEventListener('input', () => {
       const matches = keywordInput.value.trim().toUpperCase() === 'DELETE';
-      const guestBox = document.getElementById('delete-safety-guest-box');
-      if (confirmBtn && guestBox && !guestBox.classList.contains('hidden')) {
+      if (confirmBtn) {
         confirmBtn.disabled = !matches;
-      }
-    });
-  }
-
-  if (passInput) {
-    passInput.addEventListener('input', () => {
-      const hasPass = passInput.value.length >= 6;
-      const passBox = document.getElementById('delete-safety-password-box');
-      if (confirmBtn && passBox && !passBox.classList.contains('hidden')) {
-        confirmBtn.disabled = !hasPass;
       }
     });
   }

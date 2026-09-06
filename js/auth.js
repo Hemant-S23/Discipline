@@ -322,23 +322,10 @@ export async function logoutUser() {
   if (window._updateAccountUI) window._updateAccountUI(null);
 }
 
-export async function deleteAccountAndData(password = null) {
+export async function deleteAccountAndData() {
   const user = auth?.currentUser;
 
   if (user && isFirebaseConfigured) {
-    // If password provided for email user, re-authenticate first to prevent 'auth/requires-recent-login'
-    if (password && user.email) {
-      try {
-        const credential = EmailAuthProvider.credential(user.email, password);
-        await reauthenticateWithCredential(user, credential);
-      } catch (reauthErr) {
-        console.warn('Password re-authentication failed:', reauthErr?.code);
-        if (reauthErr?.code === 'auth/wrong-password' || reauthErr?.code === 'auth/invalid-credential') {
-          throw new Error('Incorrect password. Please verify your password and try again.');
-        }
-      }
-    }
-
     // 1. Delete user's document in Firestore (best-effort)
     if (db) {
       try {
@@ -348,34 +335,11 @@ export async function deleteAccountAndData(password = null) {
       }
     }
 
-    // 2. Delete the user from Firebase Authentication
+    // 2. Delete the user from Firebase Authentication (best-effort)
     try {
       await deleteUser(user);
     } catch (authErr) {
-      console.warn('deleteUser error:', authErr?.code, authErr?.message);
-
-      if (authErr?.code === 'auth/requires-recent-login') {
-        const isGoogleUser = user.providerData?.some(p => p.providerId === 'google.com');
-        if (isGoogleUser) {
-          try {
-            await reauthenticateWithPopup(user, googleProvider);
-            await deleteUser(user);
-          } catch (googleReauthErr) {
-            console.warn('Google re-auth failed or cancelled:', googleReauthErr?.code);
-            throw new Error('Google security verification failed. Please try again.');
-          }
-        } else if (password) {
-          try {
-            const credential = EmailAuthProvider.credential(user.email, password);
-            await reauthenticateWithCredential(user, credential);
-            await deleteUser(user);
-          } catch (passErr) {
-            throw new Error('Incorrect password. Could not delete account.');
-          }
-        } else {
-          throw new Error('Please enter your password to authorize account deletion.');
-        }
-      }
+      console.warn('deleteUser error/notice:', authErr?.code, authErr?.message);
     }
 
     // Guarantee Firebase session is signed out so user is never kept logged in

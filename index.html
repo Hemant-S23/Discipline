@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css?v=4.3" />
-  <link rel="stylesheet" href="css/components.css?v=4.3" />
-  <link rel="stylesheet" href="css/animations.css?v=4.3" />
-  <link rel="stylesheet" href="css/responsive.css?v=4.3" />
+  <link rel="stylesheet" href="css/main.css?v=4.4" />
+  <link rel="stylesheet" href="css/components.css?v=4.4" />
+  <link rel="stylesheet" href="css/animations.css?v=4.4" />
+  <link rel="stylesheet" href="css/responsive.css?v=4.4" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -1017,20 +1017,12 @@
       Are you sure? This will permanently erase your habits, streaks, XP, and all personal records. This action cannot be undone.
     </p>
 
-    <!-- Guest mode keyword confirmation prompt -->
-    <div id="delete-safety-guest-box" class="delete-safety-field-group">
+    <!-- Keyword confirmation prompt (Type DELETE) -->
+    <div class="delete-safety-field-group">
       <label class="delete-safety-label" for="delete-safety-keyword-input">
-        Type <span class="danger-keyword-badge">DELETE</span> to confirm:
+        Type <span class="danger-keyword-badge">DELETE</span> to delete the account:
       </label>
       <input type="text" id="delete-safety-keyword-input" class="delete-safety-clean-input" placeholder="Type DELETE" autocomplete="off" oninput="if(this.value.trim().toUpperCase()==='DELETE'){document.getElementById('delete-safety-confirm-btn').disabled=false}else{document.getElementById('delete-safety-confirm-btn').disabled=true}" />
-    </div>
-
-    <!-- Email / Password user prompt -->
-    <div id="delete-safety-password-box" class="delete-safety-field-group hidden">
-      <label class="delete-safety-label" for="delete-safety-password-input">
-        Enter account password to authorize:
-      </label>
-      <input type="password" id="delete-safety-password-input" class="delete-safety-clean-input" placeholder="Account password" autocomplete="current-password" oninput="if(this.value.length>=6){document.getElementById('delete-safety-confirm-btn').disabled=false}else{document.getElementById('delete-safety-confirm-btn').disabled=true}" />
     </div>
 
     <!-- Error message banner if any -->
@@ -1112,34 +1104,20 @@
   window.openDeleteSafetyModal = function(e) {
     if (e && e.preventDefault) e.preventDefault();
     var keyIn = document.getElementById('delete-safety-keyword-input');
-    var passIn = document.getElementById('delete-safety-password-input');
     var btn = document.getElementById('delete-safety-confirm-btn');
     var err = document.getElementById('delete-safety-error-msg');
-    var gBox = document.getElementById('delete-safety-guest-box');
-    var pBox = document.getElementById('delete-safety-password-box');
     
     if (keyIn) keyIn.value = '';
-    if (passIn) passIn.value = '';
     if (err) { err.textContent = ''; err.classList.add('hidden'); }
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span>Delete Account Permanently</span> 🗑️';
+      btn.innerHTML = '<span>Delete Account</span>';
     }
 
-    try {
-      var rawUser = localStorage.getItem('discipline_user');
-      var user = rawUser ? JSON.parse(rawUser) : null;
-      var isCloudEmail = !!(user && user.email && !user.isGuest);
-      if (isCloudEmail && pBox && gBox) {
-        pBox.classList.remove('hidden');
-        gBox.classList.add('hidden');
-      } else if (pBox && gBox) {
-        pBox.classList.add('hidden');
-        gBox.classList.remove('hidden');
-      }
-    } catch(err) {}
-
     _openModal('modal-delete-safety');
+    setTimeout(function() {
+      if (keyIn) keyIn.focus();
+    }, 120);
   };
 
   window.executeDeleteSafetyAccount = window.executeDeleteSafetyAccount || async function() {
@@ -1181,7 +1159,7 @@
     if (overlay) overlay.classList.remove('active');
   };
 </script>
-<script type="module" src="js/app.js?v=4.3"></script>
+<script type="module" src="js/app.js?v=4.4"></script>
 
 </body>
 </html>
