@@ -257,6 +257,10 @@ export function getTasksForDate(dateString) {
   return getTasks().filter(t => t.date === dateString);
 }
 
+export function getTaskById(id) {
+  return getTasks().find(t => t.id === id) || null;
+}
+
 export function addTask({ text, date, xpReward = 10 }) {
   const tasks = getTasks();
   const task = {
@@ -266,6 +270,7 @@ export function addTask({ text, date, xpReward = 10 }) {
     xpReward: xpReward || 10,
     completed: false,
     completedAt: null,
+    xpAwarded: false,
     createdAt: new Date().toISOString()
   };
   tasks.push(task);
@@ -277,10 +282,14 @@ export function toggleTask(id) {
   const tasks = getTasks();
   const task = tasks.find(t => t.id === id);
   if (!task) return null;
-  task.completed = !task.completed;
-  task.completedAt = task.completed ? new Date().toISOString() : null;
+  // Once completed, task is locked and cannot be unchecked
+  if (task.completed) {
+    return { task, alreadyCompleted: true };
+  }
+  task.completed = true;
+  task.completedAt = new Date().toISOString();
   saveTasks(tasks);
-  return task;
+  return { task, alreadyCompleted: false };
 }
 
 export function deleteTask(id) {

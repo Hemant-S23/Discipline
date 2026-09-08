@@ -2773,6 +2773,12 @@
   background: var(--success);
   border-color: var(--success);
   color: #fff;
+  cursor: default;
+  transform: scale(1.02);
+}
+
+.task-item.completed .task-check-btn:hover {
+  border-color: var(--success);
   transform: scale(1.02);
 }
 

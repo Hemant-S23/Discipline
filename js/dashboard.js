@@ -5,7 +5,7 @@
 import {
   getUser, getActiveHabits, getCompletions, getCompletionsForDate,
   today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats, getCheckinForDate,
-  getTasksForDate, addTask, toggleTask, deleteTask
+  getTasksForDate, addTask, toggleTask, deleteTask, getTaskById, getTasks, saveTasks, hasAwardedXpToday
 } from './data.js';
 import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js';
 import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js';
@@ -341,7 +341,7 @@ export function renderTodayTasks() {
   container.innerHTML = tasks.map(task => {
     return `
       <div class="task-item ${task.completed ? 'completed' : ''}" id="task-item-${task.id}">
-        <button class="task-check-btn ${task.completed ? 'checked' : ''}" onclick="handleDashboardTaskToggle('${task.id}', this)" title="${task.completed ? 'Completed! Click to undo' : 'Mark completed (+10 XP)'}" type="button">
+        <button class="task-check-btn ${task.completed ? 'checked' : ''}" onclick="handleDashboardTaskToggle('${task.id}', this)" title="${task.completed ? '✓ Already completed! (Locked)' : 'Mark completed (+10 XP)'}" type="button">
           ${task.completed ? '✓' : ''}
         </button>
         <div class="task-content">
@@ -372,16 +372,32 @@ window.handleTodayTaskSubmit = function(e) {
 };
 
 window.handleDashboardTaskToggle = function(taskId, btnEl) {
-  const task = toggleTask(taskId);
-  if (!task) return;
+  const existing = getTaskById(taskId);
+  if (existing && existing.completed) {
+    showToast(`✓ "${existing.text}" is already completed! 🎉`, 'info', 2500);
+    return;
+  }
 
-  if (task.completed) {
+  const res = toggleTask(taskId);
+  if (!res || res.alreadyCompleted) {
+    showToast('✓ Task is already completed! 🎉', 'info', 2500);
+    return;
+  }
+
+  const task = res.task;
+  const xpSource = `task_${task.id}`;
+  if (!task.xpAwarded && !hasAwardedXpToday(xpSource)) {
     const xp = task.xpReward || 10;
-    awardXP(xp, `task_${task.id}`);
+    task.xpAwarded = true;
+    const allTasks = getTasks();
+    const t = allTasks.find(x => x.id === task.id);
+    if (t) { t.xpAwarded = true; saveTasks(allTasks); }
+
+    awardXP(xp, xpSource);
     if (btnEl) showXPFloat(xp, btnEl);
     showToast(`✓ Task completed! +${xp} XP ⭐`, 'success', 2500);
   } else {
-    showToast('Task marked incomplete', 'info', 1500);
+    showToast('✓ Task completed!', 'success', 2000);
   }
 
   renderTodayTasks();
