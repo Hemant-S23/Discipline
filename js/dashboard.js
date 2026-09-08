@@ -41,20 +41,18 @@ function renderHeader() {
   const checkinBtn = document.getElementById('dash-checkin-btn');
 
   if (dateEl)  dateEl.textContent  = todayLong;
-  if (greetEl) greetEl.textContent = `${greeting}, ${user.name} 👋`;
+  if (greetEl) greetEl.textContent = `${greeting}, ${user.name}`;
   if (quoteEl) quoteEl.textContent = `"${getDailyQuote()}"`;
 
   // Check-in button state
   if (checkinBtn) {
     const todayCheckin = getCheckinForDate(today());
     if (todayCheckin) {
-      const moodEmojis = { great: '😄', good: '🙂', okay: '😐', difficult: '😕', exhausted: '😴' };
-      const emoji = moodEmojis[todayCheckin.mood] || '✨';
-      checkinBtn.innerHTML = `<span>✓ Checked-in ${emoji}</span><span class="btn-checkin-badge">Done</span>`;
+      checkinBtn.innerHTML = `<span>✓ Checked-in</span><span class="btn-checkin-badge">Done</span>`;
       checkinBtn.classList.add('checked-in');
       checkinBtn.title = 'You have already checked in for today.';
     } else {
-      checkinBtn.innerHTML = `<span>📝 Daily Check-in</span><span class="btn-checkin-badge">+15 XP ⭐</span>`;
+      checkinBtn.innerHTML = `<span>Daily Check-in</span><span class="btn-checkin-badge">+15 XP</span>`;
       checkinBtn.classList.remove('checked-in');
       checkinBtn.title = 'Complete today\'s check-in to earn +15 XP';
     }
@@ -196,7 +194,7 @@ function renderXPCard() {
   const infoEl  = document.getElementById('dash-level-xp-info');
 
   if (xpEl)   xpEl.textContent = formatNumber(user.totalXP);
-  if (lvlEl)  lvlEl.textContent = `⚡ Lv.${info.level} · ${info.name}`;
+  if (lvlEl)  lvlEl.textContent = `Lv.${info.level} · ${info.name}`;
   if (barEl)  barEl.style.width  = `${info.progress}%`;
   if (infoEl) infoEl.textContent = info.isMaxLevel
     ? '🏆 Max Level!'

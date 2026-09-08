@@ -6,86 +6,87 @@
 
 /* ── Design Tokens ──────────────────────────────────────────── */
 :root {
-  /* Primary Accent */
-  --accent:       #7C6FF7;
-  --accent-light: #A59CF5;
-  --accent-dark:  #5B4FE8;
-  --accent-10:    rgba(124, 111, 247, 0.10);
-  --accent-20:    rgba(124, 111, 247, 0.20);
-  --accent-glow:  0 0 20px rgba(124, 111, 247, 0.35);
+  /* Primary Accent - Refined Electric Indigo (Linear style) */
+  --accent:       #5E6AD2;
+  --accent-light: #7E8CE0;
+  --accent-dark:  #4B55BA;
+  --accent-10:    rgba(94, 106, 210, 0.08);
+  --accent-20:    rgba(94, 106, 210, 0.16);
+  --accent-glow:  0 0 16px rgba(94, 106, 210, 0.20);
 
-  /* Semantic Colors */
-  --success:      #22C55E;
-  --success-10:   rgba(34, 197, 94, 0.12);
-  --streak:       #F97316;
-  --streak-10:    rgba(249, 115, 22, 0.12);
-  --xp:           #F59E0B;
-  --xp-10:        rgba(245, 158, 11, 0.12);
+  /* Semantic Colors - Precision HSL */
+  --success:      #10B981;
+  --success-10:   rgba(16, 185, 129, 0.08);
+  --streak:       #F59E0B;
+  --streak-10:    rgba(245, 158, 11, 0.08);
+  --xp:           #6366F1;
+  --xp-10:        rgba(99, 102, 241, 0.08);
   --danger:       #EF4444;
-  --danger-10:    rgba(239, 68, 68, 0.12);
+  --danger-10:    rgba(239, 68, 68, 0.08);
 
-  /* Surfaces (Light Mode) */
-  --bg:           #F0EFFE;
+  /* Surfaces (Light Mode) - Apple Pro Crisp Neutral */
+  --bg:           #F8F9FA;
   --surface:      #FFFFFF;
-  --surface-2:    #F8F7FF;
-  --surface-3:    #EEEAFF;
-  --surface-hover:#F4F2FF;
+  --surface-2:    #F3F4F6;
+  --surface-3:    #E5E7EB;
+  --surface-hover:#EDEFF2;
 
-  /* Text */
-  --text:         #1A1828;
-  --text-2:       #6B6880;
-  --text-3:       #9B99B5;
+  /* Text - High Contrast Zinc / Slate */
+  --text:         #0F172A;
+  --text-2:       #475569;
+  --text-3:       #94A3B8;
   --text-inv:     #FFFFFF;
 
-  /* Borders */
-  --border:       rgba(124, 111, 247, 0.14);
-  --border-2:     rgba(124, 111, 247, 0.22);
+  /* Borders - Whisper thin 1px */
+  --border:       rgba(15, 23, 42, 0.07);
+  --border-2:     rgba(15, 23, 42, 0.13);
 
-  /* Shadows */
-  --shadow-xs:    0 1px 4px rgba(124, 111, 247, 0.06);
-  --shadow-sm:    0 2px 12px rgba(124, 111, 247, 0.08);
-  --shadow:       0 4px 28px rgba(124, 111, 247, 0.12);
-  --shadow-lg:    0 8px 48px rgba(124, 111, 247, 0.18);
-  --shadow-card:  0 2px 16px rgba(0, 0, 0, 0.04), 0 0 0 1px var(--border);
+  /* Shadows - Ambient Multi-stop Softness */
+  --shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow:       0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  --shadow-lg:    0 12px 24px -4px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-card:  0 1px 3px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--border);
 
   /* Layout */
-  --sidebar-w:    250px;
-  --mobile-nav-h: 76px;
-  --page-pad:     28px;
+  --sidebar-w:    240px;
+  --mobile-nav-h: 70px;
+  --page-pad:     32px;
 
-  /* Radii */
-  --radius-xs:    6px;
-  --radius-sm:    10px;
-  --radius:       16px;
-  --radius-lg:    22px;
-  --radius-xl:    32px;
+  /* Radii - Tailored Sleek Geometry */
+  --radius-xs:    4px;
+  --radius-sm:    8px;
+  --radius:       12px;
+  --radius-lg:    14px;
+  --radius-xl:    20px;
   --radius-pill:  999px;
 
   /* Typography */
-  --font:         'Inter', system-ui, sans-serif;
+  --font:         'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Transitions */
-  --t:            0.18s ease;
-  --t-spring:     0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --t-smooth:     0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --t:            0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  --t-spring:     0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-smooth:     0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark Mode */
+/* Dark Mode - Pure Obsidian / Linear / Raycast Tier */
 [data-theme="dark"] {
-  --bg:           #0C0B18;
-  --surface:      #17152C;
-  --surface-2:    #201D38;
-  --surface-3:    #2A2748;
-  --surface-hover:#252240;
-  --text:         #F2F0FF;
-  --text-2:       #9B99B5;
-  --text-3:       #6B6880;
-  --border:       rgba(124, 111, 247, 0.18);
-  --border-2:     rgba(124, 111, 247, 0.30);
-  --shadow-xs:    0 1px 4px rgba(0, 0, 0, 0.35);
-  --shadow-sm:    0 2px 12px rgba(0, 0, 0, 0.40);
-  --shadow:       0 4px 28px rgba(0, 0, 0, 0.50);
-  --shadow-lg:    0 8px 48px rgba(0, 0, 0, 0.60);
+  --bg:           #090A0C;
+  --surface:      #111215;
+  --surface-2:    #17181C;
+  --surface-3:    #202227;
+  --surface-hover:#1D1F24;
+  --text:         #F9FAFB;
+  --text-2:       #A1A1AA;
+  --text-3:       #71717A;
+  --border:       rgba(255, 255, 255, 0.08);
+  --border-2:     rgba(255, 255, 255, 0.15);
+  --shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow:       0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-lg:    0 10px 30px rgba(0, 0, 0, 0.7);
+  --shadow-card:  0 1px 3px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
 }
 
 /* ── Sakura Theme 🌸 ────────────────────────────────────────── */
@@ -319,20 +320,22 @@ ul, ol { list-style: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 24px 20px;
+  padding: 20px 18px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-.logo-icon { font-size: 24px; }
+.logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
 .logo-text {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .sidebar-nav {
@@ -487,15 +490,15 @@ ul, ol { list-style: none; }
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   gap: 16px;
   flex-wrap: wrap;
 }
 .page-header-left {}
-.date-display { font-size: 13px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.greeting { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; }
+.date-display { font-size: 12px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.greeting { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; color: var(--text); }
 .greeting-emoji { font-style: normal; }
-.daily-quote { font-size: 14px; color: var(--text-2); margin-top: 6px; font-style: italic; }
+.daily-quote { font-size: 13.5px; color: var(--text-2); margin-top: 4px; }
 
 /* ── Stats Row ───────────────────────────────────────────────── */
 .stats-row {
@@ -520,7 +523,7 @@ ul, ol { list-style: none; }
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 56px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   z-index: 180;
@@ -538,13 +541,10 @@ ul, ol { list-style: none; }
 }
 
 .mobile-header-title {
-  font-size: 18px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.3px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .mobile-header-right {
