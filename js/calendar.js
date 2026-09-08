@@ -4,9 +4,10 @@
 
 import {
   getActiveHabits, getCompletions, isCompleted, toggleCompletion,
-  today, dateStr, isHabitScheduledForDate
+  today, dateStr, isHabitScheduledForDate, getTasksForDate, addTask, toggleTask, deleteTask
 } from './data.js';
-import { showToast } from './ui.js';
+import { awardXP } from './xp.js';
+import { showToast, openModal, closeModal, showXPFloat } from './ui.js';
 
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
@@ -66,7 +67,13 @@ function renderMatrix() {
   html += '<th>Habit</th>';
   days.forEach(d => {
     const dow = ['S','M','T','W','T','F','S'][new Date(currentYear, currentMonth, d.day).getDay()];
-    html += `<th class="${d.isToday ? 'text-accent' : ''}">${d.day}<br><span style="font-size:9px;opacity:0.6">${dow}</span></th>`;
+    const dayTasks = getTasksForDate(d.dateStr);
+    const hasTasks = dayTasks.length > 0;
+    html += `<th class="matrix-day-th ${d.isToday ? 'text-accent today-th' : ''}" onclick="openDayDetailModal('${d.dateStr}')" title="Click to view & plan tasks for ${d.dateStr}">
+      <span class="matrix-day-num">${d.day}</span>
+      ${hasTasks ? `<span class="day-task-indicator" title="${dayTasks.length} task(s)"></span>` : ''}
+      <br><span style="font-size:9px;opacity:0.6">${dow}</span>
+    </th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -199,3 +206,181 @@ window.calendarLockedNotice = function() {
 
 window.calendarPrev = calendarPrev;
 window.calendarNext = calendarNext;
+
+// ── Day Detail Modal (Calendar Date Interaction) ──────────────
+let activeModalDate = today();
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));
+}
+
+export function openDayDetailModal(dateStr) {
+  activeModalDate = dateStr;
+  const todayStr = today();
+  const isToday = dateStr === todayStr;
+  const isFuture = dateStr > todayStr;
+
+  const d = new Date(dateStr + 'T00:00:00');
+  const titleEl = document.getElementById('day-detail-date-title');
+  const subtitleEl = document.getElementById('day-detail-date-subtitle');
+
+  if (titleEl) {
+    const formatted = d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    titleEl.textContent = formatted;
+  }
+  if (subtitleEl) {
+    let tag = '';
+    if (isToday) tag = '<span class="day-status-pill today">Today</span>';
+    else if (isFuture) tag = '<span class="day-status-pill future">Upcoming</span>';
+    else tag = '<span class="day-status-pill past">Past Date</span>';
+    subtitleEl.innerHTML = `${tag} Review habits &amp; manage day tasks`;
+  }
+
+  // Render Habits for this date
+  renderDayModalHabits(dateStr);
+
+  // Render Tasks for this date
+  renderDayModalTasks(dateStr);
+
+  openModal('modal-day-detail');
+}
+
+function renderDayModalHabits(dateStr) {
+  const container = document.getElementById('day-detail-habits-list');
+  const badge = document.getElementById('day-detail-habits-badge');
+  if (!container) return;
+
+  const habits = getActiveHabits();
+  const todayStr = today();
+  const isToday = dateStr === todayStr;
+
+  const scheduled = habits.filter(h => isHabitScheduledForDate(h, dateStr));
+  const doneCount = scheduled.filter(h => isCompleted(h.id, dateStr)).length;
+
+  if (badge) {
+    badge.textContent = `${doneCount}/${scheduled.length} completed`;
+  }
+
+  if (!scheduled.length) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text-3);padding:8px 0;">No habits scheduled for this day.</div>';
+    return;
+  }
+
+  container.innerHTML = scheduled.map(h => {
+    const done = isCompleted(h.id, dateStr);
+    let statusHtml = '';
+    if (done) {
+      statusHtml = '<span class="day-habit-badge done">✓ Done</span>';
+    } else if (dateStr < todayStr) {
+      statusHtml = '<span class="day-habit-badge missed">Missed</span>';
+    } else if (isToday) {
+      statusHtml = '<span class="day-habit-badge pending">Pending</span>';
+    } else {
+      statusHtml = '<span class="day-habit-badge future">Scheduled</span>';
+    }
+
+    return `
+      <div class="day-modal-habit-row ${done ? 'done' : ''}">
+        <div class="day-modal-habit-info">
+          <span class="day-modal-habit-icon">${h.icon}</span>
+          <span class="day-modal-habit-name">${escapeHtml(h.name)}</span>
+        </div>
+        ${statusHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDayModalTasks(dateStr) {
+  const container = document.getElementById('day-detail-tasks-list');
+  const badge = document.getElementById('day-detail-tasks-badge');
+  if (!container) return;
+
+  const tasks = getTasksForDate(dateStr);
+  const doneCount = tasks.filter(t => t.completed).length;
+
+  if (badge) {
+    badge.textContent = `${doneCount}/${tasks.length}`;
+  }
+
+  if (!tasks.length) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text-3);padding:14px 0;text-align:center;">No tasks planned for this day yet. Add one above!</div>';
+    return;
+  }
+
+  container.innerHTML = tasks.map(task => {
+    return `
+      <div class="task-item ${task.completed ? 'completed' : ''}" id="modal-task-${task.id}">
+        <button class="task-check-btn ${task.completed ? 'checked' : ''}" onclick="handleDayTaskToggle('${task.id}', this)" title="${task.completed ? 'Completed! Click to undo' : 'Mark completed'}" type="button">
+          ${task.completed ? '✓' : ''}
+        </button>
+        <div class="task-content">
+          <span class="task-text">${escapeHtml(task.text)}</span>
+          <span class="task-reward-chip">+${task.xpReward || 10} XP</span>
+        </div>
+        <button class="task-delete-btn" onclick="handleDayTaskDelete('${task.id}')" title="Delete task" type="button">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.handleDayTaskSubmit = function(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('day-detail-task-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) {
+    showToast('Please enter a task description', 'warning', 2000);
+    return;
+  }
+
+  addTask({ text, date: activeModalDate, xpReward: 10 });
+  input.value = '';
+  renderDayModalTasks(activeModalDate);
+  renderMatrix();
+
+  if (activeModalDate === today() && window._renderDashboard) {
+    window._renderDashboard();
+  }
+  showToast('✓ Task added for this date! 📌', 'success', 2000);
+};
+
+window.handleDayTaskToggle = function(taskId, btnEl) {
+  const task = toggleTask(taskId);
+  if (!task) return;
+
+  if (task.completed && task.date === today()) {
+    const xp = task.xpReward || 10;
+    awardXP(xp, `task_${task.id}`);
+    if (btnEl) showXPFloat(xp, btnEl);
+    showToast(`✓ Task completed! +${xp} XP ⭐`, 'success', 2500);
+  } else if (task.completed) {
+    showToast('✓ Task completed!', 'success', 2000);
+  } else {
+    showToast('Task marked incomplete', 'info', 1500);
+  }
+
+  renderDayModalTasks(activeModalDate);
+  renderMatrix();
+
+  if (window._renderDashboard) window._renderDashboard();
+};
+
+window.handleDayTaskDelete = function(taskId) {
+  deleteTask(taskId);
+  renderDayModalTasks(activeModalDate);
+  renderMatrix();
+
+  if (window._renderDashboard) window._renderDashboard();
+  showToast('Task removed', 'info', 1500);
+};
+
+window.openDayDetailModal = openDayDetailModal;
+window._renderCalendar = renderCalendarPage;
+

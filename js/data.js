@@ -9,7 +9,8 @@ export const KEYS = {
   CHECKINS: 'discipline_checkins',
   ACHIEVEMENTS: 'discipline_achievements',
   REWARDS: 'discipline_rewards',
-  XP_LOG: 'discipline_xp_log'
+  XP_LOG: 'discipline_xp_log',
+  TASKS: 'discipline_tasks'
 };
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -248,6 +249,45 @@ export function getHabitConsistency(habitId, days = 30) {
   return scheduled ? Math.round((completed / scheduled) * 100) : 0;
 }
 
+// ── Tasks (One-off / Dynamic To-Dos) ────────────────────────
+export function getTasks() { return load(KEYS.TASKS, []); }
+export function saveTasks(tasks) { save(KEYS.TASKS, tasks); }
+
+export function getTasksForDate(dateString) {
+  return getTasks().filter(t => t.date === dateString);
+}
+
+export function addTask({ text, date, xpReward = 10 }) {
+  const tasks = getTasks();
+  const task = {
+    id: genId(),
+    text: (text || '').trim(),
+    date: date || today(),
+    xpReward: xpReward || 10,
+    completed: false,
+    completedAt: null,
+    createdAt: new Date().toISOString()
+  };
+  tasks.push(task);
+  saveTasks(tasks);
+  return task;
+}
+
+export function toggleTask(id) {
+  const tasks = getTasks();
+  const task = tasks.find(t => t.id === id);
+  if (!task) return null;
+  task.completed = !task.completed;
+  task.completedAt = task.completed ? new Date().toISOString() : null;
+  saveTasks(tasks);
+  return task;
+}
+
+export function deleteTask(id) {
+  const tasks = getTasks().filter(t => t.id !== id);
+  saveTasks(tasks);
+}
+
 // ── Reset (for settings) ──────────────────────────────────────
 export function resetAllData() {
   Object.values(KEYS).forEach(k => localStorage.removeItem(k));
@@ -258,6 +298,7 @@ export function exportData() {
     user: getUser(),
     habits: getHabits(),
     completions: getCompletions(),
+    tasks: getTasks(),
     checkins: getCheckins(),
     achievements: getUnlockedAchievements(),
     xpLog: getXPLog(),

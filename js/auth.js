@@ -100,6 +100,9 @@ export async function syncCloudData(uid) {
         await uploadLocalDataToCloud(uid);
       }
 
+      if (cloudData.tasks && Array.isArray(cloudData.tasks)) {
+        save(KEYS.TASKS, cloudData.tasks);
+      }
       if (cloudData.completions && Array.isArray(cloudData.completions) && cloudData.completions.length > 0) {
         save(KEYS.COMPLETIONS, cloudData.completions);
       }
@@ -130,6 +133,7 @@ export async function uploadLocalDataToCloud(uid) {
     const payload = {
       habits: load(KEYS.HABITS, []),
       completions: load(KEYS.COMPLETIONS, []),
+      tasks: load(KEYS.TASKS, []),
       checkins: load(KEYS.CHECKINS, []),
       achievements: load(KEYS.ACHIEVEMENTS, []),
       rewards: load(KEYS.REWARDS, []),

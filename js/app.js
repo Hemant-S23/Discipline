@@ -6,7 +6,7 @@ import { initOnboarding } from './onboarding.js?v=4.0';
 import { renderDashboard } from './dashboard.js?v=3.2';
 import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=3.2';
 import { renderAnalyticsPage } from './analytics.js?v=3.2';
-import { renderCalendarPage, calendarPrev, calendarNext } from './calendar.js?v=3.2';
+import { renderCalendarPage, calendarPrev, calendarNext, openDayDetailModal } from './calendar.js?v=3.2';
 import { renderAchievementsPage } from './achievements.js?v=3.2';
 import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=3.2';
 import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=3.2';
@@ -848,6 +848,8 @@ function appInit() {
 
   // Expose global render function for cross-module use
   window._renderDashboard = renderDashboard;
+  window._renderCalendar = renderCalendarPage;
+  window.openDayDetailModal = openDayDetailModal;
   window._ui = { showConfetti };
 
   // Navigate to initial page

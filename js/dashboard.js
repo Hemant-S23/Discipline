@@ -4,12 +4,13 @@
 
 import {
   getUser, getActiveHabits, getCompletions, getCompletionsForDate,
-  today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats, getCheckinForDate
+  today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats, getCheckinForDate,
+  getTasksForDate, addTask, toggleTask, deleteTask
 } from './data.js';
-import { getLevelInfo, getCurrentLevelInfo } from './xp.js';
+import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js';
 import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js';
 import { renderTodayHabits } from './habits.js';
-import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber } from './ui.js';
+import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat } from './ui.js';
 
 let chartDaily = null;
 let chartWeekly = null;
@@ -24,6 +25,7 @@ export function renderDashboard() {
   renderStreakCard();
   renderXPCard();
   renderTodayHabits('today-habits-list');
+  renderTodayTasks();
   renderMiniCharts();
 }
 
@@ -303,3 +305,94 @@ function getWeeklyStats() {
   }
   return weeks;
 }
+
+// ── Today's Tasks (Dynamic / One-off) ─────────────────────────
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));
+}
+
+export function renderTodayTasks() {
+  const container = document.getElementById('today-tasks-list');
+  const badge     = document.getElementById('today-tasks-badge');
+  const emptyEl   = document.getElementById('tasks-empty');
+  if (!container) return;
+
+  const todayStr = today();
+  const tasks = getTasksForDate(todayStr);
+
+  const completedCount = tasks.filter(t => t.completed).length;
+  if (badge) {
+    badge.textContent = `${completedCount}/${tasks.length}`;
+  }
+
+  if (!tasks.length) {
+    container.innerHTML = '';
+    if (emptyEl) emptyEl.classList.remove('hidden');
+    return;
+  }
+  if (emptyEl) emptyEl.classList.add('hidden');
+
+  container.innerHTML = tasks.map(task => {
+    return `
+      <div class="task-item ${task.completed ? 'completed' : ''}" id="task-item-${task.id}">
+        <button class="task-check-btn ${task.completed ? 'checked' : ''}" onclick="handleDashboardTaskToggle('${task.id}', this)" title="${task.completed ? 'Completed! Click to undo' : 'Mark completed (+10 XP)'}" type="button">
+          ${task.completed ? '✓' : ''}
+        </button>
+        <div class="task-content">
+          <span class="task-text">${escapeHtml(task.text)}</span>
+          <span class="task-reward-chip">+${task.xpReward || 10} XP</span>
+        </div>
+        <button class="task-delete-btn" onclick="handleDashboardTaskDelete('${task.id}')" title="Delete task" type="button">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.handleTodayTaskSubmit = function(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('today-task-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) {
+    showToast('Please enter a task description', 'warning', 2000);
+    return;
+  }
+
+  addTask({ text, date: today(), xpReward: 10 });
+  input.value = '';
+  renderTodayTasks();
+  if (window._renderCalendar) window._renderCalendar();
+  showToast('✓ Task added for today! 🎯', 'success', 2000);
+};
+
+window.handleDashboardTaskToggle = function(taskId, btnEl) {
+  const task = toggleTask(taskId);
+  if (!task) return;
+
+  if (task.completed) {
+    const xp = task.xpReward || 10;
+    awardXP(xp, `task_${task.id}`);
+    if (btnEl) showXPFloat(xp, btnEl);
+    showToast(`✓ Task completed! +${xp} XP ⭐`, 'success', 2500);
+  } else {
+    showToast('Task marked incomplete', 'info', 1500);
+  }
+
+  renderTodayTasks();
+  renderXPCard();
+  if (window._renderCalendar) window._renderCalendar();
+};
+
+window.handleDashboardTaskDelete = function(taskId) {
+  deleteTask(taskId);
+  renderTodayTasks();
+  if (window._renderCalendar) window._renderCalendar();
+  showToast('Task removed', 'info', 1500);
+};
+

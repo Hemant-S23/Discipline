@@ -344,6 +344,27 @@
         </div>
       </div>
 
+      <!-- Today's Extra Tasks (One-off To-Dos) -->
+      <div class="card tasks-card" id="today-tasks-card" style="margin-top:16px;">
+        <div class="card-header" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2 style="font-size:18px;font-weight:700;">Today's Tasks</h2>
+            <span class="badge" id="today-tasks-badge" style="background:var(--accent-10);color:var(--accent);font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px">0/0</span>
+          </div>
+          <span style="font-size:12px;color:var(--text-3)">Temporary to-dos · +10 XP</span>
+        </div>
+
+        <form id="today-task-form" onsubmit="handleTodayTaskSubmit(event)" class="task-add-form" style="display:flex;gap:8px;margin-bottom:12px;">
+          <input type="text" id="today-task-input" class="form-input" placeholder="Add a dynamic task for today (e.g. Doctor visit, Assignment)..." maxlength="90" style="flex:1;height:40px;font-size:13px;" />
+          <button type="submit" class="btn-primary" style="padding:0 16px;height:40px;font-size:13px;white-space:nowrap;border-radius:var(--radius);">+ Add</button>
+        </form>
+
+        <div class="tasks-list" id="today-tasks-list"></div>
+        <div class="empty-state hidden" id="tasks-empty" style="padding:20px 0;text-align:center;">
+          <p style="font-size:13px;color:var(--text-3);margin:0">No extra tasks for today. You're all clear!</p>
+        </div>
+      </div>
+
       <!-- Charts Row -->
       <div class="charts-row">
         <div class="card">
@@ -484,7 +505,7 @@
       <div class="page-header">
         <div>
           <h1>Calendar 📅</h1>
-          <p class="daily-quote" style="margin-top:4px">Your habit matrix</p>
+          <p class="daily-quote" style="margin-top:4px">Your habit matrix · <span style="color:var(--accent);font-weight:600">Click any date header to view &amp; plan tasks</span></p>
         </div>
       </div>
 
@@ -1033,6 +1054,45 @@
       <button type="button" class="btn-clean-danger" id="delete-safety-confirm-btn" disabled onclick="executeDeleteSafetyAccount()">
         <span>Delete Account</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DAY PLANNER & DETAIL MODAL (CALENDAR INTERACTION) ── -->
+<div id="modal-day-detail" class="modal-overlay">
+  <div class="modal modal-md day-detail-modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="day-detail-date-title" style="font-size:18px;font-weight:800;">Date Overview</h2>
+        <p id="day-detail-date-subtitle" style="font-size:12px;color:var(--text-3);margin-top:2px;">Plan tasks &amp; review habits</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-day-detail')" aria-label="Close modal">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0 24px 24px;">
+      <!-- Habits on this date -->
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <h4 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-3);margin:0;">Scheduled Habits</h4>
+          <span id="day-detail-habits-badge" style="font-size:11px;font-weight:600;color:var(--text-3);"></span>
+        </div>
+        <div id="day-detail-habits-list" class="day-detail-habits-list"></div>
+      </div>
+
+      <!-- One-off Tasks on this date -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <h4 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-3);margin:0;">Tasks &amp; To-Dos</h4>
+          <span id="day-detail-tasks-badge" style="font-size:11px;font-weight:600;color:var(--text-3);"></span>
+        </div>
+
+        <!-- Add task form for this date -->
+        <form id="day-detail-task-form" onsubmit="handleDayTaskSubmit(event)" style="display:flex;gap:8px;margin-bottom:12px;">
+          <input type="text" id="day-detail-task-input" class="form-input" placeholder="Add a task for this date..." maxlength="90" style="flex:1;height:38px;font-size:13px;" />
+          <button type="submit" class="btn-primary" style="padding:0 14px;height:38px;font-size:12px;white-space:nowrap;border-radius:var(--radius);">+ Add</button>
+        </form>
+
+        <div id="day-detail-tasks-list" class="day-detail-tasks-list"></div>
+      </div>
     </div>
   </div>
 </div>
