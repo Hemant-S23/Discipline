@@ -112,18 +112,14 @@ export function checkMilestone(streak) {
 }
 
 /**
- * Build vector flame chain nodes.
+ * Build flame chain (standard fire emoji chain).
  */
 export function buildChain(streak, max = 28) {
   const count = Math.min(streak, max);
   if (count === 0) {
     return `<span style="font-size:13px;color:var(--text-3);font-weight:600">Start your streak today</span>`;
   }
-  let html = '';
-  for (let i = 0; i < count; i++) {
-    html += `<span class="chain-node active" title="Day ${i + 1}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>`;
-  }
-  return html;
+  return '🔥'.repeat(count);
 }
 
 /**

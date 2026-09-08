@@ -9,7 +9,7 @@ import { renderAnalyticsPage } from './analytics.js?v=5.0';
 import { renderCalendarPage, calendarPrev, calendarNext, openDayDetailModal } from './calendar.js?v=5.0';
 import { renderAchievementsPage } from './achievements.js?v=5.0';
 import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=5.0';
-import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=5.0';
+import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=5.1';
 import {
   getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, hasAwardedXpToday, today, resetAllData, exportData
 } from './data.js?v=5.0';

@@ -2067,11 +2067,11 @@
   margin-bottom: 20px;
 }
 .chain-fires {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  font-size: 28px;
+  letter-spacing: 6px;
+  line-height: 1.6;
+  word-break: break-all;
+  overflow-wrap: break-word;
   max-width: 540px;
   margin: 0 auto;
 }
