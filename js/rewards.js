@@ -2,14 +2,15 @@
 // rewards.js — Reward definitions and shop rendering
 // ============================================================
 
-import { getUser } from './data.js';
-import { showToast } from './ui.js';
+import { getUser } from './data.js?v=5.0';
+import { showToast } from './ui.js?v=5.0';
+import { getRewardSvg } from './icons.js?v=5.0';
 
 export const REWARDS = [
   {
     id: 'sakura_theme',
     name: 'Sakura Theme',
-    icon: '🌸',
+    icon: 'palette',
     cost: 300,
     desc: 'A soft pink blossom dashboard theme.',
     themeClass: 'theme-sakura'
@@ -17,7 +18,7 @@ export const REWARDS = [
   {
     id: 'ocean_theme',
     name: 'Ocean Theme',
-    icon: '🌊',
+    icon: 'droplet',
     cost: 500,
     desc: 'A deep ocean blue calming theme.',
     themeClass: 'theme-ocean'
@@ -25,7 +26,7 @@ export const REWARDS = [
   {
     id: 'forest_theme',
     name: 'Forest Theme',
-    icon: '🌿',
+    icon: 'sprout',
     cost: 750,
     desc: 'A lush green forest theme.',
     themeClass: 'theme-forest'
@@ -33,7 +34,7 @@ export const REWARDS = [
   {
     id: 'sunset_theme',
     name: 'Sunset Theme',
-    icon: '🌅',
+    icon: 'sun',
     cost: 1000,
     desc: 'A warm sunset orange and pink theme.',
     themeClass: 'theme-sunset'
@@ -41,7 +42,7 @@ export const REWARDS = [
   {
     id: 'midnight_theme',
     name: 'Midnight Theme',
-    icon: '🌙',
+    icon: 'moon',
     cost: 1200,
     desc: 'A deep midnight dark theme.',
     themeClass: 'theme-midnight'
@@ -49,7 +50,7 @@ export const REWARDS = [
   {
     id: 'neon_theme',
     name: 'Neon Theme',
-    icon: '⚡',
+    icon: 'zap',
     cost: 1500,
     desc: 'Electric neon cyberpunk theme.',
     themeClass: 'theme-neon'
@@ -57,7 +58,7 @@ export const REWARDS = [
   {
     id: 'gold_badge',
     name: 'Golden Badge',
-    icon: '🥇',
+    icon: 'award',
     cost: 2000,
     desc: 'A golden profile badge of honor.',
     themeClass: null
@@ -65,7 +66,7 @@ export const REWARDS = [
   {
     id: 'epic_confetti',
     name: 'Epic Celebrations',
-    icon: '🎆',
+    icon: 'star',
     cost: 2500,
     desc: 'More intense confetti on perfect days.',
     themeClass: null
@@ -73,7 +74,7 @@ export const REWARDS = [
   {
     id: 'diamond_badge',
     name: 'Diamond Badge',
-    icon: '💎',
+    icon: 'diamond',
     cost: 3500,
     desc: 'The ultimate diamond profile badge.',
     themeClass: null
@@ -81,7 +82,7 @@ export const REWARDS = [
   {
     id: 'legendary_bg',
     name: 'Legendary Background',
-    icon: '🌌',
+    icon: 'moon',
     cost: 5000,
     desc: 'An exclusive animated starfield background.',
     themeClass: 'theme-legendary'
@@ -114,12 +115,12 @@ export function renderRewardsPage() {
       <div class="reward-card ${isUnlocked ? 'unlocked' : 'locked'} ${isEquipped ? 'equipped' : ''} slide-in-up"
            style="animation-delay:${i * 0.04}s"
            onclick="${isUnlocked ? `applyReward('${r.id}')` : ''}">
-        <div class="reward-icon">${r.icon}</div>
+        <div class="reward-icon">${getRewardSvg(r.id, 26)}</div>
         <div class="reward-name">${r.name}</div>
         <div style="font-size:12px;color:var(--text-2);text-align:center">${r.desc}</div>
-        <div class="reward-cost">⭐ ${r.cost.toLocaleString()} XP</div>
+        <div class="reward-cost">${r.cost.toLocaleString()} XP</div>
         <div class="reward-status ${isEquipped ? 'equipped' : (isUnlocked ? 'unlocked' : 'locked')}">
-          ${isEquipped ? '✨ Equipped' : (isUnlocked ? '✓ Tap to Equip' : `🔒 ${(r.cost - totalXP).toLocaleString()} XP needed`)}
+          ${isEquipped ? 'Equipped' : (isUnlocked ? 'Tap to Equip' : `${(r.cost - totalXP).toLocaleString()} XP needed`)}
         </div>
       </div>
     `;
@@ -129,7 +130,7 @@ export function renderRewardsPage() {
   const statusEl = document.getElementById('rewards-xp-status');
   if (statusEl) {
     const unlockedCount = REWARDS.filter(r => totalXP >= r.cost).length;
-    statusEl.textContent = `You have ⭐ ${totalXP.toLocaleString()} XP — ${unlockedCount} / ${REWARDS.length} rewards unlocked`;
+    statusEl.textContent = `You have ${totalXP.toLocaleString()} XP — ${unlockedCount} / ${REWARDS.length} rewards unlocked`;
   }
 }
 

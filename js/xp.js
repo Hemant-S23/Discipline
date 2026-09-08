@@ -2,7 +2,7 @@
 // xp.js — XP award system and level progression
 // ============================================================
 
-import { getUser, saveUser, addXPEntry } from './data.js';
+import { getUser, saveUser, addXPEntry } from './data.js?v=5.0';
 
 export const LEVELS = [
   { level: 1,  name: 'Beginner',    xpRequired: 0,    color: '#9CA3AF' },

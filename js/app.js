@@ -2,25 +2,26 @@
 // app.js — Bootstrap, router, global events
 // ============================================================
 
-import { initOnboarding } from './onboarding.js?v=4.0';
-import { renderDashboard } from './dashboard.js?v=3.2';
-import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=3.2';
-import { renderAnalyticsPage } from './analytics.js?v=3.2';
-import { renderCalendarPage, calendarPrev, calendarNext, openDayDetailModal } from './calendar.js?v=3.2';
-import { renderAchievementsPage } from './achievements.js?v=3.2';
-import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=3.2';
-import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=3.2';
+import { initOnboarding } from './onboarding.js?v=5.0';
+import { renderDashboard } from './dashboard.js?v=5.0';
+import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=5.0';
+import { renderAnalyticsPage } from './analytics.js?v=5.0';
+import { renderCalendarPage, calendarPrev, calendarNext, openDayDetailModal } from './calendar.js?v=5.0';
+import { renderAchievementsPage } from './achievements.js?v=5.0';
+import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=5.0';
+import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=5.0';
 import {
   getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, hasAwardedXpToday, today, resetAllData, exportData
-} from './data.js?v=3.2';
-import { awardXP, XP_BONUSES } from './xp.js?v=3.2';
+} from './data.js?v=5.0';
+import { awardXP, XP_BONUSES } from './xp.js?v=5.0';
 import {
   initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult,
   checkEmailVerification, resendVerification, cancelEmailVerification
-} from './auth.js?v=4.2';
+} from './auth.js?v=5.0';
 import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
-} from './ui.js?v=3.2';
+} from './ui.js?v=5.0';
+import { getHabitSvg, ICONS_SVG } from './icons.js?v=5.0';
 
 // ── Pages ─────────────────────────────────────────────────────
 const PAGES = ['dashboard', 'habits', 'streaks', 'analytics', 'achievements', 'rewards', 'calendar', 'settings'];
@@ -111,9 +112,9 @@ export const closeMobileDrawer = window.closeMobileDrawer;
 function updateThemeToggle(theme) {
   const btn = document.getElementById('theme-toggle');
   const drawerBtn = document.getElementById('drawer-theme-toggle');
-  const icon = theme === 'dark' ? '☀️' : '🌙';
-  if (btn) btn.textContent = icon;
-  if (drawerBtn) drawerBtn.textContent = icon;
+  const iconSvg = theme === 'dark' ? ICONS_SVG['sun'] : ICONS_SVG['moon'];
+  if (btn) btn.innerHTML = iconSvg;
+  if (drawerBtn) drawerBtn.innerHTML = iconSvg;
 }
 
 function initMobileDrawer() {
@@ -246,7 +247,7 @@ function initCheckin() {
       if (checkinBtn) showXPFloat(xp, checkinBtn);
     }
 
-    showToast(`✓ Check-in saved!${xpAwarded ? ` +${xpAwarded} XP ⭐` : ''}`, 'success');
+    showToast(`✓ Check-in saved!${xpAwarded ? ` +${xpAwarded} XP` : ''}`, 'success');
     closeModal('modal-checkin');
     selectedMood = null;
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
@@ -280,7 +281,7 @@ function renderStreaksPage() {
   // Chain view
   const chainEl = document.getElementById('streak-chain-fires');
   const chainNumEl = document.getElementById('streak-chain-days');
-  if (chainEl)    chainEl.textContent    = buildChain(global.current, 28);
+  if (chainEl)    chainEl.innerHTML    = buildChain(global.current, 28);
   if (chainNumEl) chainNumEl.textContent = `${global.current} DAYS`;
 
   // Grid
@@ -288,23 +289,23 @@ function renderStreaksPage() {
   if (!gridEl) return;
 
   if (!withStr.length) {
-    gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔥</div><p>Add habits to start your streak!</p></div>';
+    gridEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">${ICONS_SVG['flame']}</div><p>Add habits to start your streak!</p></div>`;
     return;
   }
 
   gridEl.innerHTML = withStr.map((h, i) => `
     <div class="streak-item-card" style="animation-delay:${i * 0.05}s">
-      <div class="streak-item-icon">${h.icon}</div>
+      <div class="streak-item-icon" style="background:${h.color ? h.color + '18' : 'var(--surface-2)'};color:var(--text)">${getHabitSvg(h.icon, 20)}</div>
       <div class="streak-item-info">
         <div class="streak-item-name">${h.name}</div>
-        <div class="streak-item-category">${CATEGORY_ICONS[h.category] || ''} ${h.category}</div>
+        <div class="streak-item-category" style="display:inline-flex;align-items:center;gap:4px">${CATEGORY_ICONS[h.category] || ''} ${h.category}</div>
         <div class="streak-item-nums">
           <div class="streak-num-block">
-            <div class="streak-num-value">🔥 ${h.streak.current}</div>
+            <div class="streak-num-value">${h.streak.current}</div>
             <div class="streak-num-label">Current</div>
           </div>
           <div class="streak-num-block">
-            <div class="streak-num-value best">🏆 ${h.streak.best}</div>
+            <div class="streak-num-value best">${h.streak.best}</div>
             <div class="streak-num-label">Best</div>
           </div>
           <div class="streak-num-block">
@@ -353,8 +354,8 @@ function initSettings() {
   if (resetBtn) resetBtn.addEventListener('click', () => {
     showConfirmModal({
       title: 'Reset All Data?',
-      message: '⚠️ This will permanently delete ALL your habits, completions, streaks, and progress. This action cannot be undone.',
-      icon: '⚠️',
+      message: 'This will permanently delete ALL your habits, completions, streaks, and progress. This action cannot be undone.',
+      icon: '',
       confirmText: 'Reset Everything',
       cancelText: 'Cancel',
       confirmClass: 'btn-danger',
@@ -525,7 +526,7 @@ window.handleGoogleLogin = async function() {
 
 window.handleGuestMode = function() {
   updateUser({ isGuest: true, authDone: true });
-  showToast('Welcome! Exploring in Guest Mode 👤', 'info');
+  showToast('Welcome! Exploring in Guest Mode', 'info');
   proceedAfterAuth();
 };
 
@@ -655,7 +656,7 @@ export async function executeDeleteSafetyAccount() {
 
   if (confirmBtn) {
     confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span>Deleting Account...</span> ⏳';
+    confirmBtn.innerHTML = '<span>Deleting Account...</span>';
   }
   if (errorEl) {
     errorEl.textContent = '';
@@ -764,7 +765,7 @@ export function handleProfilePhotoUpload(e) {
 
       updateUser({ photoUrl: compressedDataUrl });
       updateAllAvatars();
-      showToast('✓ Profile photo updated! 📸', 'success');
+      showToast('✓ Profile photo updated!', 'success');
       closeProfileQuickMenu();
     };
     img.src = event.target.result;

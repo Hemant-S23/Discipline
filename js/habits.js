@@ -6,11 +6,12 @@ import {
   getActiveHabits, getArchivedHabits, addHabit, updateHabit, archiveHabit, restoreHabit,
   getCompletions, isCompleted, markComplete, hasAwardedXpToday, today, isHabitScheduledForDate,
   getHabitConsistency, getHabitById
-} from './data.js';
-import { awardXP, getXPForDifficulty, XP_BONUSES } from './xp.js';
-import { calculateHabitStreak, checkMilestone } from './streaks.js';
-import { checkAndUnlockAchievements } from './achievements.js';
-import { showToast, showXPFloat, openModal, closeModal, animateHabitComplete, CATEGORY_ICONS, CATEGORY_LABELS } from './ui.js';
+} from './data.js?v=5.0';
+import { awardXP, getXPForDifficulty, XP_BONUSES } from './xp.js?v=5.0';
+import { calculateHabitStreak, checkMilestone } from './streaks.js?v=5.0';
+import { checkAndUnlockAchievements } from './achievements.js?v=5.0';
+import { showToast, showXPFloat, openModal, closeModal, animateHabitComplete, CATEGORY_ICONS, CATEGORY_LABELS } from './ui.js?v=5.0';
+import { getHabitSvg, getCategorySvg, getAchievementSvg, ICONS_SVG, HABIT_GLYPH_KEYS } from './icons.js?v=5.0';
 
 // ── Habit Completion ──────────────────────────────────────────
 export function handleHabitToggle(habitId, checkBtnEl) {
@@ -21,7 +22,7 @@ export function handleHabitToggle(habitId, checkBtnEl) {
   const alreadyDone = isCompleted(habitId, todayStr);
 
   if (alreadyDone) {
-    showToast(`✓ ${habit.name} is already completed for today! 🎉`, 'info', 2500);
+    showToast(`✓ ${habit.name} is already completed for today!`, 'info', 2500);
     return;
   }
 
@@ -55,7 +56,7 @@ export function handleHabitToggle(habitId, checkBtnEl) {
     setTimeout(() => {
       const { showConfetti } = window._ui || {};
       if (showConfetti) showConfetti();
-      showToast('🎯 Perfect Day! +50 Bonus XP', 'achievement', 4000);
+      showToast('Perfect Day! +50 Bonus XP', 'achievement', 4000);
       awardXP(XP_BONUSES.PERFECT_DAY, 'perfect_day');
       if (window._renderDashboard) window._renderDashboard();
     }, 800);
@@ -108,7 +109,7 @@ export function renderTodayHabits(containerId = 'today-habits-list') {
     if (emptyEl) emptyEl.classList.add('hidden');
     container.innerHTML = `
       <div class="empty-state" style="padding:28px 16px">
-        <div class="empty-icon" style="font-size:32px;margin-bottom:8px">🏖️</div>
+        <div class="empty-icon" style="margin-bottom:8px">${ICONS_SVG['clock']}</div>
         <p style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:4px">No habits scheduled for today</p>
         <p style="font-size:13px;color:var(--text-3);margin-bottom:16px">You have ${habits.length} active habit${habits.length > 1 ? 's' : ''} scheduled for other days.</p>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
@@ -132,16 +133,16 @@ export function renderTodayHabits(containerId = 'today-habits-list') {
     const streak  = calculateHabitStreak(h.id);
     return `
       <div class="habit-item ${done ? 'completed' : ''} slide-in-up" data-habit-id="${h.id}">
-        <button class="habit-check-btn" onclick="handleHabitToggleGlobal('${h.id}', this)" title="${done ? 'Uncheck' : 'Complete'}">
+        <button class="habit-check-btn" onclick="handleHabitToggleGlobal('${h.id}', this)" title="${done ? 'Completed' : 'Mark Complete'}">
           ${done ? '✓' : ''}
         </button>
-        <span class="habit-item-icon">${h.icon}</span>
+        <span class="habit-item-icon">${getHabitSvg(h.icon, 18)}</span>
         <div class="habit-item-info">
           <div class="habit-item-name">${h.name}</div>
           <div class="habit-item-meta">
-            ${streak.current > 0 ? `<span class="habit-meta-streak">🔥 ${streak.current} day streak</span>` : ''}
+            ${streak.current > 0 ? `<span class="habit-meta-streak">${streak.current}d streak</span>` : ''}
             <span class="habit-meta-xp">+${h.xpReward || 20} XP</span>
-            <span>${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category}</span>
+            <span style="display:inline-flex;align-items:center;gap:4px">${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category}</span>
           </div>
         </div>
         <span class="habit-item-difficulty diff-${h.difficulty}">${diffLabel(h.difficulty)}</span>
@@ -163,7 +164,7 @@ export function renderHabitsPage(filter = 'all') {
   if (!habits.length) {
     container.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="empty-icon">🌟</div>
+        <div class="empty-icon">${ICONS_SVG['target']}</div>
         <p>${filter === 'all' ? 'No habits yet. Create your first one!' : 'No habits in this category.'}</p>
         <button class="btn-primary" onclick="openAddHabitModal()">+ Add Habit</button>
       </div>`;
@@ -181,28 +182,28 @@ export function renderHabitsPage(filter = 'all') {
         <div class="habit-card-accent"></div>
         <div class="habit-card-top">
           <div class="habit-card-icon-wrap">
-            <div class="habit-card-icon" style="background:${h.color ? h.color + '22' : 'var(--accent-10)'}">${h.icon}</div>
+            <div class="habit-card-icon" style="background:${h.color ? h.color + '18' : 'var(--surface-2)'};color:var(--text)">${getHabitSvg(h.icon, 20)}</div>
             <div>
               <div class="habit-card-name">${h.name}</div>
-              <div class="habit-card-category">${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category} · ${h.frequency}</div>
+              <div class="habit-card-category" style="display:inline-flex;align-items:center;gap:4px">${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category} · ${h.frequency}</div>
             </div>
           </div>
           <div class="habit-card-menu">
-            <button onclick="openEditHabitModal('${h.id}')" title="Edit">✏️</button>
-            <button onclick="confirmArchive('${h.id}')" title="Archive">🗂️</button>
+            <button onclick="openEditHabitModal('${h.id}')" title="Edit" class="icon-action-btn">${ICONS_SVG['edit']}</button>
+            <button onclick="confirmArchive('${h.id}')" title="Archive" class="icon-action-btn">${ICONS_SVG['archive']}</button>
           </div>
         </div>
         <div class="habit-card-stats">
           <div class="habit-stat">
-            <div class="habit-stat-value" style="color:var(--streak)">🔥${streak.current}</div>
+            <div class="habit-stat-value" style="color:var(--text)">${streak.current}</div>
             <div class="habit-stat-label">Streak</div>
           </div>
           <div class="habit-stat">
-            <div class="habit-stat-value" style="color:var(--xp)">🏆${streak.best}</div>
+            <div class="habit-stat-value" style="color:var(--text-2)">${streak.best}</div>
             <div class="habit-stat-label">Best</div>
           </div>
           <div class="habit-stat">
-            <div class="habit-stat-value">${totalDone}</div>
+            <div class="habit-stat-value" style="color:var(--text-2)">${totalDone}</div>
             <div class="habit-stat-label">Total</div>
           </div>
         </div>
@@ -221,16 +222,15 @@ export function renderHabitsPage(filter = 'all') {
 }
 
 // ── Add / Edit Habit Modal ─────────────────────────────────────
-const ICONS = ['📚', '🧠', '💻', '🏃', '🎯', '🧘', '📖', '✍️', '💪', '🌿', '🌙', '🎵', '🍎', '💧', '🚴', '🏋️', '🧹', '📝', '🌅', '🎨'];
 const COLORS = ['#7C6FF7', '#22C55E', '#F97316', '#F59E0B', '#EF4444', '#06B6D4', '#EC4899', '#8B5CF6'];
 
 let editingHabitId = null;
-let selectedIcon   = '📚';
+let selectedIcon   = 'book';
 let selectedColor  = '#7C6FF7';
 
 export function openAddHabitModal() {
   editingHabitId = null;
-  selectedIcon   = '📚';
+  selectedIcon   = 'book';
   selectedColor  = '#7C6FF7';
   document.getElementById('habit-modal-title').textContent  = 'Create New Habit';
   document.getElementById('habit-modal-submit').textContent = 'Create Habit';
@@ -278,9 +278,9 @@ export function openEditHabitModal(id) {
 function renderIconPicker(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  container.innerHTML = ICONS.map(ico => `
-    <button type="button" class="icon-option ${ico === selectedIcon ? 'selected' : ''}"
-            onclick="selectHabitIcon('${ico}')">${ico}</button>
+  container.innerHTML = HABIT_GLYPH_KEYS.map(key => `
+    <button type="button" class="icon-option ${key === selectedIcon ? 'selected' : ''}"
+            onclick="selectHabitIcon('${key}')" title="${key}">${getHabitSvg(key, 18)}</button>
   `).join('');
 }
 
@@ -306,7 +306,7 @@ export function submitHabitForm() {
     showToast('✓ Habit updated!', 'success');
   } else {
     addHabit(data);
-    showToast('✓ Habit created! Keep going 🔥', 'success');
+    showToast('✓ Habit created!', 'success');
   }
 
   closeModal('modal-habit');
@@ -332,17 +332,17 @@ window.confirmArchive = function(id) {
 
   if (nameEl)   nameEl.textContent = h.name;
   if (iconEl) {
-    iconEl.textContent = h.icon;
-    iconEl.style.background = h.color ? h.color + '22' : 'var(--accent-10)';
+    iconEl.innerHTML = getHabitSvg(h.icon, 24);
+    iconEl.style.background = h.color ? h.color + '18' : 'var(--surface-2)';
   }
-  if (metaEl)   metaEl.textContent = `${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category} · ${h.frequency}`;
-  if (streakEl) streakEl.textContent = `🔥 ${streak.current} ${streak.current === 1 ? 'day' : 'days'} streak`;
+  if (metaEl)   metaEl.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px">${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category} · ${h.frequency}</span>`;
+  if (streakEl) streakEl.textContent = `${streak.current} ${streak.current === 1 ? 'day' : 'days'} streak`;
 
   if (confirmBtn) {
     confirmBtn.onclick = () => {
       archiveHabit(id);
       closeModal('modal-archive');
-      showToast('Habit archived 🗂️', 'info');
+      showToast('Habit archived', 'info');
       renderHabitsPage(window._currentHabitFilter || 'all');
       if (window._renderDashboard) window._renderDashboard();
     };
@@ -354,17 +354,16 @@ window.confirmArchive = function(id) {
 
 // ── Milestones + Achievement Modals ───────────────────────────
 function showMilestoneModal(milestone, streak) {
-  document.getElementById('milestone-emoji').textContent  = milestone.emoji;
+  document.getElementById('milestone-emoji').innerHTML   = getHabitSvg('flame', 36);
   document.getElementById('milestone-title').textContent  = milestone.title;
   document.getElementById('milestone-msg').textContent    = milestone.msg;
-  const fires = '🔥'.repeat(Math.min(streak, 20));
-  document.getElementById('milestone-fires').textContent  = fires;
+  document.getElementById('milestone-fires').innerHTML    = `<span style="font-size:13px;font-weight:700;color:var(--text)">${streak} DAY STREAK COMPLETED</span>`;
   openModal('modal-milestone');
 }
 
 function showAchievementModal(a) {
   if (!a) return;
-  document.getElementById('ach-icon').textContent   = a.icon;
+  document.getElementById('ach-icon').innerHTML     = getAchievementSvg(a.id, 40);
   document.getElementById('ach-name').textContent   = a.name;
   document.getElementById('ach-desc').textContent   = a.desc;
   document.getElementById('ach-rarity').className   = `rarity-badge rarity-${a.rarity}`;
@@ -390,7 +389,7 @@ export function renderArchivedHabits() {
   container.innerHTML = archived.map(h => `
     <div class="settings-row">
       <div>
-        <div class="settings-row-label">${h.icon} ${h.name}</div>
+        <div class="settings-row-label" style="display:flex;align-items:center;gap:8px">${getHabitSvg(h.icon, 16)} ${h.name}</div>
         <div class="settings-row-desc">Archived ${new Date(h.archivedAt).toLocaleDateString()}</div>
       </div>
       <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="restoreHabitUI('${h.id}')">Restore</button>

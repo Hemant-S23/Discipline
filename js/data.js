@@ -70,7 +70,7 @@ export function addHabit(data) {
   const habit = {
     id: genId(),
     name: data.name || 'New Habit',
-    icon: data.icon || '⭐',
+    icon: data.icon || 'star',
     category: data.category || 'personal',
     frequency: data.frequency || 'daily',
     customDays: data.customDays || [],

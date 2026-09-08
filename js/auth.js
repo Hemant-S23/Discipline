@@ -9,10 +9,10 @@ import {
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
   sendEmailVerification,
   doc, setDoc, getDoc, deleteDoc
-} from './firebase-config.js?v=4.2';
-import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=4.2';
-import { showToast, closeModal, openModal } from './ui.js?v=4.2';
-import { validateEmail } from './email-validator.js?v=4.2';
+} from './firebase-config.js?v=5.0';
+import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=5.0';
+import { showToast, closeModal, openModal } from './ui.js?v=5.0';
+import { validateEmail } from './email-validator.js?v=5.0';
 
 let currentAuthUser = null;
 
@@ -36,7 +36,7 @@ export async function handleRedirectResult() {
         nameCustomized: true
       });
       await uploadLocalDataToCloud(result.user.uid);
-      showToast('✓ Signed in with Google! 🌐', 'success');
+      showToast('Signed in with Google!', 'success');
       return result.user;
     }
   } catch (err) {
@@ -162,13 +162,13 @@ export async function loginWithEmail(rawEmail, password) {
       // Check if email is verified for password users
       if (!cred.user.emailVerified) {
         showEmailVerificationModal(cred.user.email);
-        showToast('⚠️ Please verify your email first! We sent a link to your inbox.', 'warning', 5000);
+        showToast('Please verify your email first. We sent a link to your inbox.', 'warning', 5000);
         throw new Error('Email not verified. Please check your inbox.');
       }
 
       await syncCloudData(cred.user.uid);
       closeModal('modal-auth');
-      showToast('✓ Successfully signed in! ☁️', 'success');
+      showToast('Successfully signed in.', 'success');
       updateUser({ email: cred.user.email, name: cred.user.displayName || email.split('@')[0], isLoggedIn: true, authDone: true });
       if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
@@ -187,20 +187,20 @@ export async function loginWithEmail(rawEmail, password) {
     const existing = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
 
     if (!existing) {
-      const errorMsg = '⚠️ No account found with this email. Please switch to Create Account!';
+      const errorMsg = 'No account found with this email. Please switch to Create Account.';
       showToast(errorMsg, 'error');
       throw new Error(errorMsg);
     }
 
     if (existing.password !== password) {
-      const errorMsg = '⚠️ Incorrect password. Please check and try again.';
+      const errorMsg = 'Incorrect password. Please check and try again.';
       showToast(errorMsg, 'error');
       throw new Error(errorMsg);
     }
 
     updateUser({ email: existing.email, name: existing.name || email.split('@')[0], isLoggedIn: true, authDone: true, nameCustomized: true });
     closeModal('modal-auth');
-    showToast(`✓ Welcome back, ${existing.name || email.split('@')[0]}! 🔐`, 'success');
+    showToast(`Welcome back, ${existing.name || email.split('@')[0]}!`, 'success');
     if (window._updateAccountUI) window._updateAccountUI(getUser());
     return { email: existing.email, displayName: existing.name };
   }
@@ -234,7 +234,7 @@ export async function signUpWithEmail(rawEmail, password, name) {
       if (landing) landing.classList.add('hidden');
 
       showEmailVerificationModal(email);
-      showToast('✓ Activation link sent to your email! ✉️', 'success', 5000);
+      showToast('Activation link sent to your email.', 'success', 5000);
       return cred.user;
     } catch (err) {
       console.warn('Firebase signUp error:', err.code);
@@ -248,7 +248,7 @@ export async function signUpWithEmail(rawEmail, password, name) {
     const existing = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
 
     if (existing) {
-      const errorMsg = '⚠️ An account with this email already exists. Please switch to Sign In!';
+      const errorMsg = 'An account with this email already exists. Please switch to Sign In.';
       showToast(errorMsg, 'error');
       throw new Error(errorMsg);
     }
@@ -260,7 +260,7 @@ export async function signUpWithEmail(rawEmail, password, name) {
 
     updateUser({ name: userName, email, isLoggedIn: true, authDone: true, nameCustomized: true });
     closeModal('modal-auth');
-    showToast(`✓ Account created for ${userName}! 🚀`, 'success');
+    showToast(`Account created for ${userName}!`, 'success');
     if (window._updateAccountUI) window._updateAccountUI(getUser());
     return { email, displayName: userName };
   }
@@ -273,7 +273,7 @@ export async function loginWithGoogle() {
       const name = cred.user.displayName || cred.user.email.split('@')[0];
       updateUser({ email: cred.user.email, name, isLoggedIn: true, authDone: true, nameCustomized: true });
       await syncCloudData(cred.user.uid);
-      showToast('✓ Signed in with Google! 🌐', 'success');
+      showToast('Signed in with Google!', 'success');
       if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
@@ -294,7 +294,7 @@ export async function loginWithGoogle() {
   } else {
     const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
     updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, nameCustomized: true });
-    showToast('✓ Signed in with Google! 🌐', 'success');
+    showToast('Signed in with Google!', 'success');
     if (window._updateAccountUI) window._updateAccountUI(getUser());
     return googleUser;
   }
@@ -308,12 +308,12 @@ export async function resetPassword(email) {
   if (isFirebaseConfigured && auth) {
     try {
       await sendPasswordResetEmail(auth, email);
-      showToast('✓ Password reset link sent to your email!', 'success');
+      showToast('Password reset link sent to your email.', 'success');
     } catch (err) {
       showToast(getAuthErrorMessage(err.code), 'error');
     }
   } else {
-    showToast(`✓ Password reset email sent to ${email}`, 'success');
+    showToast(`Password reset email sent to ${email}`, 'success');
   }
 }
 
@@ -322,7 +322,7 @@ export async function logoutUser() {
     try { await signOut(auth); } catch(e) {}
   }
   updateUser({ email: null, isLoggedIn: false, isGuest: false, authDone: false });
-  showToast('Logged out. Switched to guest mode 👋', 'info');
+  showToast('Logged out. Switched to guest mode.', 'info');
   if (window._updateAccountUI) window._updateAccountUI(null);
 }
 
@@ -371,7 +371,7 @@ export async function deleteAccountAndData() {
     sessionStorage.clear();
   } catch(e) {}
 
-  showToast('✓ Account and all data permanently deleted.', 'info');
+  showToast('Account and all data permanently deleted.', 'info');
   setTimeout(() => {
     location.hash = '';
     location.reload();
@@ -410,14 +410,14 @@ export async function checkEmailVerification() {
       });
       await uploadLocalDataToCloud(user.uid);
       closeModal('modal-verify-email');
-      showToast('✓ Email verified! Welcome to Discipline 🚀', 'success');
+      showToast('Email verified! Welcome to Discipline.', 'success');
       if (window._updateAccountUI) window._updateAccountUI(user);
       if (typeof window.proceedAfterAuth === 'function') {
         window.proceedAfterAuth();
       }
       return true;
     } else {
-      showToast('⚠️ Email not verified yet. Please check your inbox and click the verification link.', 'warning', 4500);
+      showToast('Email not verified yet. Please check your inbox and click the verification link.', 'warning', 4500);
       return false;
     }
   } catch (err) {
@@ -440,7 +440,7 @@ export async function resendVerification() {
 
   try {
     await sendEmailVerification(auth.currentUser);
-    showToast('✓ Verification email resent! Check your inbox.', 'success');
+    showToast('Verification email resent. Check your inbox.', 'success');
     
     resendCooldown = 30;
     const btn = document.getElementById('btn-resend-verification');
@@ -478,20 +478,20 @@ export async function cancelEmailVerification() {
 
 function getAuthErrorMessage(code) {
   switch (code) {
-    case 'auth/invalid-email': return '⚠️ Invalid email address format.';
-    case 'auth/user-disabled': return '⚠️ This user account has been disabled.';
-    case 'auth/user-not-found': return '⚠️ No account found with this email. Please switch to Create Account!';
-    case 'auth/wrong-password': return '⚠️ Incorrect password. Please check and try again.';
-    case 'auth/invalid-credential': return '⚠️ No account found with these credentials. Please switch to Create Account!';
-    case 'auth/email-already-in-use': return '⚠️ An account with this email already exists. Please switch to Sign In!';
-    case 'auth/weak-password': return '⚠️ Password should be at least 6 characters.';
-    case 'auth/unauthorized-domain': return '⚠️ Domain not authorized. Go to Firebase Console → Authentication → Settings → Authorized Domains and add your site.';
-    case 'auth/operation-not-allowed': return '⚠️ This sign-in method is not enabled. Please enable it in Firebase Console.';
-    case 'auth/popup-blocked': return '⚠️ Popup was blocked by browser. Redirecting to Google sign-in...';
-    case 'auth/popup-closed-by-user': return '⚠️ Sign-in was cancelled. Please try again.';
-    case 'auth/cancelled-popup-request': return '⚠️ Sign-in cancelled. Please try again.';
-    case 'auth/network-request-failed': return '⚠️ Network error. Please check your internet connection.';
-    case 'auth/too-many-requests': return '⚠️ Too many failed attempts. Please try again later.';
-    default: return `⚠️ Authentication failed. (${code || 'unknown'}). Please check your credentials or try again.`;
+    case 'auth/invalid-email': return 'Invalid email address format.';
+    case 'auth/user-disabled': return 'This user account has been disabled.';
+    case 'auth/user-not-found': return 'No account found with this email. Please switch to Create Account.';
+    case 'auth/wrong-password': return 'Incorrect password. Please check and try again.';
+    case 'auth/invalid-credential': return 'No account found with these credentials. Please switch to Create Account.';
+    case 'auth/email-already-in-use': return 'An account with this email already exists. Please switch to Sign In.';
+    case 'auth/weak-password': return 'Password should be at least 6 characters.';
+    case 'auth/unauthorized-domain': return 'Domain not authorized in Firebase settings.';
+    case 'auth/operation-not-allowed': return 'This sign-in method is not enabled.';
+    case 'auth/popup-blocked': return 'Popup was blocked by browser. Redirecting to Google sign-in...';
+    case 'auth/popup-closed-by-user': return 'Sign-in was cancelled.';
+    case 'auth/cancelled-popup-request': return 'Sign-in cancelled.';
+    case 'auth/network-request-failed': return 'Network error. Please check your internet connection.';
+    case 'auth/too-many-requests': return 'Too many failed attempts. Please try again later.';
+    default: return `Authentication failed (${code || 'unknown'}). Please try again.`;
   }
 }

@@ -6,11 +6,11 @@ import {
   getUser, getActiveHabits, getCompletions, getCompletionsForDate,
   today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats, getCheckinForDate,
   getTasksForDate, addTask, toggleTask, deleteTask, getTaskById, getTasks, saveTasks, hasAwardedXpToday
-} from './data.js';
-import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js';
-import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js';
-import { renderTodayHabits } from './habits.js';
-import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat } from './ui.js';
+} from './data.js?v=5.0';
+import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js?v=5.0';
+import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js?v=5.0';
+import { renderTodayHabits } from './habits.js?v=5.0';
+import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat } from './ui.js?v=5.0';
 
 let chartDaily = null;
 let chartWeekly = null;
@@ -161,7 +161,7 @@ function renderProgressCard() {
   if (fracEl) fracEl.innerHTML = `${done} <span class="total">/ ${total}</span>`;
   if (pctEl)  pctEl.textContent  = `${pct}%`;
   if (remEl)  remEl.textContent  = remaining === 0
-    ? '🎉 All done for today!'
+    ? 'All habits completed today!'
     : `${remaining} habit${remaining === 1 ? '' : 's'} remaining`;
   if (barEl) {
     barEl.style.width = `${pct}%`;
@@ -197,7 +197,7 @@ function renderXPCard() {
   if (lvlEl)  lvlEl.textContent = `Lv.${info.level} · ${info.name}`;
   if (barEl)  barEl.style.width  = `${info.progress}%`;
   if (infoEl) infoEl.textContent = info.isMaxLevel
-    ? '🏆 Max Level!'
+    ? 'Max Level reached'
     : `${info.xpToNext} XP to Lv.${info.level + 1}`;
 }
 
@@ -366,19 +366,19 @@ window.handleTodayTaskSubmit = function(e) {
   input.value = '';
   renderTodayTasks();
   if (window._renderCalendar) window._renderCalendar();
-  showToast('✓ Task added for today! 🎯', 'success', 2000);
+  showToast('✓ Task added for today!', 'success', 2000);
 };
 
 window.handleDashboardTaskToggle = function(taskId, btnEl) {
   const existing = getTaskById(taskId);
   if (existing && existing.completed) {
-    showToast(`✓ "${existing.text}" is already completed! 🎉`, 'info', 2500);
+    showToast(`✓ "${existing.text}" is already completed!`, 'info', 2500);
     return;
   }
 
   const res = toggleTask(taskId);
   if (!res || res.alreadyCompleted) {
-    showToast('✓ Task is already completed! 🎉', 'info', 2500);
+    showToast('✓ Task is already completed!', 'info', 2500);
     return;
   }
 
@@ -393,7 +393,7 @@ window.handleDashboardTaskToggle = function(taskId, btnEl) {
 
     awardXP(xp, xpSource);
     if (btnEl) showXPFloat(xp, btnEl);
-    showToast(`✓ Task completed! +${xp} XP ⭐`, 'success', 2500);
+    showToast(`✓ Task completed! +${xp} XP`, 'success', 2500);
   } else {
     showToast('✓ Task completed!', 'success', 2000);
   }

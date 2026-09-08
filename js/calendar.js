@@ -6,9 +6,10 @@ import {
   getActiveHabits, getCompletions, isCompleted, toggleCompletion,
   today, dateStr, isHabitScheduledForDate, getTasksForDate, addTask, toggleTask, deleteTask,
   getTaskById, getTasks, saveTasks, hasAwardedXpToday
-} from './data.js';
-import { awardXP } from './xp.js';
-import { showToast, openModal, closeModal, showXPFloat } from './ui.js';
+} from './data.js?v=5.0';
+import { awardXP } from './xp.js?v=5.0';
+import { showToast, openModal, closeModal, showXPFloat } from './ui.js?v=5.0';
+import { getHabitSvg, ICONS_SVG } from './icons.js?v=5.0';
 
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
@@ -59,7 +60,7 @@ function renderMatrix() {
   });
 
   if (!habits.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Add habits to see them here.</p></div>';
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">${ICONS_SVG['clock']}</div><p>Add habits to see them here.</p></div>`;
     return;
   }
 
@@ -81,7 +82,7 @@ function renderMatrix() {
   habits.forEach(h => {
     const createdDate = h.createdAt ? h.createdAt.slice(0, 10) : todayStr;
 
-    html += `<tr><td><div class="matrix-habit-name">${h.icon} ${h.name}</div></td>`;
+    html += `<tr><td><div class="matrix-habit-name"><span class="matrix-habit-icon">${getHabitSvg(h.icon, 15)}</span> ${h.name}</div></td>`;
     days.forEach(d => {
       const isBeforeCreated = d.dateStr < createdDate;
       const scheduled = isHabitScheduledForDate(h, d.dateStr);
@@ -179,7 +180,7 @@ function renderMonthlySummary(habits, days) {
 window.calendarToggle = function(habitId, ds) {
   const todayStr = today();
   if (ds !== todayStr) {
-    showToast('🔒 Past entries are locked. Complete habits on today!', 'warning');
+    showToast('Past entries are locked. Complete habits on today.', 'warning');
     return;
   }
 
@@ -191,18 +192,18 @@ window.calendarToggle = function(habitId, ds) {
 
 window.calendarNotice = function(type, habitName) {
   if (type === 'future') {
-    showToast('⏳ Future dates cannot be completed in advance.', 'info', 2500);
+    showToast('Future dates cannot be completed in advance.', 'info', 2500);
   } else if (type === 'before') {
-    showToast(`ℹ️ "${habitName || 'Habit'}" was started after this date.`, 'info', 2500);
+    showToast(`"${habitName || 'Habit'}" was started after this date.`, 'info', 2500);
   } else if (type === 'off_schedule') {
-    showToast(`ℹ️ "${habitName || 'Habit'}" is not scheduled for this day.`, 'info', 2500);
+    showToast(`"${habitName || 'Habit'}" is not scheduled for this day.`, 'info', 2500);
   } else {
-    showToast('🔒 Past entries are locked. Complete habits each day to build discipline!', 'warning', 2500);
+    showToast('Past entries are locked. Complete habits each day to build discipline.', 'warning', 2500);
   }
 };
 
 window.calendarLockedNotice = function() {
-  showToast('🔒 Past entries are locked. Discipline is built day by day!', 'warning', 2500);
+  showToast('Past entries are locked. Discipline is built day by day.', 'warning', 2500);
 };
 
 window.calendarPrev = calendarPrev;
@@ -349,19 +350,19 @@ window.handleDayTaskSubmit = function(e) {
   if (activeModalDate === today() && window._renderDashboard) {
     window._renderDashboard();
   }
-  showToast('✓ Task added for this date! 📌', 'success', 2000);
+  showToast('✓ Task added for this date!', 'success', 2000);
 };
 
 window.handleDayTaskToggle = function(taskId, btnEl) {
   const existing = getTaskById(taskId);
   if (existing && existing.completed) {
-    showToast(`✓ "${existing.text}" is already completed! 🎉`, 'info', 2500);
+    showToast(`✓ "${existing.text}" is already completed!`, 'info', 2500);
     return;
   }
 
   const res = toggleTask(taskId);
   if (!res || res.alreadyCompleted) {
-    showToast('✓ Task is already completed! 🎉', 'info', 2500);
+    showToast('✓ Task is already completed!', 'info', 2500);
     return;
   }
 
@@ -376,7 +377,7 @@ window.handleDayTaskToggle = function(taskId, btnEl) {
 
     awardXP(xp, xpSource);
     if (btnEl) showXPFloat(xp, btnEl);
-    showToast(`✓ Task completed! +${xp} XP ⭐`, 'success', 2500);
+    showToast(`✓ Task completed! +${xp} XP`, 'success', 2500);
   } else {
     showToast('✓ Task completed!', 'success', 2000);
   }

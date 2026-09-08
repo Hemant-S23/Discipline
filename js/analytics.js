@@ -5,10 +5,11 @@
 import {
   getActiveHabits, getCompletions, getDailyStats, today, dateStr,
   isHabitScheduledForDate, isCompleted, getHabitConsistency
-} from './data.js';
-import { calculateHabitStreak } from './streaks.js';
-import { getUser } from './data.js';
-import { CATEGORY_ICONS } from './ui.js';
+} from './data.js?v=5.0';
+import { calculateHabitStreak } from './streaks.js?v=5.0';
+import { getUser } from './data.js?v=5.0';
+import { CATEGORY_ICONS } from './ui.js?v=5.0';
+import { getHabitSvg } from './icons.js?v=5.0';
 
 let chartDailyAnalytics = null;
 let chartWeeklyAnalytics = null;
@@ -46,8 +47,8 @@ function renderOverviewStats() {
   const els = {
     'stat-total-completions': totalCompletions,
     'stat-30-pct':            `${pct30}%`,
-    'stat-best-streak':       `${bestStreak} 🔥`,
-    'stat-total-xp':          `⭐ ${user.totalXP}`
+    'stat-best-streak':       bestStreak,
+    'stat-total-xp':          user.totalXP
   };
 
   Object.entries(els).forEach(([id, val]) => {
@@ -72,7 +73,7 @@ function renderTopHabits() {
   container.innerHTML = habitStats.slice(0, 8).map((h, i) => `
     <div class="top-habit-item">
       <div class="top-habit-rank">#${i + 1}</div>
-      <div class="top-habit-icon">${h.icon}</div>
+      <div class="top-habit-icon">${getHabitSvg(h.icon, 16)}</div>
       <div class="top-habit-info">
         <div class="top-habit-name">${h.name}</div>
         <div class="top-habit-pct-bar-wrap">
@@ -97,20 +98,20 @@ function renderNeedsAttention() {
     .slice(0, 4);
 
   if (!weak.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--success);padding:20px;font-size:15px;font-weight:700">🎉 All habits are on track!</div>';
+    container.innerHTML = '<div style="text-align:center;color:var(--text-2);padding:20px;font-size:13px;font-weight:600">All habits are on track</div>';
     return;
   }
 
   container.innerHTML = weak.map(h => `
     <div class="top-habit-item">
-      <div class="top-habit-icon">${h.icon}</div>
+      <div class="top-habit-icon">${getHabitSvg(h.icon, 16)}</div>
       <div class="top-habit-info">
         <div class="top-habit-name">${h.name}</div>
         <div class="top-habit-pct-bar-wrap">
-          <div class="top-habit-pct-bar" style="width:${h.consistency}%;background:linear-gradient(90deg,var(--streak),var(--xp))"></div>
+          <div class="top-habit-pct-bar" style="width:${h.consistency}%;background:var(--accent)"></div>
         </div>
       </div>
-      <div class="top-habit-pct" style="color:var(--streak)">${h.consistency}%</div>
+      <div class="top-habit-pct" style="color:var(--text-2)">${h.consistency}%</div>
     </div>
   `).join('');
 }

@@ -2,7 +2,7 @@
 // streaks.js — Streak calculation engine
 // ============================================================
 
-import { getCompletions, getHabitById, today, dateStr, isHabitScheduledForDate } from './data.js';
+import { getCompletions, getHabitById, today, dateStr, isHabitScheduledForDate } from './data.js?v=5.0';
 
 /**
  * Calculate current and best streak for a single habit.
@@ -94,17 +94,17 @@ export function calculateGlobalStreak(activeHabits) {
 export const MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365];
 
 export const MILESTONE_DATA = {
-  3:   { emoji: '🌱', title: '3 Days!',   msg: "Nice start. The habit is forming." },
-  7:   { emoji: '🔥', title: '7 Days!',   msg: "One week! You're building momentum." },
-  14:  { emoji: '💪', title: '14 Days!',  msg: "Two weeks of pure discipline." },
-  21:  { emoji: '⚡', title: '21 Days!',  msg: "Three weeks in — this is becoming automatic." },
-  30:  { emoji: '🏆', title: '30 Days!',  msg: "One full month. Absolutely incredible." },
-  50:  { emoji: '👑', title: '50 Days!',  msg: "Consistency unlocked. You're unstoppable." },
-  75:  { emoji: '🌟', title: '75 Days!',  msg: "75 days of showing up. Legendary." },
-  100: { emoji: '🦋', title: '100 Days!', msg: "100 days. You've transformed yourself." },
-  150: { emoji: '🚀', title: '150 Days!', msg: "150 days. You are the system." },
-  200: { emoji: '💎', title: '200 Days!', msg: "200 days. This is mastery." },
-  365: { emoji: '🌈', title: '365 Days!', msg: "A full year. You are Discipline itself." }
+  3:   { key: 'sprout', title: '3 Days',   msg: "Initial habit momentum established." },
+  7:   { key: 'flame',  title: '7 Days',   msg: "One full week of continuous discipline." },
+  14:  { key: 'activity', title: '14 Days', msg: "Two weeks of consistent execution." },
+  21:  { key: 'zap',    title: '21 Days',  msg: "Three weeks in — habit is becoming automatic." },
+  30:  { key: 'trophy', title: '30 Days',  msg: "One month of unbroken consistency." },
+  50:  { key: 'crown',  title: '50 Days',  msg: "High consistency unlocked." },
+  75:  { key: 'star',   title: '75 Days',  msg: "75 days of showing up without fail." },
+  100: { key: 'award',  title: '100 Days', msg: "100-day milestone reached." },
+  150: { key: 'target', title: '150 Days', msg: "150 days of peak discipline." },
+  200: { key: 'diamond', title: '200 Days', msg: "Mastery level achieved." },
+  365: { key: 'shield', title: '365 Days', msg: "One full year of unbreakable discipline." }
 };
 
 export function checkMilestone(streak) {
@@ -112,11 +112,18 @@ export function checkMilestone(streak) {
 }
 
 /**
- * Build flame chain string (e.g. "🔥🔥🔥" × streak count).
+ * Build vector flame chain nodes.
  */
-export function buildChain(streak, max = 30) {
+export function buildChain(streak, max = 28) {
   const count = Math.min(streak, max);
-  return '🔥'.repeat(count);
+  if (count === 0) {
+    return `<span style="font-size:13px;color:var(--text-3);font-weight:600">Start your streak today</span>`;
+  }
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += `<span class="chain-node active" title="Day ${i + 1}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>`;
+  }
+  return html;
 }
 
 /**

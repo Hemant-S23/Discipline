@@ -2,24 +2,25 @@
 // onboarding.js — 5-step onboarding wizard
 // ============================================================
 
-import { getUser, updateUser, addHabit } from './data.js';
-import { uploadLocalDataToCloud } from './auth.js';
-import { auth, isFirebaseConfigured } from './firebase-config.js';
-import { showToast } from './ui.js';
+import { getUser, updateUser, addHabit } from './data.js?v=5.0';
+import { uploadLocalDataToCloud } from './auth.js?v=5.0';
+import { auth, isFirebaseConfigured } from './firebase-config.js?v=5.0';
+import { showToast } from './ui.js?v=5.0';
+import { getHabitSvg } from './icons.js?v=5.0';
 
 const STARTER_HABITS = [
-  { icon: '📚', name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['learning'] },
-  { icon: '🧘', name: 'Meditate',           category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['mind'] },
-  { icon: '💻', name: 'Study / Practice',   category: 'learning', difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['learning', 'work'] },
-  { icon: '🏃', name: 'Exercise',           category: 'fitness',  difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['fitness'] },
-  { icon: '📝', name: 'Plan tomorrow',      category: 'work',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['work', 'routine'] },
-  { icon: '🌙', name: 'Sleep by 11pm',      category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['routine'] },
-  { icon: '🚶', name: 'Walk 10 min',        category: 'fitness',  difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['fitness'] },
-  { icon: '✍️', name: 'Journal',            category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['mind', 'personal'] },
-  { icon: '💧', name: 'Drink 8 glasses',    category: 'routine',  difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['routine', 'fitness'] },
-  { icon: '🎯', name: 'Deep work 1 hr',     category: 'work',     difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['work'] },
-  { icon: '🌱', name: 'Personal project',   category: 'personal', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['personal'] },
-  { icon: '📖', name: 'No phone after 9pm', category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['routine', 'mind'] },
+  { icon: 'book',     name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['learning'] },
+  { icon: 'meditate', name: 'Meditate',           category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['mind'] },
+  { icon: 'code',     name: 'Study / Practice',   category: 'learning', difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['learning', 'work'] },
+  { icon: 'activity', name: 'Exercise',           category: 'fitness',  difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['fitness'] },
+  { icon: 'pen',      name: 'Plan tomorrow',      category: 'work',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['work', 'routine'] },
+  { icon: 'moon',     name: 'Sleep by 11pm',      category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['routine'] },
+  { icon: 'walk',     name: 'Walk 10 min',        category: 'fitness',  difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['fitness'] },
+  { icon: 'pen',      name: 'Journal',            category: 'mind',     difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['mind', 'personal'] },
+  { icon: 'droplet',  name: 'Drink 8 glasses',    category: 'routine',  difficulty: 'easy',   xpReward: 10, frequency: 'daily', cats: ['routine', 'fitness'] },
+  { icon: 'target',   name: 'Deep work 1 hr',     category: 'work',     difficulty: 'hard',   xpReward: 30, frequency: 'daily', cats: ['work'] },
+  { icon: 'sprout',   name: 'Personal project',   category: 'personal', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['personal'] },
+  { icon: 'book',     name: 'No phone after 9pm', category: 'routine',  difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['routine', 'mind'] },
 ];
 
 let currentStep = 1;
@@ -113,7 +114,7 @@ function renderStarterHabits() {
     return `
       <div class="starter-habit-item ${isSel ? 'selected' : ''}"
            onclick="window.toggleStarterHabitByName('${h.name.replace(/'/g, "\\'")}')">
-        <span class="starter-habit-icon">${h.icon}</span>
+        <span class="starter-habit-icon" style="display:inline-flex;align-items:center;justify-content:center">${getHabitSvg(h.icon, 20)}</span>
         <div class="starter-habit-info">
           <div class="starter-habit-name">${h.name}</div>
           <div class="starter-habit-meta">${h.category} · ${h.difficulty} · +${h.xpReward} XP</div>
@@ -158,7 +159,7 @@ window.onboardingNext = function() {
       setTimeout(() => input?.classList.remove('input-error-shake'), 600);
       if (errorEl) errorEl.classList.remove('hidden');
       if (nextBtn) nextBtn.disabled = true;
-      showToast('Please enter your name to continue 😊', 'warning');
+      showToast('Please enter your name to continue', 'warning');
       return; // Cannot proceed without entering name!
     }
 

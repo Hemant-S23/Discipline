@@ -9,7 +9,7 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="alternate icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>" />
+  <link rel="alternate icon" type="image/svg+xml" href="favicon.svg" />
 
 
   <!-- Fonts -->
@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css?v=4.4" />
-  <link rel="stylesheet" href="css/components.css?v=4.4" />
-  <link rel="stylesheet" href="css/animations.css?v=4.4" />
-  <link rel="stylesheet" href="css/responsive.css?v=4.4" />
+  <link rel="stylesheet" href="css/main.css?v=5.0" />
+  <link rel="stylesheet" href="css/components.css?v=5.0" />
+  <link rel="stylesheet" href="css/animations.css?v=5.0" />
+  <link rel="stylesheet" href="css/responsive.css?v=5.0" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -93,7 +93,7 @@
         </button>
 
         <button type="button" class="btn-secondary full-width btn-guest" onclick="handleGuestMode()">
-          <span>👤 Continue as Guest</span>
+          <span>Continue as Guest</span>
         </button>
       </div>
     </div>
@@ -101,7 +101,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
-     ONBOARDING OVERLAY
+     ONBOARDING WIZARD (First-time users)
      ═══════════════════════════════════════════════════════════ -->
 <div id="onboarding-overlay" class="onboarding-overlay hidden">
   <div class="onboarding-card">
@@ -117,30 +117,30 @@
 
     <!-- Step 1: Welcome -->
     <div class="onboarding-step active" data-step="1">
-      <div class="onboarding-logo">🎯 DISCIPLINE</div>
+      <div class="onboarding-logo" style="display:flex;align-items:center;gap:8px;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg> DISCIPLINE</div>
       <h1>Build the person you promised<br>yourself you'd become.</h1>
       <p>Small promises. Kept every day.</p>
       <div style="background:var(--surface-2);border-radius:var(--radius);padding:16px 20px;margin-bottom:28px;border:1px solid var(--border)">
         <div style="display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:22px">🔥</span>
+            <span class="ob-icon-wrap" style="color:var(--text)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
             <div>
               <div style="font-size:14px;font-weight:700">Build streaks</div>
               <div style="font-size:12px;color:var(--text-2)">Never miss twice</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:22px">⭐</span>
+            <span class="ob-icon-wrap" style="color:var(--text)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
             <div>
               <div style="font-size:14px;font-weight:700">Earn XP &amp; level up</div>
               <div style="font-size:12px;color:var(--text-2)">Every habit counts</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:22px">📊</span>
+            <span class="ob-icon-wrap" style="color:var(--text)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg></span>
             <div>
               <div style="font-size:14px;font-weight:700">See your progress</div>
-              <div style="font-size:12px;color:var(--text-2)">Beautiful analytics</div>
+              <div style="font-size:12px;color:var(--text-2)">Clear analytics</div>
             </div>
           </div>
         </div>
@@ -150,7 +150,7 @@
 
     <!-- Step 2: Name -->
     <div class="onboarding-step" data-step="2">
-      <div class="onboarding-logo">👋</div>
+      <div class="onboarding-logo" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <h2>What should we call you?</h2>
       <p>So we can personalize your experience.</p>
       <div class="form-group" style="margin-bottom:24px">
@@ -165,16 +165,16 @@
 
     <!-- Step 3: Goals -->
     <div class="onboarding-step" data-step="3">
-      <div class="onboarding-logo">🎯</div>
+      <div class="onboarding-logo" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg></div>
       <h2>What do you want to improve?</h2>
       <p>Choose all that apply</p>
       <div class="goal-grid">
-        <div class="goal-chip" onclick="toggleGoal('mind', this)"><span>🧠 Mind</span></div>
-        <div class="goal-chip" onclick="toggleGoal('learning', this)"><span>📚 Learning</span></div>
-        <div class="goal-chip" onclick="toggleGoal('fitness', this)"><span>💪 Fitness</span></div>
-        <div class="goal-chip" onclick="toggleGoal('work', this)"><span>💻 Work</span></div>
-        <div class="goal-chip" onclick="toggleGoal('personal', this)"><span>🌱 Personal</span></div>
-        <div class="goal-chip" onclick="toggleGoal('routine', this)"><span>😴 Routine</span></div>
+        <div class="goal-chip" onclick="toggleGoal('mind', this)"><span>Mind</span></div>
+        <div class="goal-chip" onclick="toggleGoal('learning', this)"><span>Learning</span></div>
+        <div class="goal-chip" onclick="toggleGoal('fitness', this)"><span>Fitness</span></div>
+        <div class="goal-chip" onclick="toggleGoal('work', this)"><span>Work</span></div>
+        <div class="goal-chip" onclick="toggleGoal('personal', this)"><span>Personal</span></div>
+        <div class="goal-chip" onclick="toggleGoal('routine', this)"><span>Routine</span></div>
       </div>
       <div class="onboarding-step-footer">
         <button class="step-back" onclick="onboardingBack()">← Back</button>
@@ -184,7 +184,7 @@
 
     <!-- Step 4: Starter Habits -->
     <div class="onboarding-step" data-step="4">
-      <div class="onboarding-logo">✨</div>
+      <div class="onboarding-logo" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
       <h2>Choose your starter habits</h2>
       <p>Pick 3–5 to begin with. You can always add more later.</p>
       <div class="starter-habits-list" id="starter-habits-container"></div>
@@ -196,13 +196,13 @@
 
     <!-- Step 5: Ready -->
     <div class="onboarding-step" data-step="5">
-      <div class="onboarding-success-icon">🔥</div>
+      <div class="onboarding-success-icon"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
       <h2 style="text-align:center">You're ready.</h2>
       <p style="text-align:center">Day 1 starts today. One habit at a time.</p>
       <div style="background:var(--accent-10);border-radius:var(--radius);padding:16px 20px;margin-bottom:28px;border:1px solid var(--accent-20);text-align:center">
         <p style="font-size:14px;color:var(--accent);font-weight:600;font-style:italic;margin:0">"You don't need a perfect day.<br>You just need to keep showing up."</p>
       </div>
-      <button class="btn-primary full-width" onclick="finishOnboarding()">Start my discipline 🚀</button>
+      <button class="btn-primary full-width" onclick="finishOnboarding()">Start my discipline</button>
     </div>
 
   </div>
@@ -255,7 +255,7 @@
         <div class="user-name" id="sidebar-user-name">Friend</div>
         <div class="user-level-text" id="sidebar-user-level">Lv.1 · Beginner</div>
       </div>
-      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     </div>
   </aside>
 
@@ -402,12 +402,12 @@
       </div>
       <div class="filter-tabs">
         <button class="filter-tab habits-filter-tab active" data-filter="all">All</button>
-        <button class="filter-tab habits-filter-tab" data-filter="mind">🧠 Mind</button>
-        <button class="filter-tab habits-filter-tab" data-filter="learning">📚 Learning</button>
-        <button class="filter-tab habits-filter-tab" data-filter="fitness">💪 Fitness</button>
-        <button class="filter-tab habits-filter-tab" data-filter="work">💻 Work</button>
-        <button class="filter-tab habits-filter-tab" data-filter="personal">🌱 Personal</button>
-        <button class="filter-tab habits-filter-tab" data-filter="routine">😴 Routine</button>
+        <button class="filter-tab habits-filter-tab" data-filter="mind">Mind</button>
+        <button class="filter-tab habits-filter-tab" data-filter="learning">Learning</button>
+        <button class="filter-tab habits-filter-tab" data-filter="fitness">Fitness</button>
+        <button class="filter-tab habits-filter-tab" data-filter="work">Work</button>
+        <button class="filter-tab habits-filter-tab" data-filter="personal">Personal</button>
+        <button class="filter-tab habits-filter-tab" data-filter="routine">Routine</button>
       </div>
       <div class="habits-grid" id="habits-page-list"></div>
     </section>
@@ -742,7 +742,7 @@
       <div class="drawer-footer-left">
         <span>Appearance</span>
       </div>
-      <button class="theme-toggle" id="drawer-theme-toggle" title="Toggle theme">🌙</button>
+      <button class="theme-toggle" id="drawer-theme-toggle" title="Toggle theme"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     </div>
   </div>
 </div>
@@ -774,21 +774,21 @@
         <div class="form-group">
           <label>Category</label>
           <select class="form-select" id="habit-category-select">
-            <option value="mind">🧠 Mind</option>
-            <option value="learning">📚 Learning</option>
-            <option value="fitness">💪 Fitness</option>
-            <option value="work">💻 Work</option>
-            <option value="personal">🌱 Personal</option>
-            <option value="routine">😴 Routine</option>
+            <option value="mind">Mind</option>
+            <option value="learning">Learning</option>
+            <option value="fitness">Fitness</option>
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+            <option value="routine">Routine</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Frequency</label>
           <div class="radio-group">
-            <div class="radio-option selected freq-option" data-value="daily">📅 Every day</div>
-            <div class="radio-option freq-option" data-value="weekdays">💼 Weekdays</div>
-            <div class="radio-option freq-option" data-value="weekends">🏖️ Weekends</div>
+            <div class="radio-option selected freq-option" data-value="daily">Every day</div>
+            <div class="radio-option freq-option" data-value="weekdays">Weekdays</div>
+            <div class="radio-option freq-option" data-value="weekends">Weekends</div>
           </div>
         </div>
 
@@ -796,19 +796,16 @@
           <label>Difficulty &amp; XP Reward</label>
           <div class="diff-picker">
             <div class="diff-option diff-option-btn" data-value="easy">
-              <span style="font-size:20px">🌱</span>
-              <span>Easy</span>
-              <span style="color:var(--success);font-size:11px">+10 XP</span>
+              <span style="font-weight:700;font-size:14px">Easy</span>
+              <span style="color:var(--text-3);font-size:11px">+10 XP</span>
             </div>
             <div class="diff-option diff-option-btn selected" data-value="medium">
-              <span style="font-size:20px">⚡</span>
-              <span>Medium</span>
+              <span style="font-weight:700;font-size:14px">Medium</span>
               <span style="color:var(--accent);font-size:11px">+20 XP</span>
             </div>
             <div class="diff-option diff-option-btn" data-value="hard">
-              <span style="font-size:20px">🔥</span>
-              <span>Hard</span>
-              <span style="color:var(--danger);font-size:11px">+30 XP</span>
+              <span style="font-weight:700;font-size:14px">Hard</span>
+              <span style="color:var(--text-2);font-size:11px">+30 XP</span>
             </div>
           </div>
         </div>
@@ -828,17 +825,17 @@
 <div id="modal-checkin" class="modal-overlay">
   <div class="modal">
     <div class="modal-header">
-      <h2>Daily Check-in 📝</h2>
+      <h2>Daily Check-in</h2>
       <button class="modal-close" data-close-modal="modal-checkin">✕</button>
     </div>
     <div class="modal-body">
-      <p style="color:var(--text-2);margin-bottom:20px;font-size:14px">How was today? Record your mood &amp; note to earn <strong style="color:var(--xp);font-weight:700;">+15 XP ⭐</strong></p>
+      <p style="color:var(--text-2);margin-bottom:20px;font-size:14px">Record your mood &amp; daily reflection. Earn <strong style="color:var(--text);font-weight:700;">+15 XP</strong></p>
       <div class="mood-picker">
-        <button class="mood-btn" data-mood="great"><span class="mood-emoji">😄</span>Great</button>
-        <button class="mood-btn" data-mood="good"><span class="mood-emoji">🙂</span>Good</button>
-        <button class="mood-btn" data-mood="okay"><span class="mood-emoji">😐</span>Okay</button>
-        <button class="mood-btn" data-mood="difficult"><span class="mood-emoji">😕</span>Tough</button>
-        <button class="mood-btn" data-mood="exhausted"><span class="mood-emoji">😴</span>Tired</button>
+        <button class="mood-btn" data-mood="great"><span class="mood-emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 3 4 3 4-3 4-3"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></span>Great</button>
+        <button class="mood-btn" data-mood="good"><span class="mood-emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></span>Good</button>
+        <button class="mood-btn" data-mood="okay"><span class="mood-emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" x2="16" y1="15" y2="15"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></span>Okay</button>
+        <button class="mood-btn" data-mood="difficult"><span class="mood-emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></span>Tough</button>
+        <button class="mood-btn" data-mood="exhausted"><span class="mood-emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" x2="16" y1="15" y2="15"/><line x1="8" x2="10" y1="9" y2="9"/><line x1="14" x2="16" y1="9" y2="9"/></svg></span>Tired</button>
       </div>
       <div class="form-group">
         <label>Add a note (optional)</label>
@@ -852,35 +849,37 @@
 <!-- ── Milestone Modal ────────────────────────────────────────── -->
 <div id="modal-milestone" class="modal-overlay">
   <div class="modal milestone-modal">
-    <div class="milestone-big-emoji" id="milestone-emoji">🔥</div>
+    <div class="milestone-big-emoji" id="milestone-emoji">
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+    </div>
     <h2 id="milestone-title">14 Days!</h2>
     <p id="milestone-msg" style="color:var(--text-2);margin:8px 0 16px">Two weeks strong!</p>
-    <div class="milestone-streak-viz" id="milestone-fires">🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥</div>
-    <button class="btn-primary" style="margin-top:20px;width:100%" data-close-modal="modal-milestone">Keep going! 💪</button>
+    <div class="milestone-streak-viz" id="milestone-fires"></div>
+    <button class="btn-primary" style="margin-top:20px;width:100%" data-close-modal="modal-milestone">Continue</button>
   </div>
 </div>
 
 <!-- ── Achievement Modal ──────────────────────────────────────── -->
 <div id="modal-achievement" class="modal-overlay">
   <div class="modal achievement-modal">
-    <div class="achievement-unlock-label">🏆 Achievement Unlocked!</div>
-    <div class="achievement-big-icon" id="ach-icon">🌱</div>
+    <div class="achievement-unlock-label">Achievement Unlocked</div>
+    <div class="achievement-big-icon" id="ach-icon"></div>
     <h2 id="ach-name">First Step</h2>
     <p id="ach-desc" style="color:var(--text-2);margin:8px 0 12px">Complete your first habit.</p>
     <span class="rarity-badge" id="ach-rarity">Common</span>
-    <button class="btn-primary" style="margin-top:20px;width:100%" data-close-modal="modal-achievement">Awesome! ⭐</button>
+    <button class="btn-primary" style="margin-top:20px;width:100%" data-close-modal="modal-achievement">Done</button>
   </div>
 </div>
 
 <!-- ── Level Up Modal ─────────────────────────────────────────── -->
 <div id="modal-levelup" class="modal-overlay">
   <div class="modal level-up-modal">
-    <div class="level-up-stars">✨ ✨ ✨</div>
-    <div class="level-up-label">LEVEL UP!</div>
+    <div class="level-up-stars"></div>
+    <div class="level-up-label">LEVEL UP</div>
     <div class="level-up-num" id="levelup-num">2</div>
     <div class="level-up-name" id="levelup-name">Starter</div>
-    <p style="color:var(--text-2);margin:8px 0 20px">Keep up the incredible work!</p>
-    <button class="btn-primary" style="width:100%" data-close-modal="modal-levelup">Continue 🔥</button>
+    <p style="color:var(--text-2);margin:8px 0 20px">Consistent progress pays compounding dividends.</p>
+    <button class="btn-primary" style="width:100%" data-close-modal="modal-levelup">Continue</button>
   </div>
 </div>
 
@@ -889,7 +888,7 @@
   <div class="modal auth-modal">
     <div class="modal-header">
       <div class="archive-header-title">
-        <div class="archive-icon-badge" style="background:var(--accent-10);border-color:var(--accent-20)">🔐</div>
+        <div class="archive-icon-badge" style="background:var(--accent-10);border-color:var(--accent-20);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
         <h2 id="auth-modal-title">Cloud Account</h2>
       </div>
       <button class="modal-close" data-close-modal="modal-auth">✕</button>
@@ -978,7 +977,7 @@
   <div class="modal archive-modal">
     <div class="modal-header">
       <div class="archive-header-title">
-        <div class="archive-icon-badge">🗂️</div>
+        <div class="archive-icon-badge"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect width="22" height="5" x="1" y="3" rx="1"/><line x1="10" x2="14" y1="12" y2="12"/></svg></div>
         <h2>Archive Habit</h2>
       </div>
       <button class="modal-close" data-close-modal="modal-archive">✕</button>
@@ -987,16 +986,16 @@
       <p class="archive-modal-subtext">Are you sure you want to archive this habit?</p>
       
       <div class="archive-habit-card-preview" id="archive-habit-preview">
-        <div class="archive-habit-icon" id="archive-modal-habit-icon">🧘</div>
+        <div class="archive-habit-icon" id="archive-modal-habit-icon"></div>
         <div class="archive-habit-info">
           <div class="archive-habit-name" id="archive-modal-habit-name">Meditate</div>
-          <div class="archive-habit-meta" id="archive-modal-habit-meta">🧠 Mind · Daily</div>
+          <div class="archive-habit-meta" id="archive-modal-habit-meta">Mind · Daily</div>
         </div>
-        <div class="archive-habit-badge" id="archive-modal-habit-streak">🔥 1 streak</div>
+        <div class="archive-habit-badge" id="archive-modal-habit-streak">1 day streak</div>
       </div>
 
       <div class="archive-notice-box">
-        <span class="notice-icon">💡</span>
+        <span class="notice-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg></span>
         <span class="notice-text">
           Your completion history, streaks, and XP will be safely preserved. You can view or restore archived habits anytime in <strong>Settings</strong>.
         </span>
@@ -1005,7 +1004,7 @@
       <div class="modal-actions">
         <button type="button" class="btn-secondary" data-close-modal="modal-archive">Cancel</button>
         <button type="button" class="btn-archive-confirm" id="archive-confirm-action-btn">
-          <span>Archive Habit</span> 🗂️
+          <span>Archive Habit</span>
         </button>
       </div>
     </div>
@@ -1017,7 +1016,7 @@
   <div class="modal confirm-dialog-modal">
     <div class="modal-header">
       <div class="archive-header-title">
-        <div class="archive-icon-badge confirm-icon-badge" id="confirm-modal-icon-wrap">⚠️</div>
+        <div class="archive-icon-badge confirm-icon-badge" id="confirm-modal-icon-wrap"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></div>
         <h2 id="confirm-modal-title">Confirmation</h2>
       </div>
       <button class="modal-close" data-close-modal="modal-confirm">✕</button>
@@ -1130,7 +1129,9 @@
     <div class="profile-quick-header">
       <div class="profile-quick-avatar-wrap" onclick="triggerProfilePhotoUpload()" title="Tap to change photo">
         <div class="profile-quick-avatar" id="profile-menu-avatar">H</div>
-        <div class="profile-avatar-badge">📷</div>
+        <div class="profile-avatar-badge">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
       </div>
       <div class="profile-quick-user-info">
         <div class="profile-quick-name" id="profile-menu-name">Friend</div>
@@ -1141,13 +1142,13 @@
 
     <div class="profile-quick-actions">
       <button type="button" class="profile-quick-btn profile-btn-upload" onclick="triggerProfilePhotoUpload()">
-        <span>📸 Upload Profile Photo</span>
+        <span>Upload Profile Photo</span>
       </button>
       <button type="button" class="profile-quick-btn profile-btn-remove hidden" id="profile-menu-remove-photo-btn" onclick="removeProfilePhoto()">
-        <span>🗑️ Remove Photo</span>
+        <span>Remove Photo</span>
       </button>
       <a href="#settings" class="profile-quick-btn profile-btn-settings" onclick="closeProfileQuickMenu()">
-        <span>⚙️ Account Settings</span>
+        <span>Account Settings</span>
       </a>
     </div>
   </div>
@@ -1199,7 +1200,7 @@
     var btn = document.getElementById('delete-safety-confirm-btn');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span>Deleting Account & Data...</span> ⏳';
+      btn.innerHTML = '<span>Deleting Account & Data...</span>';
     }
     try { localStorage.clear(); } catch(e) {}
     try { sessionStorage.clear(); } catch(e) {}
@@ -1234,7 +1235,7 @@
     if (overlay) overlay.classList.remove('active');
   };
 </script>
-<script type="module" src="js/app.js?v=4.4"></script>
+<script type="module" src="js/app.js?v=5.0"></script>
 
 </body>
 </html>

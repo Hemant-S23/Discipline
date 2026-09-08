@@ -2,8 +2,10 @@
 // ui.js — Shared UI helpers: toast, modal, confetti, XP float
 // ============================================================
 
+import { getCategorySvg } from './icons.js?v=5.0';
+
 // ── Toast ─────────────────────────────────────────────────────
-const TOAST_ICONS = { success: '✓', error: '✕', info: 'ℹ', achievement: '🏆', warning: '⚠' };
+const TOAST_ICONS = { success: '✓', error: '✕', info: 'ℹ', achievement: '★', warning: '!' };
 
 export function showToast(message, type = 'success', duration = 3500) {
   const container = document.getElementById('toast-container');
@@ -31,7 +33,7 @@ export function showXPFloat(amount, sourceEl) {
   const rect = sourceEl ? sourceEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2 };
   const el = document.createElement('div');
   el.className = 'xp-float';
-  el.textContent = `+${amount} XP ⭐`;
+  el.textContent = `+${amount} XP`;
   el.style.left = (rect.left + rect.width / 2) + 'px';
   el.style.top = (rect.top + window.scrollY) + 'px';
   container.appendChild(el);
@@ -70,7 +72,7 @@ export function closeAllModals() {
 export function showConfirmModal({
   title = 'Confirmation',
   message = 'Are you sure?',
-  icon = '⚠️',
+  icon = '',
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   confirmClass = 'btn-primary',
@@ -258,7 +260,12 @@ export function difficultyLabel(d) {
 
 // ── Category label ────────────────────────────────────────────
 export const CATEGORY_ICONS = {
-  mind: '🧠', learning: '📚', fitness: '💪', work: '💻', personal: '🌱', routine: '😴'
+  mind: getCategorySvg('mind', 14),
+  learning: getCategorySvg('learning', 14),
+  fitness: getCategorySvg('fitness', 14),
+  work: getCategorySvg('work', 14),
+  personal: getCategorySvg('personal', 14),
+  routine: getCategorySvg('routine', 14)
 };
 export const CATEGORY_LABELS = {
   mind: 'Mind', learning: 'Learning', fitness: 'Fitness', work: 'Work', personal: 'Personal', routine: 'Routine'

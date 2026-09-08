@@ -2,23 +2,24 @@
 // achievements.js — Achievement definitions and unlock logic
 // ============================================================
 
-import { getCompletions, getHabits, getUser, unlockAchievement, isAchievementUnlocked, getUnlockedAchievements, today, isHabitScheduledForDate } from './data.js';
-import { calculateHabitStreak } from './streaks.js';
+import { getCompletions, getHabits, getUser, unlockAchievement, isAchievementUnlocked, getUnlockedAchievements, today, isHabitScheduledForDate } from './data.js?v=5.0';
+import { calculateHabitStreak } from './streaks.js?v=5.0';
+import { getAchievementSvg } from './icons.js?v=5.0';
 
 export const ACHIEVEMENTS = [
-  { id: 'first_step',       name: 'First Step',       icon: '🌱', rarity: 'common',    desc: 'Complete your very first habit.' },
-  { id: 'habit_builder',    name: 'Habit Builder',     icon: '🏗️', rarity: 'common',    desc: 'Create 5 or more habits.' },
-  { id: 'early_bird',       name: 'Early Bird',        icon: '🌅', rarity: 'common',    desc: 'Complete 5 habits before noon.' },
-  { id: 'comeback_kid',     name: 'Comeback Kid',      icon: '🔄', rarity: 'common',    desc: 'Complete a habit after a 3-day break.' },
-  { id: 'week_warrior',     name: 'Week Warrior',      icon: '⚔️', rarity: 'rare',      desc: 'Maintain a 7-day streak on any habit.' },
-  { id: 'perfect_day',      name: 'Perfect Day',       icon: '🎯', rarity: 'rare',      desc: 'Complete every scheduled habit in a single day.' },
-  { id: 'consistency',      name: 'Consistency',       icon: '⚡', rarity: 'rare',      desc: 'Complete the same habit 50 times.' },
-  { id: 'xp_hunter',        name: 'XP Hunter',         icon: '⭐', rarity: 'rare',      desc: 'Earn 1,000 total XP.' },
-  { id: 'century',          name: 'Century',           icon: '💯', rarity: 'epic',      desc: 'Reach 100 total habit completions.' },
-  { id: 'monthly_master',   name: 'Monthly Master',    icon: '📅', rarity: 'epic',      desc: 'Maintain a 30-day streak on any habit.' },
-  { id: 'xp_master',        name: 'XP Master',         icon: '💎', rarity: 'epic',      desc: 'Earn 5,000 total XP.' },
-  { id: 'fire_starter',     name: 'Fire Starter',      icon: '🔥', rarity: 'legendary', desc: 'Reach a 100-day streak on any habit.' },
-  { id: 'discipline_master',name: 'Discipline Master', icon: '👑', rarity: 'legendary', desc: 'Reach Level 10.' },
+  { id: 'first_step',       name: 'First Step',       icon: 'sprout',   rarity: 'common',    desc: 'Complete your very first habit.' },
+  { id: 'habit_builder',    name: 'Habit Builder',     icon: 'code',     rarity: 'common',    desc: 'Create 5 or more habits.' },
+  { id: 'early_bird',       name: 'Early Bird',        icon: 'sun',      rarity: 'common',    desc: 'Complete 5 habits before noon.' },
+  { id: 'comeback_kid',     name: 'Comeback Kid',      icon: 'activity', rarity: 'common',    desc: 'Complete a habit after a 3-day break.' },
+  { id: 'week_warrior',     name: 'Week Warrior',      icon: 'shield',   rarity: 'rare',      desc: 'Maintain a 7-day streak on any habit.' },
+  { id: 'perfect_day',      name: 'Perfect Day',       icon: 'target',   rarity: 'rare',      desc: 'Complete every scheduled habit in a single day.' },
+  { id: 'consistency',      name: 'Consistency',       icon: 'zap',      rarity: 'rare',      desc: 'Complete the same habit 50 times.' },
+  { id: 'xp_hunter',        name: 'XP Hunter',         icon: 'star',     rarity: 'rare',      desc: 'Earn 1,000 total XP.' },
+  { id: 'century',          name: 'Century',           icon: 'target',   rarity: 'epic',      desc: 'Reach 100 total habit completions.' },
+  { id: 'monthly_master',   name: 'Monthly Master',    icon: 'clock',    rarity: 'epic',      desc: 'Maintain a 30-day streak on any habit.' },
+  { id: 'xp_master',        name: 'XP Master',         icon: 'diamond',  rarity: 'epic',      desc: 'Earn 5,000 total XP.' },
+  { id: 'fire_starter',     name: 'Fire Starter',      icon: 'flame',    rarity: 'legendary', desc: 'Reach a 100-day streak on any habit.' },
+  { id: 'discipline_master',name: 'Discipline Master', icon: 'crown',    rarity: 'legendary', desc: 'Reach Level 10.' },
 ];
 
 export function getAchievementById(id) {
@@ -156,16 +157,16 @@ export function renderAchievementsPage() {
 
     return `
       <div class="achievement-card ${isUnlocked ? '' : 'locked'} slide-in-up">
-        <div class="achievement-icon">${a.icon}</div>
+        <div class="achievement-icon">${getAchievementSvg(a.id, 24)}</div>
         <span class="rarity-badge rarity-${a.rarity}">${a.rarity}</span>
         <div class="achievement-name">${a.name}</div>
         <div class="achievement-desc">${a.desc}</div>
         ${isUnlocked
-          ? `<div class="achievement-unlocked-label">✓ Unlocked ${unlockedDate}</div>`
+          ? `<div class="achievement-unlocked-label">Unlocked ${unlockedDate}</div>`
           : prog
             ? `<div class="achievement-progress"><div class="achievement-progress-bar" style="width:${progPct}%"></div></div>
                <div style="font-size:11px;color:var(--text-3)">${prog.current} / ${prog.total}</div>`
-            : '<div style="font-size:11px;color:var(--text-3)">Keep going!</div>'
+            : '<div style="font-size:11px;color:var(--text-3)">In progress</div>'
         }
       </div>
     `;
