@@ -28,15 +28,27 @@ export async function handleRedirectResult() {
     if (result && result.user) {
       currentAuthUser = result.user;
       const name = result.user.displayName || result.user.email.split('@')[0];
-      updateUser({
-        email: result.user.email,
-        name,
-        isLoggedIn: true,
-        authDone: true,
-        nameCustomized: true
-      });
-      await uploadLocalDataToCloud(result.user.uid);
-      showToast('Signed in with Google!', 'success');
+      const hasCloudHabits = await syncCloudData(result.user.uid);
+
+      if (hasCloudHabits) {
+        updateUser({
+          email: result.user.email,
+          name: result.user.displayName || name,
+          isLoggedIn: true,
+          authDone: true,
+          onboardingDone: true
+        });
+      } else {
+        updateUser({
+          email: result.user.email,
+          name: result.user.displayName || name,
+          isLoggedIn: true,
+          authDone: true,
+          onboardingDone: false
+        });
+      }
+
+      showToast(`Signed in as ${result.user.displayName || name}!`, 'success');
       return result.user;
     }
   } catch (err) {
@@ -84,7 +96,7 @@ export async function initAuth(onUserChange) {
 }
 
 export async function syncCloudData(uid) {
-  if (!isFirebaseConfigured || !db) return;
+  if (!isFirebaseConfigured || !db) return false;
   try {
     const userDocRef = doc(db, 'users', uid);
     const snap = await getDoc(userDocRef);
@@ -92,9 +104,10 @@ export async function syncCloudData(uid) {
     if (snap.exists()) {
       const cloudData = snap.data();
       const localHabits = load(KEYS.HABITS, []);
+      const cloudHabits = cloudData.habits && Array.isArray(cloudData.habits) && cloudData.habits.length > 0;
 
       // If cloud has habits, restore them. If cloud is empty but local has habits (e.g. from onboarding), keep local & sync up!
-      if (cloudData.habits && Array.isArray(cloudData.habits) && cloudData.habits.length > 0) {
+      if (cloudHabits) {
         save(KEYS.HABITS, cloudData.habits);
       } else if (localHabits.length > 0) {
         await uploadLocalDataToCloud(uid);
@@ -115,14 +128,23 @@ export async function syncCloudData(uid) {
       if (cloudData.rewards && Array.isArray(cloudData.rewards) && cloudData.rewards.length > 0) {
         save(KEYS.REWARDS, cloudData.rewards);
       }
+      // Restore profile but keep local onboardingDone state based on cloud habits presence
       if (cloudData.userProfile) {
-        save(KEYS.USER, { ...getUser(), ...cloudData.userProfile });
+        const mergedProfile = { ...getUser(), ...cloudData.userProfile };
+        // onboardingDone is determined by whether user has cloud habits, not by the stored flag
+        mergedProfile.onboardingDone = cloudHabits || !!cloudData.userProfile.onboardingDone;
+        save(KEYS.USER, mergedProfile);
       }
+
+      return cloudHabits; // true = returning user with data, false = brand new user
     } else {
+      // No cloud doc yet — fresh account
       await uploadLocalDataToCloud(uid);
+      return false;
     }
   } catch (e) {
     console.error('Error syncing cloud data:', e);
+    return false;
   }
 }
 
@@ -271,9 +293,20 @@ export async function loginWithGoogle() {
     try {
       const cred = await signInWithPopup(auth, googleProvider);
       const name = cred.user.displayName || cred.user.email.split('@')[0];
-      updateUser({ email: cred.user.email, name, isLoggedIn: true, authDone: true, nameCustomized: true });
-      await syncCloudData(cred.user.uid);
-      showToast('Signed in with Google!', 'success');
+
+      // Check cloud for existing data — determines if onboarding is needed
+      const hasCloudHabits = await syncCloudData(cred.user.uid);
+
+      updateUser({
+        email: cred.user.email,
+        name: cred.user.displayName || name,
+        isLoggedIn: true,
+        authDone: true,
+        // Returning user with cloud data → skip onboarding. New user → run onboarding.
+        onboardingDone: hasCloudHabits
+      });
+
+      showToast(`Welcome${hasCloudHabits ? ' back' : ''}, ${cred.user.displayName || name}!`, 'success');
       if (window._updateAccountUI) window._updateAccountUI(cred.user);
       return cred.user;
     } catch (err) {
@@ -292,8 +325,9 @@ export async function loginWithGoogle() {
       throw err;
     }
   } else {
+    // Fallback demo mode (no Firebase configured)
     const googleUser = { name: 'Google User', email: 'user.google@gmail.com' };
-    updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, nameCustomized: true });
+    updateUser({ name: googleUser.name, email: googleUser.email, isLoggedIn: true, authDone: true, onboardingDone: false });
     showToast('Signed in with Google!', 'success');
     if (window._updateAccountUI) window._updateAccountUI(getUser());
     return googleUser;
