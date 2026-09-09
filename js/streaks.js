@@ -179,6 +179,7 @@ export function calculateAnnualActivity(activeHabits) {
 
   const monthLabels = [];
   let lastMonth = -1;
+  let lastYear = -1;
   let colIndex = 0;
 
   const cursor = new Date(startDate);
@@ -219,12 +220,22 @@ export function calculateAnnualActivity(activeHabits) {
     currentWeek.push(dayItem);
 
     if (currentWeek.length === 7) {
-      // Check if this week starts or includes a new month
-      const validDay = currentWeek.find(d => !d.isFuture);
-      if (validDay && validDay.month !== lastMonth) {
-        lastMonth = validDay.month;
-        const monthName = new Date(validDay.year, validDay.month, 1).toLocaleDateString('en-US', { month: 'short' });
-        monthLabels.push({ colIndex, label: monthName });
+      // Check if a new month starts in this week
+      const firstDay = currentWeek[0];
+      if (firstDay.month !== lastMonth) {
+        const monthShort = new Date(firstDay.year, firstDay.month, 1).toLocaleDateString('en-US', { month: 'short' });
+        const isYearChange = lastYear === -1 || firstDay.year !== lastYear;
+        const yearShort = `'${String(firstDay.year).slice(2)}`;
+        
+        monthLabels.push({
+          colIndex,
+          label: monthShort,
+          year: firstDay.year,
+          yearShort,
+          isYearChange
+        });
+        lastMonth = firstDay.month;
+        lastYear = firstDay.year;
       }
       weeks.push(currentWeek);
       currentWeek = [];
@@ -238,9 +249,14 @@ export function calculateAnnualActivity(activeHabits) {
     weeks.push(currentWeek);
   }
 
+  const startMonthStr = new Date(startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  const endMonthStr = todayObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  const timelineRange = `${startMonthStr} – ${endMonthStr}`;
+
   return {
     weeks,
     monthLabels,
+    timelineRange,
     totalCompletionsLastYear,
     activeDaysCount,
     maxDaily

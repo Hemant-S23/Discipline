@@ -287,16 +287,27 @@ function renderStreaksPage() {
   const chainDaysEl  = document.getElementById('streak-chain-days');
   const chainSubEl   = document.getElementById('streak-chain-sub');
   if (chainFiresEl) chainFiresEl.innerHTML = buildChain(global.current, 12);
-  if (chainDaysEl)  chainDaysEl.textContent = `${global.current}`;
+  
+  const chainDays = global.current;
+  const chainUnit = chainDays === 1 ? 'DAY' : 'DAYS';
+  if (chainDaysEl) chainDaysEl.textContent = `${chainDays}`;
+  const chainUnitEl = document.querySelector('.streak-kpi-primary .streak-kpi-unit');
+  if (chainUnitEl) chainUnitEl.textContent = chainUnit;
+
   if (chainSubEl) {
     chainSubEl.textContent = global.current > 0
-      ? `${global.current} consecutive days without missing a scheduled habit`
+      ? `${global.current} consecutive ${global.current === 1 ? 'day' : 'days'} without missing a scheduled habit`
       : 'Complete today\'s scheduled habits to start or extend your chain';
   }
 
   const bestEl = document.getElementById('streak-kpi-best');
   const bestSubEl = document.getElementById('streak-kpi-best-sub');
-  if (bestEl) bestEl.textContent = `${global.best}`;
+  const bestDays = global.best;
+  const bestUnit = bestDays === 1 ? 'DAY' : 'DAYS';
+  if (bestEl) bestEl.textContent = `${bestDays}`;
+  const bestUnitEl = document.querySelectorAll('.streak-kpi-card')[1]?.querySelector('.streak-kpi-unit');
+  if (bestUnitEl) bestUnitEl.textContent = bestUnit;
+
   if (bestSubEl) {
     bestSubEl.textContent = global.best > 0
       ? 'Personal record across all habits'
@@ -321,39 +332,40 @@ function renderStreaksPage() {
   // 2. Annual Consistency Heatmap
   const totalCompEl = document.getElementById('heatmap-total-completions');
   if (totalCompEl) {
-    totalCompEl.textContent = `${annual.totalCompletionsLastYear} completions across ${annual.activeDaysCount} active days in the last year`;
+    totalCompEl.innerHTML = `
+      <span class="matrix-range-pill">${annual.timelineRange || 'Last 365 Days'}</span>
+      <span>${annual.totalCompletionsLastYear} completions across ${annual.activeDaysCount} active days</span>
+    `;
   }
 
   const heatmapContainer = document.getElementById('heatmap-matrix-container');
   if (heatmapContainer && annual.weeks) {
     let heatmapHtml = '';
 
-    // Month header row
-    heatmapHtml += '<div class="heatmap-months-row">';
+    // Month header row (synchronized with 53 columns)
+    heatmapHtml += '<div class="heatmap-row-wrapper heatmap-months-row">';
     heatmapHtml += '<div class="heatmap-day-label-space"></div>';
     heatmapHtml += '<div class="heatmap-months-track">';
-    let lastRenderedCol = -4;
     annual.monthLabels.forEach(m => {
-      if (m.colIndex - lastRenderedCol >= 3) {
-        heatmapHtml += `<span class="heatmap-month-label" style="grid-column-start:${m.colIndex + 1}">${m.label}</span>`;
-        lastRenderedCol = m.colIndex;
-      }
+      heatmapHtml += `<span class="heatmap-month-label ${m.isYearChange ? 'has-year-tag' : ''}" style="grid-column-start:${m.colIndex + 1}">
+        ${m.label}${m.isYearChange ? ` <span class="year-badge">${m.yearShort}</span>` : ''}
+      </span>`;
     });
     heatmapHtml += '</div></div>';
 
-    // Matrix body with day labels on the left
-    heatmapHtml += '<div class="heatmap-grid-body">';
-    heatmapHtml += '<div class="heatmap-day-labels">';
+    // Body row: All 7 days labeled on the left, and 53 columns on the right
+    heatmapHtml += '<div class="heatmap-row-wrapper heatmap-body-row">';
+    heatmapHtml += '<div class="heatmap-days-col">';
     heatmapHtml += '<span class="heatmap-day-label">Mon</span>';
-    heatmapHtml += '<span class="heatmap-day-label"></span>';
+    heatmapHtml += '<span class="heatmap-day-label">Tue</span>';
     heatmapHtml += '<span class="heatmap-day-label">Wed</span>';
-    heatmapHtml += '<span class="heatmap-day-label"></span>';
+    heatmapHtml += '<span class="heatmap-day-label">Thu</span>';
     heatmapHtml += '<span class="heatmap-day-label">Fri</span>';
-    heatmapHtml += '<span class="heatmap-day-label"></span>';
+    heatmapHtml += '<span class="heatmap-day-label">Sat</span>';
     heatmapHtml += '<span class="heatmap-day-label">Sun</span>';
     heatmapHtml += '</div>';
 
-    heatmapHtml += '<div class="heatmap-columns">';
+    heatmapHtml += '<div class="heatmap-weeks-grid">';
     annual.weeks.forEach(week => {
       heatmapHtml += '<div class="heatmap-col">';
       week.forEach(day => {
@@ -390,6 +402,14 @@ function renderStreaksPage() {
         });
       });
     }
+
+    // Auto-scroll on mobile/overflow viewports so today is immediately visible
+    setTimeout(() => {
+      const scrollContainer = document.querySelector('.heatmap-scroll-container');
+      if (scrollContainer && scrollContainer.scrollWidth > scrollContainer.clientWidth) {
+        scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+      }
+    }, 50);
   }
 
   // 3. Habit Performance Ledger
@@ -412,7 +432,7 @@ function renderStreaksPage() {
             const isDoneToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.completed;
             const isScheduledToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.scheduled;
             const statusBadge = isDoneToday
-              ? `<span class="ledger-tag tag-done">${ICONS_SVG['check']} Completed</span>`
+              ? `<span class="ledger-tag tag-done">${ICONS_SVG['check-circle'] || ''} Completed</span>`
               : (isScheduledToday
                   ? `<span class="ledger-tag tag-due">Due Today</span>`
                   : `<span class="ledger-tag tag-rest">Rest Day</span>`);

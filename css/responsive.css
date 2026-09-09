@@ -524,6 +524,33 @@
 
   /* Streaks Page */
   .streaks-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .heatmap-card {
+    padding: 16px 14px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+  .heatmap-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .heatmap-title-group {
+    width: 100% !important;
+  }
+  .heatmap-subtitle {
+    font-size: 11.5px !important;
+    flex-wrap: wrap !important;
+  }
+  .heatmap-legend {
+    align-self: flex-start !important;
+  }
+  .heatmap-scroll-container {
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-x: contain !important;
+  }
+  .heatmap-matrix-wrapper {
+    min-width: 840px !important;
+  }
 
   /* Onboarding */
   .onboarding-card { padding: 24px 18px !important; }
