@@ -3,7 +3,7 @@
 // Offline caching, fast background updates, and standalone support
 // ============================================================
 
-const CACHE_NAME = 'discipline-v1.0.0';
+const CACHE_NAME = 'discipline-v1.0.1';
 
 const PRECACHE_ASSETS = [
   './',

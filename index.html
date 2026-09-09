@@ -49,13 +49,61 @@
       </linearGradient>
     </defs>
   </svg>
+
+  <!-- Anti-FOUC & Instant Auth Resolver: Executes synchronously before any paint to eliminate login screen flash -->
+  <script>
+    (function() {
+      try {
+        var raw = localStorage.getItem('discipline_user');
+        var u = raw ? JSON.parse(raw) : null;
+        var isAuth = u && (u.isLoggedIn || u.isGuest || u.authDone || u.email);
+        var root = document.documentElement;
+        if (u && u.theme) {
+          root.setAttribute('data-theme', u.theme);
+        }
+        if (isAuth && (!u || u.onboardingDone !== false)) {
+          root.classList.add('is-authenticated');
+        } else if (isAuth && u && u.onboardingDone === false) {
+          root.classList.add('is-onboarding');
+        } else {
+          root.classList.add('is-unauthenticated');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <style>
+    /* Critical Anti-Flash Rules: Enforce immediate visibility state prior to JS module hydration */
+    html.is-authenticated #landing-overlay,
+    html.is-onboarding #landing-overlay,
+    .landing-overlay.hidden {
+      display: none !important;
+    }
+    html.is-authenticated #app.app-shell {
+      display: flex !important;
+    }
+    html.is-authenticated #onboarding-overlay {
+      display: none !important;
+    }
+    html.is-unauthenticated #landing-overlay {
+      display: flex !important;
+    }
+    html.is-unauthenticated #app.app-shell {
+      display: none !important;
+    }
+    html.is-onboarding #onboarding-overlay {
+      display: flex !important;
+    }
+    html.is-onboarding #app.app-shell {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════
      LANDING / AUTH WELCOME OVERLAY
      ═══════════════════════════════════════════════════════════ -->
-<div id="landing-overlay" class="landing-overlay">
+<div id="landing-overlay" class="landing-overlay hidden">
   <div class="landing-card">
     <div class="landing-header">
       <div class="landing-logo">
@@ -1380,8 +1428,31 @@
     if (menu) menu.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
   };
+
+  // Immediate page hash restore to prevent page-swap flicker on refresh
+  (function() {
+    try {
+      var hash = (location.hash || '').slice(1);
+      var validPages = ['dashboard', 'habits', 'streaks', 'analytics', 'achievements', 'rewards', 'calendar', 'settings'];
+      if (hash && validPages.indexOf(hash) !== -1 && hash !== 'dashboard') {
+        var dash = document.getElementById('page-dashboard');
+        var target = document.getElementById('page-' + hash);
+        if (dash) dash.classList.remove('active');
+        if (target) target.classList.add('active');
+        var navItems = document.querySelectorAll('.nav-item, .mobile-nav-item');
+        for (var i = 0; i < navItems.length; i++) {
+          var item = navItems[i];
+          if (item.getAttribute('data-page') === hash) {
+            item.classList.add('active');
+          } else if (item.getAttribute('data-page') === 'dashboard') {
+            item.classList.remove('active');
+          }
+        }
+      }
+    } catch(e) {}
+  })();
 </script>
-<script type="module" src="js/app.js?v=6.0"></script>
+<script type="module" src="js/app.js?v=6.1"></script>
 
 </body>
 </html>

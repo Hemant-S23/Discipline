@@ -809,6 +809,8 @@ window.handleGuestMode = function() {
 };
 
 function proceedAfterAuth() {
+  document.documentElement.classList.add('is-authenticated');
+  document.documentElement.classList.remove('is-unauthenticated');
   const landingOverlay = document.getElementById('landing-overlay');
   if (landingOverlay) landingOverlay.classList.add('hidden');
 
@@ -836,7 +838,12 @@ function initAuthUI() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       await logoutUser();
-      updateUser({ isLoggedIn: false, authDone: false, isGuest: false });
+      updateUser({ isLoggedIn: false, authDone: false, isGuest: false, email: null });
+      try {
+        document.documentElement.classList.remove('is-authenticated');
+        document.documentElement.classList.add('is-unauthenticated');
+      } catch(e) {}
+      location.hash = '';
       location.reload();
     });
   }
@@ -1141,15 +1148,6 @@ window._appInit = appInit;
 window._proceedAfterAuth = proceedAfterAuth;
 
 async function bootApp() {
-  // FIRST: check if we just came back from a Google sign-in redirect
-  const redirectUser = await handleRedirectResult();
-  if (redirectUser) {
-    // Google redirect returned a user — skip the landing screen entirely
-    updateUser({ isLoggedIn: true, authDone: true });
-    proceedAfterAuth();
-    return;
-  }
-
   const user = getUser();
   const isAuthDone = user.isLoggedIn || user.isGuest || user.authDone || user.email;
 
@@ -1157,21 +1155,43 @@ async function bootApp() {
   const onboardingOverlay = document.getElementById('onboarding-overlay');
   const appShell = document.getElementById('app');
 
-  if (!isAuthDone) {
-    if (landingOverlay) landingOverlay.classList.remove('hidden');
-    if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
-    if (appShell) appShell.classList.add('hidden');
-  } else if (!user.onboardingDone) {
+  if (isAuthDone) {
+    // Fast-path: User is already authenticated. Render application instantly with zero flash!
+    document.documentElement.classList.add('is-authenticated');
+    document.documentElement.classList.remove('is-unauthenticated');
     if (landingOverlay) landingOverlay.classList.add('hidden');
-    if (onboardingOverlay) onboardingOverlay.classList.remove('hidden');
-    if (appShell) appShell.classList.add('hidden');
-    initOnboarding();
-  } else {
-    if (landingOverlay) landingOverlay.classList.add('hidden');
-    if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
-    if (appShell) appShell.classList.remove('hidden');
-    appInit();
+
+    if (!user.onboardingDone) {
+      if (onboardingOverlay) onboardingOverlay.classList.remove('hidden');
+      if (appShell) appShell.classList.add('hidden');
+      initOnboarding();
+    } else {
+      if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
+      if (appShell) appShell.classList.remove('hidden');
+      appInit();
+    }
+
+    // Check redirect in background without blocking initial paint or page load
+    handleRedirectResult().catch(() => {});
+    return;
   }
+
+  // Not authenticated locally — check if we just returned from a Google sign-in redirect
+  const redirectUser = await handleRedirectResult();
+  if (redirectUser) {
+    updateUser({ isLoggedIn: true, authDone: true });
+    document.documentElement.classList.add('is-authenticated');
+    document.documentElement.classList.remove('is-unauthenticated');
+    proceedAfterAuth();
+    return;
+  }
+
+  // Unauthenticated user: display landing welcome screen
+  document.documentElement.classList.add('is-unauthenticated');
+  document.documentElement.classList.remove('is-authenticated');
+  if (landingOverlay) landingOverlay.classList.remove('hidden');
+  if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
+  if (appShell) appShell.classList.add('hidden');
 }
 
 bootApp();
