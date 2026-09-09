@@ -153,10 +153,10 @@ export function calculateGlobalStreak(activeHabits) {
 }
 
 /**
- * Annual Activity Heatmap Engine (GitHub-Style 52-Week Matrix).
+ * Annual Activity Heatmap Engine (Calendar Year Matrix: Jan 1 to Dec 31).
  * Computes 53 columns of 7-day cells starting on Monday and ending on Sunday.
  */
-export function calculateAnnualActivity(activeHabits) {
+export function calculateAnnualActivity(activeHabits, targetYear = null) {
   const completions = getCompletions();
   const completionsByDate = new Map();
   completions.forEach(c => {
@@ -165,41 +165,59 @@ export function calculateAnnualActivity(activeHabits) {
 
   const todayObj = new Date();
   const todayStr = today();
-  const dayOfWeekToday = (todayObj.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+  const currentYear = todayObj.getFullYear();
+  const year = targetYear ? parseInt(targetYear, 10) : currentYear;
 
-  // 52 full weeks back from the start of the current week
-  const totalDaysBack = 52 * 7 + dayOfWeekToday;
-  const startDate = new Date(todayObj.getTime() - totalDaysBack * 86400000);
+  const jan1 = new Date(year, 0, 1);
+  const dayOfWeekJan1 = (jan1.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+  // Start on the Monday of the week containing Jan 1
+  const startDate = new Date(jan1.getTime() - dayOfWeekJan1 * 86400000);
+
+  const dec31 = new Date(year, 11, 31);
+  const dayOfWeekDec31 = (dec31.getDay() + 6) % 7;
+  // End on the Sunday of the week containing Dec 31
+  const endDate = new Date(dec31.getTime() + (6 - dayOfWeekDec31) * 86400000);
+
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  const totalDaysInYear = isLeapYear ? 366 : 365;
+
+  let dayOfYear = 0;
+  if (year === currentYear) {
+    const diffTime = todayObj - jan1;
+    dayOfYear = Math.min(totalDaysInYear, Math.max(1, Math.floor(diffTime / 86400000) + 1));
+  } else if (year < currentYear) {
+    dayOfYear = totalDaysInYear;
+  } else {
+    dayOfYear = 0;
+  }
 
   const weeks = [];
   let currentWeek = [];
-  let totalCompletionsLastYear = 0;
+  let totalCompletionsThisYear = 0;
   let activeDaysCount = 0;
   let maxDaily = 0;
 
   const monthLabels = [];
-  let lastMonth = -1;
-  let lastYear = -1;
   let colIndex = 0;
 
   const cursor = new Date(startDate);
-  // End on the Sunday of the current week
-  const endDate = new Date(todayObj.getTime() + (6 - dayOfWeekToday) * 86400000);
 
   while (cursor <= endDate) {
     const ds = dateStr(cursor);
+    const dayYear = cursor.getFullYear();
+    const isOutsideYear = dayYear !== year;
     const isFuture = ds > todayStr;
-    const count = isFuture ? 0 : (completionsByDate.get(ds) || 0);
+    const count = (!isOutsideYear && !isFuture) ? (completionsByDate.get(ds) || 0) : 0;
 
-    if (!isFuture && count > 0) {
-      totalCompletionsLastYear += count;
+    if (!isOutsideYear && !isFuture && count > 0) {
+      totalCompletionsThisYear += count;
       activeDaysCount++;
       if (count > maxDaily) maxDaily = count;
     }
 
     // Intensity Level: 0 to 4
     let level = 0;
-    if (!isFuture) {
+    if (!isOutsideYear && !isFuture) {
       if (count >= 5) level = 4;
       else if (count >= 3) level = 3;
       else if (count >= 2) level = 2;
@@ -212,30 +230,25 @@ export function calculateAnnualActivity(activeHabits) {
       level,
       isToday: ds === todayStr,
       isFuture,
+      isOutsideYear,
       dayOfWeek: (cursor.getDay() + 6) % 7, // 0 = Mon, 6 = Sun
       month: cursor.getMonth(),
-      year: cursor.getFullYear()
+      year: dayYear
     };
 
     currentWeek.push(dayItem);
 
     if (currentWeek.length === 7) {
-      // Check if a new month starts in this week
-      const firstDay = currentWeek[0];
-      if (firstDay.month !== lastMonth) {
-        const monthShort = new Date(firstDay.year, firstDay.month, 1).toLocaleDateString('en-US', { month: 'short' });
-        const isYearChange = lastYear === -1 || firstDay.year !== lastYear;
-        const yearShort = `'${String(firstDay.year).slice(2)}`;
-        
+      // Check if this week contains the 1st of a month in the target year
+      const firstOfMonthDay = currentWeek.find(d => !d.isOutsideYear && parseInt(d.date.slice(8), 10) === 1);
+      if (firstOfMonthDay) {
+        const monthShort = new Date(year, firstOfMonthDay.month, 1).toLocaleDateString('en-US', { month: 'short' });
         monthLabels.push({
           colIndex,
           label: monthShort,
-          year: firstDay.year,
-          yearShort,
-          isYearChange
+          month: firstOfMonthDay.month,
+          isCurrent: year === currentYear && firstOfMonthDay.month === todayObj.getMonth()
         });
-        lastMonth = firstDay.month;
-        lastYear = firstDay.year;
       }
       weeks.push(currentWeek);
       currentWeek = [];
@@ -249,17 +262,22 @@ export function calculateAnnualActivity(activeHabits) {
     weeks.push(currentWeek);
   }
 
-  const startMonthStr = new Date(startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  const endMonthStr = todayObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  const timelineRange = `${startMonthStr} – ${endMonthStr}`;
+  const timelineRange = `Jan 1 – Dec 31, ${year}`;
+  const yearProgressPercent = Math.round((dayOfYear / totalDaysInYear) * 100);
 
   return {
+    year,
+    currentYear,
     weeks,
     monthLabels,
     timelineRange,
-    totalCompletionsLastYear,
+    totalCompletionsThisYear,
+    totalCompletionsLastYear: totalCompletionsThisYear, // backwards compat
     activeDaysCount,
-    maxDaily
+    maxDaily,
+    dayOfYear,
+    totalDaysInYear,
+    yearProgressPercent
   };
 }
 

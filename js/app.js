@@ -330,11 +330,49 @@ function renderStreaksPage() {
   if (habitsTotalEl)  habitsTotalEl.textContent = `/ ${global.totalHabits}`;
 
   // 2. Annual Consistency Heatmap
+  renderAnnualHeatmap(habits);
+}
+
+let selectedHeatmapYear = null;
+
+function renderAnnualHeatmap(habits, targetYear = null) {
+  const currentYear = new Date().getFullYear();
+  if (targetYear) {
+    selectedHeatmapYear = targetYear;
+  } else if (!selectedHeatmapYear) {
+    selectedHeatmapYear = currentYear;
+  }
+  const year = selectedHeatmapYear;
+  const annual = calculateAnnualActivity(habits, year);
+
+  // Update Title and Year Selector
+  const cardTitleEl = document.querySelector('.heatmap-title');
+  if (cardTitleEl) {
+    cardTitleEl.innerHTML = `
+      <span>${year} Annual Consistency Matrix</span>
+      <div class="heatmap-year-selector">
+        <button class="heatmap-year-btn ${year === currentYear - 1 ? 'active' : ''}" data-year="${currentYear - 1}">${currentYear - 1}</button>
+        <button class="heatmap-year-btn ${year === currentYear ? 'active' : ''}" data-year="${currentYear}">${currentYear}</button>
+      </div>
+    `;
+    cardTitleEl.querySelectorAll('.heatmap-year-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const y = parseInt(btn.dataset.year, 10);
+        if (y !== selectedHeatmapYear) {
+          renderAnnualHeatmap(habits, y);
+        }
+      });
+    });
+  }
+
+  // Update Subtitle
   const totalCompEl = document.getElementById('heatmap-total-completions');
   if (totalCompEl) {
     totalCompEl.innerHTML = `
-      <span class="matrix-range-pill">${annual.timelineRange || 'Last 365 Days'}</span>
-      <span>${annual.totalCompletionsLastYear} completions across ${annual.activeDaysCount} active days</span>
+      <span class="matrix-range-pill">${annual.timelineRange}</span>
+      <span>${annual.totalCompletionsThisYear} completion${annual.totalCompletionsThisYear === 1 ? '' : 's'} across ${annual.activeDaysCount} active days</span>
+      ${year === currentYear ? `<span class="matrix-progress-pill">Day ${annual.dayOfYear} of ${annual.totalDaysInYear} (${annual.yearProgressPercent}% elapsed)</span>` : ''}
     `;
   }
 
@@ -347,8 +385,8 @@ function renderStreaksPage() {
     heatmapHtml += '<div class="heatmap-day-label-space"></div>';
     heatmapHtml += '<div class="heatmap-months-track">';
     annual.monthLabels.forEach(m => {
-      heatmapHtml += `<span class="heatmap-month-label ${m.isYearChange ? 'has-year-tag' : ''}" style="grid-column-start:${m.colIndex + 1}">
-        ${m.label}${m.isYearChange ? ` <span class="year-badge">${m.yearShort}</span>` : ''}
+      heatmapHtml += `<span class="heatmap-month-label ${m.isCurrent ? 'is-current-month' : ''}" style="grid-column-start:${m.colIndex + 1}">
+        ${m.label}
       </span>`;
     });
     heatmapHtml += '</div></div>';
@@ -369,10 +407,20 @@ function renderStreaksPage() {
     annual.weeks.forEach(week => {
       heatmapHtml += '<div class="heatmap-col">';
       week.forEach(day => {
-        const titleText = day.isFuture
+        const titleText = day.isOutsideYear
           ? ''
-          : `${day.count} completion${day.count === 1 ? '' : 's'} on ${day.date}`;
-        heatmapHtml += `<div class="heatmap-cell lvl-${day.level} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}" data-date="${day.date}" data-count="${day.count}" data-future="${day.isFuture}" title="${titleText}"></div>`;
+          : (day.isFuture
+              ? `Upcoming • ${day.date}`
+              : `${day.count} completion${day.count === 1 ? '' : 's'} on ${day.date}`);
+        const classes = [
+          'heatmap-cell',
+          `lvl-${day.level}`,
+          day.isToday ? 'is-today' : '',
+          day.isFuture ? 'is-future' : '',
+          day.isOutsideYear ? 'is-outside-year' : ''
+        ].filter(Boolean).join(' ');
+
+        heatmapHtml += `<div class="${classes}" data-date="${day.date}" data-count="${day.count}" data-future="${day.isFuture}" data-outside="${day.isOutsideYear}" title="${titleText}"></div>`;
       });
       heatmapHtml += '</div>';
     });
@@ -384,13 +432,26 @@ function renderStreaksPage() {
     // Attach interactive hover tooltip
     const tooltipEl = document.getElementById('heatmap-tooltip');
     if (tooltipEl) {
-      heatmapContainer.querySelectorAll('.heatmap-cell:not(.is-future)').forEach(cell => {
+      heatmapContainer.querySelectorAll('.heatmap-cell:not(.is-outside-year)').forEach(cell => {
         cell.addEventListener('mouseenter', () => {
           const date = cell.dataset.date;
+          const isFuture = cell.dataset.future === 'true';
           const count = parseInt(cell.dataset.count || '0', 10);
           const dObj = new Date(date + 'T00:00:00');
           const dateStrFormatted = dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-          tooltipEl.innerHTML = `<strong>${count} habit${count === 1 ? '' : 's'} completed</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${dateStrFormatted}</div>`;
+          
+          let content = '';
+          if (cell.classList.contains('is-today')) {
+            content = `<strong>${count} habit${count === 1 ? '' : 's'} completed today</strong><div style="font-size:11px;color:var(--accent);margin-top:2px">Today • ${dateStrFormatted}</div>`;
+          } else if (isFuture) {
+            content = `<strong>Upcoming Day</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${dateStrFormatted}</div>`;
+          } else if (count > 0) {
+            content = `<strong>${count} habit${count === 1 ? '' : 's'} completed</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${dateStrFormatted}</div>`;
+          } else {
+            content = `<strong>No completions</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${dateStrFormatted}</div>`;
+          }
+
+          tooltipEl.innerHTML = content;
           tooltipEl.style.display = 'block';
           const rect = cell.getBoundingClientRect();
           const tipRect = tooltipEl.getBoundingClientRect();
@@ -403,11 +464,17 @@ function renderStreaksPage() {
       });
     }
 
-    // Auto-scroll on mobile/overflow viewports so today is immediately visible
+    // Auto-scroll on mobile/overflow viewports so today or current week is visible
     setTimeout(() => {
       const scrollContainer = document.querySelector('.heatmap-scroll-container');
       if (scrollContainer && scrollContainer.scrollWidth > scrollContainer.clientWidth) {
-        scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+        const todayCell = heatmapContainer.querySelector('.heatmap-cell.is-today');
+        if (todayCell) {
+          const cellLeft = todayCell.offsetLeft;
+          scrollContainer.scrollLeft = Math.max(0, cellLeft - scrollContainer.clientWidth / 2);
+        } else {
+          scrollContainer.scrollLeft = 0;
+        }
       }
     }, 50);
   }

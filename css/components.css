@@ -1306,7 +1306,43 @@
   letter-spacing: -0.01em;
   color: var(--text);
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
+.heatmap-year-selector {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+.heatmap-year-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  padding: 2px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+.heatmap-year-btn:hover {
+  color: var(--text);
+}
+.heatmap-year-btn.active {
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .heatmap-subtitle {
   font-size: 12px;
   color: var(--text-3);
@@ -1315,7 +1351,8 @@
   gap: 8px;
   flex-wrap: wrap;
 }
-.matrix-range-pill {
+.matrix-range-pill,
+.matrix-progress-pill {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
@@ -1410,6 +1447,10 @@
   color: var(--text);
   font-weight: 700;
 }
+.heatmap-month-label.is-current-month {
+  color: var(--accent);
+  font-weight: 800;
+}
 .year-badge {
   display: inline-flex;
   align-items: center;
@@ -1497,10 +1538,20 @@
   outline-offset: 1px;
 }
 .heatmap-cell.is-future {
-  opacity: 0.16;
   cursor: default;
   background: var(--surface-2);
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--border-2);
+  opacity: 0.55;
+}
+.heatmap-cell.is-future:hover {
+  opacity: 0.85;
+  border-color: var(--text-3);
+  transform: scale(1.15);
+  z-index: 5;
+}
+.heatmap-cell.is-outside-year {
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 .heatmap-cell:not(.is-future):hover {
   transform: scale(1.35);
