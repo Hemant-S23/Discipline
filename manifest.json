@@ -1,0 +1,57 @@
+{
+  "name": "Discipline — Habit & Streak Tracker",
+  "short_name": "Discipline",
+  "description": "Build the person you promised yourself you'd become. Track daily habits, consistency, unbroken streaks, and earn milestone rewards.",
+  "start_url": "./",
+  "scope": "./",
+  "id": "/discipline-app",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#08090A",
+  "theme_color": "#08090A",
+  "lang": "en",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Habit Routine",
+      "short_name": "Habits",
+      "description": "View and check in your daily habits",
+      "url": "./#habits",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Consistency Streaks",
+      "short_name": "Streaks",
+      "description": "View your unbroken chains and consistency matrix",
+      "url": "./#streaks",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

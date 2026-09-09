@@ -1206,3 +1206,38 @@ window.executeDeleteSafetyAccount = executeDeleteSafetyAccount;
 window.checkEmailVerificationStatus = checkEmailVerification;
 window.resendEmailVerificationLink = resendVerification;
 window.cancelEmailVerification = cancelEmailVerification;
+
+// ── PWA Service Worker Registration ───────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => {
+        console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('[PWA] ServiceWorker registration failed:', err);
+      });
+  });
+}
+
+// ── PWA Install Prompt Handler ────────────────────────────────
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  window.deferredInstallPrompt = deferredInstallPrompt;
+  console.log('[PWA] beforeinstallprompt captured, ready for install.');
+  window.dispatchEvent(new CustomEvent('pwa-installable'));
+});
+
+window.triggerPWAInstall = async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    console.log('[PWA] User choice outcome:', outcome);
+    deferredInstallPrompt = null;
+    window.deferredInstallPrompt = null;
+  } else {
+    showToast('To install, use browser menu: "Install App" or "Add to Home Screen"', 'info');
+  }
+};

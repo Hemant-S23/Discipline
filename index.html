@@ -5,11 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Discipline — Build the person you promised yourself you'd become</title>
   <meta name="description" content="Discipline is a personal habit and consistency dashboard. Track habits, streaks, XP, achievements and build the person you promised yourself you'd become." />
-  <meta name="theme-color" content="#7C6FF7" />
+  <meta name="theme-color" content="#08090A" />
 
-  <!-- Favicon -->
+  <!-- PWA Web App Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Mobile & iOS PWA Support -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Discipline" />
+  <meta name="application-name" content="Discipline" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+
+  <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="alternate icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="shortcut icon" href="favicon.ico" />
 
 
   <!-- Fonts -->
@@ -712,6 +726,23 @@
                 <div class="settings-row-desc">Switch between clean light and dark theme</div>
               </div>
               <button class="btn-secondary-sm" id="sidebar-theme-toggle">Toggle Theme</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group 2.5: Application & Installation -->
+        <div class="settings-group" id="pwa-install-group">
+          <div class="settings-group-header">APPLICATION</div>
+          <div class="settings-card-group">
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <div class="settings-row-label">Install App on Device</div>
+                <div class="settings-row-desc">Install Discipline as a standalone app on your phone or computer for instant offline access</div>
+              </div>
+              <button class="btn-primary-sm" id="pwa-install-btn" onclick="triggerPWAInstall()" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:8px 14px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;border:none;cursor:pointer;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Install App
+              </button>
             </div>
           </div>
         </div>
