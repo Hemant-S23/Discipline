@@ -809,8 +809,6 @@ window.handleGuestMode = function() {
 };
 
 function proceedAfterAuth() {
-  document.documentElement.classList.add('is-authenticated');
-  document.documentElement.classList.remove('is-unauthenticated');
   const landingOverlay = document.getElementById('landing-overlay');
   if (landingOverlay) landingOverlay.classList.add('hidden');
 
@@ -820,6 +818,7 @@ function proceedAfterAuth() {
     if (onboardingOverlay) onboardingOverlay.classList.remove('hidden');
     initOnboarding();
   } else {
+    document.documentElement.classList.add('user-logged-in');
     const appShell = document.getElementById('app');
     if (appShell) appShell.classList.remove('hidden');
     appInit();
@@ -840,8 +839,7 @@ function initAuthUI() {
       await logoutUser();
       updateUser({ isLoggedIn: false, authDone: false, isGuest: false, email: null });
       try {
-        document.documentElement.classList.remove('is-authenticated');
-        document.documentElement.classList.add('is-unauthenticated');
+        document.documentElement.classList.remove('user-logged-in');
       } catch(e) {}
       location.hash = '';
       location.reload();
@@ -1156,9 +1154,6 @@ async function bootApp() {
   const appShell = document.getElementById('app');
 
   if (isAuthDone) {
-    // Fast-path: User is already authenticated. Render application instantly with zero flash!
-    document.documentElement.classList.add('is-authenticated');
-    document.documentElement.classList.remove('is-unauthenticated');
     if (landingOverlay) landingOverlay.classList.add('hidden');
 
     if (!user.onboardingDone) {
@@ -1166,6 +1161,7 @@ async function bootApp() {
       if (appShell) appShell.classList.add('hidden');
       initOnboarding();
     } else {
+      document.documentElement.classList.add('user-logged-in');
       if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
       if (appShell) appShell.classList.remove('hidden');
       appInit();
@@ -1180,15 +1176,12 @@ async function bootApp() {
   const redirectUser = await handleRedirectResult();
   if (redirectUser) {
     updateUser({ isLoggedIn: true, authDone: true });
-    document.documentElement.classList.add('is-authenticated');
-    document.documentElement.classList.remove('is-unauthenticated');
     proceedAfterAuth();
     return;
   }
 
   // Unauthenticated user: display landing welcome screen
-  document.documentElement.classList.add('is-unauthenticated');
-  document.documentElement.classList.remove('is-authenticated');
+  document.documentElement.classList.remove('user-logged-in');
   if (landingOverlay) landingOverlay.classList.remove('hidden');
   if (onboardingOverlay) onboardingOverlay.classList.add('hidden');
   if (appShell) appShell.classList.add('hidden');

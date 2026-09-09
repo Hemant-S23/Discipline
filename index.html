@@ -50,51 +50,28 @@
     </defs>
   </svg>
 
-  <!-- Anti-FOUC & Instant Auth Resolver: Executes synchronously before any paint to eliminate login screen flash -->
+  <!-- Anti-FOUC: Only hides landing overlay on refresh IF user is already logged in & finished onboarding -->
   <script>
     (function() {
       try {
         var raw = localStorage.getItem('discipline_user');
         var u = raw ? JSON.parse(raw) : null;
-        var isAuth = u && (u.isLoggedIn || u.isGuest || u.authDone || u.email);
-        var root = document.documentElement;
         if (u && u.theme) {
-          root.setAttribute('data-theme', u.theme);
+          document.documentElement.setAttribute('data-theme', u.theme);
         }
-        if (isAuth && (!u || u.onboardingDone !== false)) {
-          root.classList.add('is-authenticated');
-        } else if (isAuth && u && u.onboardingDone === false) {
-          root.classList.add('is-onboarding');
-        } else {
-          root.classList.add('is-unauthenticated');
+        if (u && (u.isLoggedIn || u.isGuest || u.authDone || u.email) && u.onboardingDone) {
+          document.documentElement.classList.add('user-logged-in');
         }
       } catch(e) {}
     })();
   </script>
   <style>
-    /* Critical Anti-Flash Rules: Enforce immediate visibility state prior to JS module hydration */
-    html.is-authenticated #landing-overlay,
-    html.is-onboarding #landing-overlay,
-    .landing-overlay.hidden {
+    /* Suppress landing overlay flash ONLY for verified logged-in users during refresh */
+    html.user-logged-in #landing-overlay {
       display: none !important;
     }
-    html.is-authenticated #app.app-shell {
+    html.user-logged-in #app.app-shell {
       display: flex !important;
-    }
-    html.is-authenticated #onboarding-overlay {
-      display: none !important;
-    }
-    html.is-unauthenticated #landing-overlay {
-      display: flex !important;
-    }
-    html.is-unauthenticated #app.app-shell {
-      display: none !important;
-    }
-    html.is-onboarding #onboarding-overlay {
-      display: flex !important;
-    }
-    html.is-onboarding #app.app-shell {
-      display: none !important;
     }
   </style>
 </head>
@@ -103,7 +80,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      LANDING / AUTH WELCOME OVERLAY
      ═══════════════════════════════════════════════════════════ -->
-<div id="landing-overlay" class="landing-overlay hidden">
+<div id="landing-overlay" class="landing-overlay">
   <div class="landing-card">
     <div class="landing-header">
       <div class="landing-logo">
@@ -1452,7 +1429,7 @@
     } catch(e) {}
   })();
 </script>
-<script type="module" src="js/app.js?v=6.1"></script>
+<script type="module" src="js/app.js?v=6.2"></script>
 
 </body>
 </html>

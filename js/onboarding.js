@@ -220,6 +220,7 @@ window.finishOnboarding = async function() {
     }
   }
 
+  try { document.documentElement.classList.add('user-logged-in'); } catch(e) {}
   const overlay = document.getElementById('onboarding-overlay');
   const appShell = document.getElementById('app');
   if (overlay) overlay.classList.add('hidden');
