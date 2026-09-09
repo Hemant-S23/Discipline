@@ -5,11 +5,11 @@
 import {
   getActiveHabits, getCompletions, getDailyStats, today, dateStr,
   isHabitScheduledForDate, isCompleted, getHabitConsistency
-} from './data.js?v=5.0';
-import { calculateHabitStreak } from './streaks.js?v=5.0';
-import { getUser } from './data.js?v=5.0';
-import { CATEGORY_ICONS } from './ui.js?v=5.0';
-import { getHabitSvg } from './icons.js?v=5.0';
+} from './data.js?v=6.0';
+import { calculateHabitStreak } from './streaks.js?v=6.0';
+import { getUser } from './data.js?v=6.0';
+import { CATEGORY_ICONS } from './ui.js?v=6.0';
+import { getHabitSvg } from './icons.js?v=6.0';
 
 let chartDailyAnalytics = null;
 let chartWeeklyAnalytics = null;

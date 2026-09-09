@@ -6,10 +6,10 @@ import {
   getActiveHabits, getCompletions, isCompleted, toggleCompletion,
   today, dateStr, isHabitScheduledForDate, getTasksForDate, addTask, toggleTask, deleteTask,
   getTaskById, getTasks, saveTasks, hasAwardedXpToday
-} from './data.js?v=5.0';
-import { awardXP } from './xp.js?v=5.0';
-import { showToast, openModal, closeModal, showXPFloat } from './ui.js?v=5.0';
-import { getHabitSvg, ICONS_SVG } from './icons.js?v=5.0';
+} from './data.js?v=6.0';
+import { awardXP } from './xp.js?v=6.0';
+import { showToast, openModal, closeModal, showXPFloat } from './ui.js?v=6.0';
+import { getHabitSvg, ICONS_SVG } from './icons.js?v=6.0';
 
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();

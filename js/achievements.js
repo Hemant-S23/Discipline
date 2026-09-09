@@ -2,9 +2,9 @@
 // achievements.js — Achievement definitions and unlock logic
 // ============================================================
 
-import { getCompletions, getHabits, getUser, unlockAchievement, isAchievementUnlocked, getUnlockedAchievements, today, isHabitScheduledForDate } from './data.js?v=5.0';
-import { calculateHabitStreak } from './streaks.js?v=5.0';
-import { getAchievementSvg } from './icons.js?v=5.0';
+import { getCompletions, getHabits, getUser, unlockAchievement, isAchievementUnlocked, getUnlockedAchievements, today, isHabitScheduledForDate } from './data.js?v=6.0';
+import { calculateHabitStreak } from './streaks.js?v=6.0';
+import { getAchievementSvg } from './icons.js?v=6.0';
 
 export const ACHIEVEMENTS = [
   { id: 'first_step',       name: 'First Step',       icon: 'sprout',   rarity: 'common',    desc: 'Complete your very first habit.' },

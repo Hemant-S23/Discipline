@@ -2,26 +2,29 @@
 // app.js — Bootstrap, router, global events
 // ============================================================
 
-import { initOnboarding } from './onboarding.js?v=5.0';
-import { renderDashboard } from './dashboard.js?v=5.0';
-import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=5.0';
-import { renderAnalyticsPage } from './analytics.js?v=5.0';
-import { renderCalendarPage, calendarPrev, calendarNext, openDayDetailModal } from './calendar.js?v=5.0';
-import { renderAchievementsPage } from './achievements.js?v=5.0';
-import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=5.0';
-import { calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain } from './streaks.js?v=5.1';
+import { initOnboarding } from './onboarding.js?v=6.0';
+import { renderDashboard } from './dashboard.js?v=6.0';
+import { renderHabitsPage, openAddHabitModal, submitHabitForm, renderArchivedHabits } from './habits.js?v=6.0';
+import { renderAnalyticsPage } from './analytics.js?v=6.0';
+import { renderCalendarPage, calendarPrev, calendarNext, openDayDetailModal } from './calendar.js?v=6.0';
+import { renderAchievementsPage } from './achievements.js?v=6.0';
+import { renderRewardsPage, restoreActiveReward, applyReward } from './rewards.js?v=6.0';
+import {
+  calculateHabitStreak, calculateGlobalStreak, getHabitsByStreak, buildChain,
+  calculateAnnualActivity, getNextMilestone, MILESTONES, MILESTONE_DATA
+} from './streaks.js?v=6.0';
 import {
   getActiveHabits, getUser, updateUser, saveCheckin, getCheckinForDate, hasAwardedXpToday, today, resetAllData, exportData
-} from './data.js?v=5.0';
-import { awardXP, XP_BONUSES } from './xp.js?v=5.0';
+} from './data.js?v=6.0';
+import { awardXP, XP_BONUSES } from './xp.js?v=6.0';
 import {
   initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult,
   checkEmailVerification, resendVerification, cancelEmailVerification
-} from './auth.js?v=5.0';
+} from './auth.js?v=6.0';
 import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
-} from './ui.js?v=5.0';
-import { getHabitSvg, ICONS_SVG } from './icons.js?v=5.0';
+} from './ui.js?v=6.0';
+import { getHabitSvg, ICONS_SVG } from './icons.js?v=6.0';
 
 // ── Pages ─────────────────────────────────────────────────────
 const PAGES = ['dashboard', 'habits', 'streaks', 'analytics', 'achievements', 'rewards', 'calendar', 'settings'];
@@ -277,45 +280,226 @@ function renderStreaksPage() {
   const habits  = getActiveHabits();
   const global  = calculateGlobalStreak(habits);
   const withStr = getHabitsByStreak(habits);
+  const annual  = calculateAnnualActivity(habits);
 
-  // Chain view
-  const chainEl = document.getElementById('streak-chain-fires');
-  const chainNumEl = document.getElementById('streak-chain-days');
-  if (chainEl)    chainEl.innerHTML    = buildChain(global.current, 28);
-  if (chainNumEl) chainNumEl.textContent = `${global.current} DAYS`;
-
-  // Grid
-  const gridEl = document.getElementById('streaks-habits-grid');
-  if (!gridEl) return;
-
-  if (!withStr.length) {
-    gridEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">${ICONS_SVG['flame']}</div><p>Add habits to start your streak!</p></div>`;
-    return;
+  // 1. Executive KPI Header
+  const chainFiresEl = document.getElementById('streak-chain-fires');
+  const chainDaysEl  = document.getElementById('streak-chain-days');
+  const chainSubEl   = document.getElementById('streak-chain-sub');
+  if (chainFiresEl) chainFiresEl.innerHTML = buildChain(global.current, 12);
+  if (chainDaysEl)  chainDaysEl.textContent = `${global.current}`;
+  if (chainSubEl) {
+    chainSubEl.textContent = global.current > 0
+      ? `${global.current} consecutive days without missing a scheduled habit`
+      : 'Complete today\'s scheduled habits to start or extend your chain';
   }
 
-  gridEl.innerHTML = withStr.map((h, i) => `
-    <div class="streak-item-card" style="animation-delay:${i * 0.05}s">
-      <div class="streak-item-icon" style="background:${h.color ? h.color + '18' : 'var(--surface-2)'};color:var(--text)">${getHabitSvg(h.icon, 20)}</div>
-      <div class="streak-item-info">
-        <div class="streak-item-name">${h.name}</div>
-        <div class="streak-item-category" style="display:inline-flex;align-items:center;gap:4px">${CATEGORY_ICONS[h.category] || ''} ${h.category}</div>
-        <div class="streak-item-nums">
-          <div class="streak-num-block">
-            <div class="streak-num-value">${h.streak.current}</div>
-            <div class="streak-num-label">Current</div>
+  const bestEl = document.getElementById('streak-kpi-best');
+  const bestSubEl = document.getElementById('streak-kpi-best-sub');
+  if (bestEl) bestEl.textContent = `${global.best}`;
+  if (bestSubEl) {
+    bestSubEl.textContent = global.best > 0
+      ? 'Personal record across all habits'
+      : 'Complete habits consecutively to set records';
+  }
+
+  const consistencyEl = document.getElementById('streak-kpi-consistency');
+  const consistencyBarEl = document.getElementById('streak-kpi-consistency-bar');
+  const consistencySubEl = document.getElementById('streak-kpi-consistency-sub');
+  if (consistencyEl) consistencyEl.textContent = `${global.consistency30d}%`;
+  if (consistencyBarEl) consistencyBarEl.style.width = `${global.consistency30d}%`;
+  if (consistencySubEl) {
+    const tier = global.consistency30d >= 90 ? 'Elite discipline tier' : (global.consistency30d >= 70 ? 'Strong momentum' : 'Building consistency');
+    consistencySubEl.textContent = `${tier} (last 30 days)`;
+  }
+
+  const habitsActiveEl = document.getElementById('streak-kpi-habits-active');
+  const habitsTotalEl  = document.getElementById('streak-kpi-habits-total');
+  if (habitsActiveEl) habitsActiveEl.textContent = `${global.habitsOnTrack}`;
+  if (habitsTotalEl)  habitsTotalEl.textContent = `/ ${global.totalHabits}`;
+
+  // 2. Annual Consistency Heatmap
+  const totalCompEl = document.getElementById('heatmap-total-completions');
+  if (totalCompEl) {
+    totalCompEl.textContent = `${annual.totalCompletionsLastYear} completions across ${annual.activeDaysCount} active days in the last year`;
+  }
+
+  const heatmapContainer = document.getElementById('heatmap-matrix-container');
+  if (heatmapContainer && annual.weeks) {
+    let heatmapHtml = '';
+
+    // Month header row
+    heatmapHtml += '<div class="heatmap-months-row">';
+    heatmapHtml += '<div class="heatmap-day-label-space"></div>';
+    heatmapHtml += '<div class="heatmap-months-track">';
+    let lastRenderedCol = -4;
+    annual.monthLabels.forEach(m => {
+      if (m.colIndex - lastRenderedCol >= 3) {
+        heatmapHtml += `<span class="heatmap-month-label" style="grid-column-start:${m.colIndex + 1}">${m.label}</span>`;
+        lastRenderedCol = m.colIndex;
+      }
+    });
+    heatmapHtml += '</div></div>';
+
+    // Matrix body with day labels on the left
+    heatmapHtml += '<div class="heatmap-grid-body">';
+    heatmapHtml += '<div class="heatmap-day-labels">';
+    heatmapHtml += '<span class="heatmap-day-label">Mon</span>';
+    heatmapHtml += '<span class="heatmap-day-label"></span>';
+    heatmapHtml += '<span class="heatmap-day-label">Wed</span>';
+    heatmapHtml += '<span class="heatmap-day-label"></span>';
+    heatmapHtml += '<span class="heatmap-day-label">Fri</span>';
+    heatmapHtml += '<span class="heatmap-day-label"></span>';
+    heatmapHtml += '<span class="heatmap-day-label">Sun</span>';
+    heatmapHtml += '</div>';
+
+    heatmapHtml += '<div class="heatmap-columns">';
+    annual.weeks.forEach(week => {
+      heatmapHtml += '<div class="heatmap-col">';
+      week.forEach(day => {
+        const titleText = day.isFuture
+          ? ''
+          : `${day.count} completion${day.count === 1 ? '' : 's'} on ${day.date}`;
+        heatmapHtml += `<div class="heatmap-cell lvl-${day.level} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}" data-date="${day.date}" data-count="${day.count}" data-future="${day.isFuture}" title="${titleText}"></div>`;
+      });
+      heatmapHtml += '</div>';
+    });
+    heatmapHtml += '</div>';
+    heatmapHtml += '</div>';
+
+    heatmapContainer.innerHTML = heatmapHtml;
+
+    // Attach interactive hover tooltip
+    const tooltipEl = document.getElementById('heatmap-tooltip');
+    if (tooltipEl) {
+      heatmapContainer.querySelectorAll('.heatmap-cell:not(.is-future)').forEach(cell => {
+        cell.addEventListener('mouseenter', () => {
+          const date = cell.dataset.date;
+          const count = parseInt(cell.dataset.count || '0', 10);
+          const dObj = new Date(date + 'T00:00:00');
+          const dateStrFormatted = dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+          tooltipEl.innerHTML = `<strong>${count} habit${count === 1 ? '' : 's'} completed</strong><div style="font-size:11px;color:var(--text-3);margin-top:2px">${dateStrFormatted}</div>`;
+          tooltipEl.style.display = 'block';
+          const rect = cell.getBoundingClientRect();
+          const tipRect = tooltipEl.getBoundingClientRect();
+          tooltipEl.style.left = `${rect.left + window.scrollX - tipRect.width / 2 + rect.width / 2}px`;
+          tooltipEl.style.top  = `${rect.top + window.scrollY - tipRect.height - 8}px`;
+        });
+        cell.addEventListener('mouseleave', () => {
+          tooltipEl.style.display = 'none';
+        });
+      });
+    }
+  }
+
+  // 3. Habit Performance Ledger
+  const ledgerEl = document.getElementById('streaks-habits-grid');
+  if (ledgerEl) {
+    if (!withStr.length) {
+      ledgerEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">${ICONS_SVG['flame']}</div><p>No active habits yet. Add habits to start tracking consistency.</p></div>`;
+    } else {
+      ledgerEl.innerHTML = `
+        <div class="ledger-table-header">
+          <div class="col-habit">Habit Routine</div>
+          <div class="col-spark">Last 7 Days</div>
+          <div class="col-streak">Streak</div>
+          <div class="col-best">Record</div>
+          <div class="col-consistency">30d Consistency</div>
+          <div class="col-status">Status Today</div>
+        </div>
+        <div class="ledger-rows">
+          ${withStr.map((h, i) => {
+            const isDoneToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.completed;
+            const isScheduledToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.scheduled;
+            const statusBadge = isDoneToday
+              ? `<span class="ledger-tag tag-done">${ICONS_SVG['check']} Completed</span>`
+              : (isScheduledToday
+                  ? `<span class="ledger-tag tag-due">Due Today</span>`
+                  : `<span class="ledger-tag tag-rest">Rest Day</span>`);
+
+            return `
+              <div class="ledger-row" style="animation-delay:${i * 0.04}s">
+                <div class="col-habit">
+                  <div class="ledger-icon" style="background:${h.color ? h.color + '15' : 'var(--surface-2)'};color:${h.color || 'var(--accent)'}">${getHabitSvg(h.icon, 18)}</div>
+                  <div class="ledger-name-wrap">
+                    <div class="ledger-name">${h.name}</div>
+                    <div class="ledger-category">${CATEGORY_ICONS[h.category] || ''} <span>${h.category}</span></div>
+                  </div>
+                </div>
+
+                <div class="col-spark">
+                  <div class="sparkline-dots">
+                    ${h.streak.last7Days.map(d => `
+                      <div class="spark-dot ${d.completed ? 'is-done' : (d.isToday ? 'is-today-due' : 'is-missed')} ${!d.scheduled ? 'is-unscheduled' : ''}" title="${d.dayLetter}: ${d.completed ? 'Completed' : (d.isToday ? 'Due today' : 'Not completed')} on ${d.date}">
+                        <span class="spark-letter">${d.dayLetter}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div class="col-streak">
+                  <div class="streak-pill-val">
+                    <span class="fire-icon">🔥</span>
+                    <span class="num">${h.streak.current}d</span>
+                  </div>
+                </div>
+
+                <div class="col-best">
+                  <div class="best-badge">
+                    <span class="num">${h.streak.best}d</span>
+                  </div>
+                </div>
+
+                <div class="col-consistency">
+                  <div class="ledger-progress-wrap">
+                    <div class="ledger-progress-bar">
+                      <div class="ledger-progress-fill" style="width:${h.streak.consistency30d}%"></div>
+                    </div>
+                    <span class="ledger-progress-num">${h.streak.consistency30d}%</span>
+                  </div>
+                </div>
+
+                <div class="col-status">
+                  ${statusBadge}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+  }
+
+  // 4. Discipline Shields / Milestone Matrix
+  const shieldsEl = document.getElementById('streak-shields-grid');
+  if (shieldsEl) {
+    const nextInfo = getNextMilestone(global.best);
+    shieldsEl.innerHTML = MILESTONES.map(m => {
+      const isUnlocked = global.best >= m;
+      const data = MILESTONE_DATA[m];
+      const isCurrentTarget = nextInfo.nextMilestone === m;
+
+      return `
+        <div class="shield-card ${isUnlocked ? 'shield-unlocked' : 'shield-locked'} ${isCurrentTarget ? 'shield-target' : ''}">
+          <div class="shield-icon-wrap">
+            <div class="shield-icon">${ICONS_SVG[data.key] || ICONS_SVG['award']}</div>
+            ${isUnlocked ? '<span class="shield-check">✓</span>' : ''}
           </div>
-          <div class="streak-num-block">
-            <div class="streak-num-value best">${h.streak.best}</div>
-            <div class="streak-num-label">Best</div>
-          </div>
-          <div class="streak-num-block">
-            <div class="streak-num-value" style="color:var(--text-2)">${h.streak.total}</div>
-            <div class="streak-num-label">Total</div>
+          <div class="shield-content">
+            <div class="shield-title">${data.name} · ${data.title}</div>
+            <div class="shield-desc">${data.msg}</div>
+            <div class="shield-footer">
+              ${isUnlocked
+                ? `<span class="shield-status-pill unlocked">Achieved</span>`
+                : (isCurrentTarget
+                    ? `<span class="shield-status-pill in-progress">${nextInfo.remaining} days away</span>`
+                    : `<span class="shield-status-pill locked">${m} Day Target</span>`)}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  `).join('');
+      `;
+    }).join('');
+  }
 }
 
 // ── Settings Page ─────────────────────────────────────────────

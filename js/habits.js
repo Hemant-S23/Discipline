@@ -6,12 +6,12 @@ import {
   getActiveHabits, getArchivedHabits, addHabit, updateHabit, archiveHabit, restoreHabit,
   getCompletions, isCompleted, markComplete, hasAwardedXpToday, today, isHabitScheduledForDate,
   getHabitConsistency, getHabitById
-} from './data.js?v=5.0';
-import { awardXP, getXPForDifficulty, XP_BONUSES } from './xp.js?v=5.0';
-import { calculateHabitStreak, checkMilestone } from './streaks.js?v=5.0';
-import { checkAndUnlockAchievements } from './achievements.js?v=5.0';
-import { showToast, showXPFloat, openModal, closeModal, animateHabitComplete, CATEGORY_ICONS, CATEGORY_LABELS } from './ui.js?v=5.0';
-import { getHabitSvg, getCategorySvg, getAchievementSvg, ICONS_SVG, HABIT_GLYPH_KEYS } from './icons.js?v=5.0';
+} from './data.js?v=6.0';
+import { awardXP, getXPForDifficulty, XP_BONUSES } from './xp.js?v=6.0';
+import { calculateHabitStreak, checkMilestone } from './streaks.js?v=6.0';
+import { checkAndUnlockAchievements } from './achievements.js?v=6.0';
+import { showToast, showXPFloat, openModal, closeModal, animateHabitComplete, CATEGORY_ICONS, CATEGORY_LABELS } from './ui.js?v=6.0';
+import { getHabitSvg, getCategorySvg, getAchievementSvg, ICONS_SVG, HABIT_GLYPH_KEYS } from './icons.js?v=6.0';
 
 // ── Habit Completion ──────────────────────────────────────────
 export function handleHabitToggle(habitId, checkBtnEl) {

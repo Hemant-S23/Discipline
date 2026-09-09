@@ -6,11 +6,11 @@ import {
   getUser, getActiveHabits, getCompletions, getCompletionsForDate,
   today, dateStr, isHabitScheduledForDate, isCompleted, getDailyStats, getCheckinForDate,
   getTasksForDate, addTask, toggleTask, deleteTask, getTaskById, getTasks, saveTasks, hasAwardedXpToday
-} from './data.js?v=5.0';
-import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js?v=5.0';
-import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js?v=5.0';
-import { renderTodayHabits } from './habits.js?v=5.0';
-import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat } from './ui.js?v=5.0';
+} from './data.js?v=6.0';
+import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js?v=6.0';
+import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js?v=6.0';
+import { renderTodayHabits } from './habits.js?v=6.0';
+import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat } from './ui.js?v=6.0';
 
 let chartDaily = null;
 let chartWeekly = null;

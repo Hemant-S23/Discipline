@@ -2,11 +2,11 @@
 // onboarding.js — 5-step onboarding wizard
 // ============================================================
 
-import { getUser, updateUser, addHabit } from './data.js?v=5.0';
-import { uploadLocalDataToCloud } from './auth.js?v=5.0';
-import { auth, isFirebaseConfigured } from './firebase-config.js?v=5.0';
-import { showToast } from './ui.js?v=5.0';
-import { getHabitSvg } from './icons.js?v=5.0';
+import { getUser, updateUser, addHabit } from './data.js?v=6.0';
+import { uploadLocalDataToCloud } from './auth.js?v=6.0';
+import { auth, isFirebaseConfigured } from './firebase-config.js?v=6.0';
+import { showToast } from './ui.js?v=6.0';
+import { getHabitSvg } from './icons.js?v=6.0';
 
 const STARTER_HABITS = [
   { icon: 'book',     name: 'Read 10 pages',     category: 'learning', difficulty: 'medium', xpReward: 20, frequency: 'daily', cats: ['learning'] },

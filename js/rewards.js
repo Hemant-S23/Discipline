@@ -2,9 +2,9 @@
 // rewards.js — Reward definitions and shop rendering
 // ============================================================
 
-import { getUser } from './data.js?v=5.0';
-import { showToast } from './ui.js?v=5.0';
-import { getRewardSvg } from './icons.js?v=5.0';
+import { getUser } from './data.js?v=6.0';
+import { showToast } from './ui.js?v=6.0';
+import { getRewardSvg } from './icons.js?v=6.0';
 
 export const REWARDS = [
   {

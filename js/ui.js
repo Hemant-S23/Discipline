@@ -2,7 +2,7 @@
 // ui.js — Shared UI helpers: toast, modal, confetti, XP float
 // ============================================================
 
-import { getCategorySvg } from './icons.js?v=5.0';
+import { getCategorySvg } from './icons.js?v=6.0';
 
 // ── Toast ─────────────────────────────────────────────────────
 const TOAST_ICONS = { success: '✓', error: '✕', info: 'ℹ', achievement: '★', warning: '!' };

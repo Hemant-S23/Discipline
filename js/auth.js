@@ -9,10 +9,10 @@ import {
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
   sendEmailVerification,
   doc, setDoc, getDoc, deleteDoc
-} from './firebase-config.js?v=5.0';
-import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=5.0';
-import { showToast, closeModal, openModal } from './ui.js?v=5.0';
-import { validateEmail } from './email-validator.js?v=5.0';
+} from './firebase-config.js?v=6.0';
+import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=6.0';
+import { showToast, closeModal, openModal } from './ui.js?v=6.0';
+import { validateEmail } from './email-validator.js?v=6.0';
 
 let currentAuthUser = null;
 

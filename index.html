@@ -18,10 +18,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/main.css?v=5.0" />
-  <link rel="stylesheet" href="css/components.css?v=5.1" />
-  <link rel="stylesheet" href="css/animations.css?v=5.0" />
-  <link rel="stylesheet" href="css/responsive.css?v=5.0" />
+  <link rel="stylesheet" href="css/main.css?v=6.0" />
+  <link rel="stylesheet" href="css/components.css?v=6.0" />
+  <link rel="stylesheet" href="css/animations.css?v=6.0" />
+  <link rel="stylesheet" href="css/responsive.css?v=6.0" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -416,22 +416,137 @@
     <section id="page-streaks" class="page">
       <div class="page-header">
         <div>
-          <h1>Streaks</h1>
-          <p class="daily-quote" style="margin-top:4px">Don't break the chain</p>
+          <h1>Consistency & Streaks</h1>
+          <p class="daily-quote" style="margin-top:4px">Discipline is the bridge between goals and accomplishment</p>
+        </div>
+        <div class="streak-header-actions" style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-secondary" style="font-size:12px;padding:7px 14px;border-radius:var(--radius-sm)" onclick="navigateTo('calendar')">
+            Habit Calendar
+          </button>
         </div>
       </div>
 
-      <!-- Chain View -->
-      <div class="chain-view">
-        <div class="chain-title">YOUR CHAIN</div>
-        <div class="chain-fires" id="streak-chain-fires"></div>
-        <div class="chain-days-label" id="streak-chain-days">0 DAYS</div>
-        <div class="chain-days-sub">Keep going. Every day matters.</div>
+      <!-- Executive KPI Matrix -->
+      <div class="streak-executive-grid">
+        <!-- Card 1: Active Chain with Classic Flame -->
+        <div class="streak-kpi-card streak-kpi-primary">
+          <div class="streak-kpi-top">
+            <span class="streak-kpi-badge">
+              <span class="pulse-dot"></span> Active Chain
+            </span>
+            <span class="streak-kpi-flames" id="streak-chain-fires">🔥</span>
+          </div>
+          <div class="streak-kpi-main">
+            <span class="streak-kpi-num" id="streak-chain-days">0</span>
+            <span class="streak-kpi-unit">DAYS</span>
+          </div>
+          <div class="streak-kpi-sub" id="streak-chain-sub">All habits unbroken today</div>
+        </div>
+
+        <!-- Card 2: Personal Best Record -->
+        <div class="streak-kpi-card">
+          <div class="streak-kpi-top">
+            <span class="streak-kpi-label">All-Time Record</span>
+            <div class="streak-kpi-icon trophy-glyph">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8v2h8v-2h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M18 4H6v7a6 6 0 0 0 12 0V4z"/></svg>
+            </div>
+          </div>
+          <div class="streak-kpi-main">
+            <span class="streak-kpi-num" id="streak-kpi-best">0</span>
+            <span class="streak-kpi-unit">DAYS</span>
+          </div>
+          <div class="streak-kpi-sub" id="streak-kpi-best-sub">Personal record across all habits</div>
+        </div>
+
+        <!-- Card 3: 30-Day Discipline Index -->
+        <div class="streak-kpi-card">
+          <div class="streak-kpi-top">
+            <span class="streak-kpi-label">30-Day Index</span>
+            <div class="streak-kpi-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+          </div>
+          <div class="streak-kpi-main">
+            <span class="streak-kpi-num" id="streak-kpi-consistency">0%</span>
+          </div>
+          <div class="streak-kpi-meter">
+            <div class="streak-kpi-meter-fill" id="streak-kpi-consistency-bar" style="width:0%"></div>
+          </div>
+          <div class="streak-kpi-sub" id="streak-kpi-consistency-sub">Scheduled completions kept</div>
+        </div>
+
+        <!-- Card 4: Active Habits Streak Ratio -->
+        <div class="streak-kpi-card">
+          <div class="streak-kpi-top">
+            <span class="streak-kpi-label">Habits On Track</span>
+            <div class="streak-kpi-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+          </div>
+          <div class="streak-kpi-main">
+            <span class="streak-kpi-num" id="streak-kpi-habits-active">0</span>
+            <span class="streak-kpi-unit" id="streak-kpi-habits-total">/ 0</span>
+          </div>
+          <div class="streak-kpi-sub">Active habit routines on-track</div>
+        </div>
       </div>
 
-      <!-- Per-habit streaks -->
-      <h3 style="margin-bottom:14px;font-size:16px;font-weight:700;color:var(--text-2)">HABIT STREAKS</h3>
-      <div class="streaks-grid" id="streaks-habits-grid"></div>
+      <!-- Annual Heatmap Matrix (GitHub-Style 52-Week Activity Grid) -->
+      <div class="heatmap-card">
+        <div class="heatmap-header">
+          <div class="heatmap-title-group">
+            <h3 class="heatmap-title">Annual Consistency Matrix</h3>
+            <span class="heatmap-subtitle" id="heatmap-total-completions">0 completions in the last 365 days</span>
+          </div>
+          <div class="heatmap-legend">
+            <span class="legend-text">Less</span>
+            <span class="heatmap-cell lvl-0" title="0 completions"></span>
+            <span class="heatmap-cell lvl-1" title="1 completion"></span>
+            <span class="heatmap-cell lvl-2" title="2-3 completions"></span>
+            <span class="heatmap-cell lvl-3" title="4-5 completions"></span>
+            <span class="heatmap-cell lvl-4" title="6+ completions"></span>
+            <span class="legend-text">More</span>
+          </div>
+        </div>
+
+        <!-- 52-Week Grid Matrix Wrapper -->
+        <div class="heatmap-scroll-container">
+          <div class="heatmap-matrix-wrapper" id="heatmap-matrix-container">
+            <!-- Dynamically rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Tooltip -->
+        <div id="heatmap-tooltip" class="heatmap-tooltip" style="display:none;"></div>
+      </div>
+
+      <!-- Habit Performance Ledger -->
+      <div class="streak-ledger-section">
+        <div class="streak-ledger-header">
+          <div>
+            <h3 class="streak-ledger-title">Habit Performance Ledger</h3>
+            <p class="streak-ledger-sub">Velocity, 7-day trajectories, and unbroken streaks per habit</p>
+          </div>
+        </div>
+
+        <!-- Ledger Container -->
+        <div class="streak-ledger-container" id="streaks-habits-grid">
+          <!-- Dynamically rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Discipline Shields / Milestone Matrix -->
+      <div class="shields-card">
+        <div class="shields-header">
+          <div>
+            <h3 class="shields-title">Discipline Shields</h3>
+            <span class="shields-subtitle">Consecutive consistency badges unlocked automatically</span>
+          </div>
+        </div>
+        <div class="shields-grid" id="streak-shields-grid">
+          <!-- Dynamically rendered by JS -->
+        </div>
+      </div>
     </section>
 
     <!-- ▸ ANALYTICS ───────────────────────────────────────────── -->
@@ -1235,7 +1350,7 @@
     if (overlay) overlay.classList.remove('active');
   };
 </script>
-<script type="module" src="js/app.js?v=5.1"></script>
+<script type="module" src="js/app.js?v=6.0"></script>
 
 </body>
 </html>
