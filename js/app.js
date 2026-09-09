@@ -331,6 +331,12 @@ function renderStreaksPage() {
 
   // 2. Annual Consistency Heatmap
   renderAnnualHeatmap(habits);
+
+  // 3. Habit Performance Ledger
+  renderHabitLedger(withStr);
+
+  // 4. Discipline Shields / Milestone Matrix
+  renderDisciplineShields(global);
 }
 
 let selectedHeatmapYear = null;
@@ -478,115 +484,116 @@ function renderAnnualHeatmap(habits, targetYear = null) {
       }
     }, 50);
   }
+}
 
-  // 3. Habit Performance Ledger
+function renderHabitLedger(withStr) {
   const ledgerEl = document.getElementById('streaks-habits-grid');
-  if (ledgerEl) {
-    if (!withStr.length) {
-      ledgerEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">${ICONS_SVG['flame']}</div><p>No active habits yet. Add habits to start tracking consistency.</p></div>`;
-    } else {
-      ledgerEl.innerHTML = `
-        <div class="ledger-table-header">
-          <div class="col-habit">Habit Routine</div>
-          <div class="col-spark">Last 7 Days</div>
-          <div class="col-streak">Streak</div>
-          <div class="col-best">Record</div>
-          <div class="col-consistency">30d Consistency</div>
-          <div class="col-status">Status Today</div>
-        </div>
-        <div class="ledger-rows">
-          ${withStr.map((h, i) => {
-            const isDoneToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.completed;
-            const isScheduledToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.scheduled;
-            const statusBadge = isDoneToday
-              ? `<span class="ledger-tag tag-done">${ICONS_SVG['check-circle'] || ''} Completed</span>`
-              : (isScheduledToday
-                  ? `<span class="ledger-tag tag-due">Due Today</span>`
-                  : `<span class="ledger-tag tag-rest">Rest Day</span>`);
-
-            return `
-              <div class="ledger-row" style="animation-delay:${i * 0.04}s">
-                <div class="col-habit">
-                  <div class="ledger-icon" style="background:${h.color ? h.color + '15' : 'var(--surface-2)'};color:${h.color || 'var(--accent)'}">${getHabitSvg(h.icon, 18)}</div>
-                  <div class="ledger-name-wrap">
-                    <div class="ledger-name">${h.name}</div>
-                    <div class="ledger-category">${CATEGORY_ICONS[h.category] || ''} <span>${h.category}</span></div>
-                  </div>
-                </div>
-
-                <div class="col-spark">
-                  <div class="sparkline-dots">
-                    ${h.streak.last7Days.map(d => `
-                      <div class="spark-dot ${d.completed ? 'is-done' : (d.isToday ? 'is-today-due' : 'is-missed')} ${!d.scheduled ? 'is-unscheduled' : ''}" title="${d.dayLetter}: ${d.completed ? 'Completed' : (d.isToday ? 'Due today' : 'Not completed')} on ${d.date}">
-                        <span class="spark-letter">${d.dayLetter}</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-
-                <div class="col-streak">
-                  <div class="streak-pill-val">
-                    <span class="fire-icon">🔥</span>
-                    <span class="num">${h.streak.current}d</span>
-                  </div>
-                </div>
-
-                <div class="col-best">
-                  <div class="best-badge">
-                    <span class="num">${h.streak.best}d</span>
-                  </div>
-                </div>
-
-                <div class="col-consistency">
-                  <div class="ledger-progress-wrap">
-                    <div class="ledger-progress-bar">
-                      <div class="ledger-progress-fill" style="width:${h.streak.consistency30d}%"></div>
-                    </div>
-                    <span class="ledger-progress-num">${h.streak.consistency30d}%</span>
-                  </div>
-                </div>
-
-                <div class="col-status">
-                  ${statusBadge}
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
-    }
+  if (!ledgerEl) return;
+  if (!withStr.length) {
+    ledgerEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">${ICONS_SVG['flame']}</div><p>No active habits yet. Add habits to start tracking consistency.</p></div>`;
+    return;
   }
+  ledgerEl.innerHTML = `
+    <div class="ledger-table-header">
+      <div class="col-habit">Habit Routine</div>
+      <div class="col-spark">Last 7 Days</div>
+      <div class="col-streak">Current Streak</div>
+      <div class="col-best">Best Record</div>
+      <div class="col-consistency">30D Consistency</div>
+      <div class="col-status">Status Today</div>
+    </div>
+    <div class="ledger-rows">
+      ${withStr.map((h, i) => {
+        const isDoneToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.completed;
+        const isScheduledToday = h.streak.last7Days[h.streak.last7Days.length - 1]?.scheduled;
+        const statusBadge = isDoneToday
+          ? `<span class="ledger-tag tag-done">${ICONS_SVG['check-circle'] || ''} Completed</span>`
+          : (isScheduledToday
+              ? `<span class="ledger-tag tag-due">Due Today</span>`
+              : `<span class="ledger-tag tag-rest">Rest Day</span>`);
 
-  // 4. Discipline Shields / Milestone Matrix
-  const shieldsEl = document.getElementById('streak-shields-grid');
-  if (shieldsEl) {
-    const nextInfo = getNextMilestone(global.best);
-    shieldsEl.innerHTML = MILESTONES.map(m => {
-      const isUnlocked = global.best >= m;
-      const data = MILESTONE_DATA[m];
-      const isCurrentTarget = nextInfo.nextMilestone === m;
+        return `
+          <div class="ledger-row" style="animation-delay:${i * 0.04}s">
+            <div class="col-habit">
+              <div class="ledger-icon" style="background:${h.color ? h.color + '15' : 'var(--surface-2)'};color:${h.color || 'var(--accent)'}">${getHabitSvg(h.icon, 18)}</div>
+              <div class="ledger-name-wrap">
+                <div class="ledger-name">${h.name}</div>
+                <div class="ledger-category">${CATEGORY_ICONS[h.category] || ''} <span>${h.category}</span></div>
+              </div>
+            </div>
 
-      return `
-        <div class="shield-card ${isUnlocked ? 'shield-unlocked' : 'shield-locked'} ${isCurrentTarget ? 'shield-target' : ''}">
-          <div class="shield-icon-wrap">
-            <div class="shield-icon">${ICONS_SVG[data.key] || ICONS_SVG['award']}</div>
-            ${isUnlocked ? '<span class="shield-check">✓</span>' : ''}
-          </div>
-          <div class="shield-content">
-            <div class="shield-title">${data.name} · ${data.title}</div>
-            <div class="shield-desc">${data.msg}</div>
-            <div class="shield-footer">
-              ${isUnlocked
-                ? `<span class="shield-status-pill unlocked">Achieved</span>`
-                : (isCurrentTarget
-                    ? `<span class="shield-status-pill in-progress">${nextInfo.remaining} days away</span>`
-                    : `<span class="shield-status-pill locked">${m} Day Target</span>`)}
+            <div class="col-spark">
+              <div class="sparkline-dots">
+                ${h.streak.last7Days.map(d => `
+                  <div class="spark-dot ${d.completed ? 'is-done' : (d.isToday ? 'is-today-due' : 'is-missed')} ${!d.scheduled ? 'is-unscheduled' : ''}" title="${d.dayLetter}: ${d.completed ? 'Completed' : (d.isToday ? 'Due today' : 'Not completed')} on ${d.date}">
+                    <span class="spark-letter">${d.dayLetter}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="col-streak">
+              <div class="streak-pill-val">
+                <span class="fire-icon">🔥</span>
+                <span class="num">${h.streak.current}d</span>
+              </div>
+            </div>
+
+            <div class="col-best">
+              <div class="best-stat">
+                <span class="best-trophy-icon">🏆</span>
+                <span class="best-num">${h.streak.best}d</span>
+              </div>
+            </div>
+
+            <div class="col-consistency">
+              <div class="ledger-progress-wrap">
+                <div class="ledger-progress-track">
+                  <div class="ledger-progress-fill ${h.streak.consistency30d >= 90 ? 'is-elite' : (h.streak.consistency30d >= 70 ? 'is-good' : '')}" style="width:${h.streak.consistency30d}%"></div>
+                </div>
+                <span class="ledger-progress-num">${h.streak.consistency30d}%</span>
+              </div>
+            </div>
+
+            <div class="col-status">
+              ${statusBadge}
             </div>
           </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderDisciplineShields(global) {
+  const shieldsEl = document.getElementById('streak-shields-grid');
+  if (!shieldsEl) return;
+  const nextInfo = getNextMilestone(global.best);
+  shieldsEl.innerHTML = MILESTONES.map(m => {
+    const isUnlocked = global.best >= m;
+    const data = MILESTONE_DATA[m];
+    const isCurrentTarget = nextInfo.nextMilestone === m;
+
+    return `
+      <div class="shield-card ${isUnlocked ? 'shield-unlocked' : 'shield-locked'} ${isCurrentTarget ? 'shield-target' : ''}">
+        <div class="shield-icon-wrap">
+          <div class="shield-icon">${ICONS_SVG[data.key] || ICONS_SVG['award']}</div>
+          ${isUnlocked ? '<span class="shield-check">✓</span>' : ''}
         </div>
-      `;
-    }).join('');
-  }
+        <div class="shield-content">
+          <div class="shield-title">${data.name} · ${data.title}</div>
+          <div class="shield-desc">${data.msg}</div>
+          <div class="shield-footer">
+            ${isUnlocked
+              ? `<span class="shield-status-pill unlocked">Achieved</span>`
+              : (isCurrentTarget
+                  ? `<span class="shield-status-pill in-progress">${nextInfo.remaining} days away</span>`
+                  : `<span class="shield-status-pill locked">${m} Day Target</span>`)}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ── Settings Page ─────────────────────────────────────────────
