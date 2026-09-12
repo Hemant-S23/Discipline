@@ -445,6 +445,12 @@ export function openAddHabitModal() {
   document.querySelectorAll('.freq-option').forEach(el => {
     el.classList.toggle('selected', el.dataset.value === 'daily');
   });
+  // Hide custom day picker and clear selections
+  const picker = document.getElementById('custom-days-picker');
+  if (picker) {
+    picker.classList.add('hidden');
+    picker.querySelectorAll('.day-chip').forEach(c => c.classList.remove('selected'));
+  }
   // Reset difficulty selection to 'medium'
   document.querySelectorAll('.diff-option-btn').forEach(el => {
     el.classList.toggle('selected', el.dataset.value === 'medium');
@@ -471,6 +477,20 @@ export function openEditHabitModal(id) {
   document.querySelectorAll('.freq-option').forEach(el => {
     el.classList.toggle('selected', el.dataset.value === h.frequency);
   });
+  // Restore custom days if needed
+  const picker = document.getElementById('custom-days-picker');
+  if (picker) {
+    if (h.frequency === 'custom') {
+      picker.classList.remove('hidden');
+      const days = h.customDays || [];
+      picker.querySelectorAll('.day-chip').forEach(chip => {
+        chip.classList.toggle('selected', days.includes(Number(chip.dataset.day)));
+      });
+    } else {
+      picker.classList.add('hidden');
+      picker.querySelectorAll('.day-chip').forEach(c => c.classList.remove('selected'));
+    }
+  }
   // Set difficulty
   document.querySelectorAll('.diff-option-btn').forEach(el => {
     el.classList.toggle('selected', el.dataset.value === h.difficulty);
@@ -502,9 +522,20 @@ export function submitHabitForm() {
   const difficulty = document.querySelector('.diff-option-btn.selected')?.dataset.value || 'medium';
   const xpReward   = getXPForDifficulty(difficulty);
 
+  // Collect custom days (as numbers: 0=Sun … 6=Sat)
+  let customDays = [];
+  if (frequency === 'custom') {
+    customDays = [...document.querySelectorAll('#custom-days-picker .day-chip.selected')]
+      .map(chip => Number(chip.dataset.day));
+    if (!customDays.length) {
+      showToast('Please select at least one day for Custom frequency', 'warning', 3000);
+      return;
+    }
+  }
+
   if (!name) { showToast('Please enter a habit name', 'error'); return; }
 
-  const data = { name, icon: selectedIcon, category, frequency, difficulty, xpReward, reminderTime: reminder, color: selectedColor };
+  const data = { name, icon: selectedIcon, category, frequency, customDays, difficulty, xpReward, reminderTime: reminder, color: selectedColor };
 
   if (editingHabitId) {
     updateHabit(editingHabitId, data);
@@ -522,6 +553,34 @@ export function submitHabitForm() {
 window.openAddHabitModal   = openAddHabitModal;
 window.openEditHabitModal  = openEditHabitModal;
 window.handleHabitToggleGlobal = (id, el) => handleHabitToggle(id, el);
+
+/**
+ * Toggle frequency selection and show/hide custom day-picker.
+ */
+window.selectFrequency = function(el) {
+  document.querySelectorAll('.freq-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const picker = document.getElementById('custom-days-picker');
+  if (picker) {
+    if (el.dataset.value === 'custom') {
+      picker.classList.remove('hidden');
+    } else {
+      picker.classList.add('hidden');
+      picker.querySelectorAll('.day-chip').forEach(c => c.classList.remove('selected'));
+    }
+  }
+};
+
+/**
+ * Toggle individual day chip selection.
+ */
+(function() {
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('day-chip')) {
+      e.target.classList.toggle('selected');
+    }
+  });
+})();
 
 window.confirmArchive = function(id) {
   const h = getHabitById(id);

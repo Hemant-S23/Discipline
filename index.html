@@ -963,10 +963,23 @@
 
         <div class="form-group">
           <label>Frequency</label>
-          <div class="radio-group">
-            <div class="radio-option selected freq-option" data-value="daily">Every day</div>
-            <div class="radio-option freq-option" data-value="weekdays">Weekdays</div>
-            <div class="radio-option freq-option" data-value="weekends">Weekends</div>
+          <div class="radio-group freq-group">
+            <div class="radio-option freq-option selected" data-value="daily" onclick="selectFrequency(this)">Every day</div>
+            <div class="radio-option freq-option" data-value="weekdays" onclick="selectFrequency(this)">Weekdays</div>
+            <div class="radio-option freq-option" data-value="weekends" onclick="selectFrequency(this)">Weekends</div>
+            <div class="radio-option freq-option freq-custom-btn" data-value="custom" onclick="selectFrequency(this)">Custom</div>
+          </div>
+          <!-- Inline day picker — visible only when Custom is selected -->
+          <div class="custom-days-picker hidden" id="custom-days-picker">
+            <div class="day-chips">
+              <button type="button" class="day-chip" data-day="1">Mon</button>
+              <button type="button" class="day-chip" data-day="2">Tue</button>
+              <button type="button" class="day-chip" data-day="3">Wed</button>
+              <button type="button" class="day-chip" data-day="4">Thu</button>
+              <button type="button" class="day-chip" data-day="5">Fri</button>
+              <button type="button" class="day-chip" data-day="6">Sat</button>
+              <button type="button" class="day-chip" data-day="0">Sun</button>
+            </div>
           </div>
         </div>
 

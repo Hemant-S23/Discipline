@@ -979,6 +979,72 @@
 }
 .radio-option:hover { border-color: var(--accent); }
 
+/* ── Frequency group — compact 4-option row ─────────────────── */
+.freq-group {
+  gap: 6px;
+}
+.freq-group .radio-option {
+  padding: 8px 10px;
+  font-size: 12px;
+  min-width: 0;
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+}
+.freq-custom-btn {
+  border-style: dashed;
+}
+.freq-custom-btn.selected {
+  border-style: solid;
+}
+
+/* ── Custom Days Picker ───────────────────────────────────────── */
+.custom-days-picker {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--accent-20, rgba(124,111,247,0.2));
+  border-radius: var(--radius-sm);
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.custom-days-picker.hidden { display: none; }
+
+.day-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.day-chip {
+  flex: 1;
+  min-width: 36px;
+  padding: 7px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all var(--t);
+}
+.day-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-10);
+}
+.day-chip.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+
+
 .diff-picker { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .diff-option {
   display: flex;
