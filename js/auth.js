@@ -288,9 +288,25 @@ export async function signUpWithEmail(rawEmail, password, name) {
   }
 }
 
+// Detect if running inside a Capacitor native app (Android/iOS)
+function isCapacitorApp() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
 export async function loginWithGoogle() {
   if (isFirebaseConfigured && auth) {
     try {
+      // In Capacitor (Android/iOS), popups are blocked by the native WebView.
+      // We MUST use signInWithRedirect. The WebView is configured (via allowNavigation)
+      // to handle the firebaseapp.com auth handler internally, so getRedirectResult()
+      // will pick up the result when the app resumes back to its origin.
+      if (isCapacitorApp()) {
+        showToast('Redirecting to Google...', 'info', 2000);
+        await signInWithRedirect(auth, googleProvider);
+        return null; // Result will be handled by handleRedirectResult() on next load
+      }
+
+      // Web browser: use popup (instant, no page reload needed)
       const cred = await signInWithPopup(auth, googleProvider);
       const name = cred.user.displayName || cred.user.email.split('@')[0];
 
@@ -302,7 +318,6 @@ export async function loginWithGoogle() {
         name: cred.user.displayName || name,
         isLoggedIn: true,
         authDone: true,
-        // Returning user with cloud data → skip onboarding. New user → run onboarding.
         onboardingDone: hasCloudHabits
       });
 
@@ -312,7 +327,8 @@ export async function loginWithGoogle() {
     } catch (err) {
       console.warn('Google Sign-In error:', err.code, err.message);
       if (err.code === 'auth/popup-blocked') {
-        showToast('Popup was blocked by browser. Redirecting to Google...', 'info');
+        // Popup blocked even on web — fallback to redirect
+        showToast('Popup was blocked. Redirecting to Google...', 'info');
         await signInWithRedirect(auth, googleProvider);
         return null;
       }

@@ -3,9 +3,15 @@
   "appName": "Discipline",
   "webDir": "www",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "allowNavigation": [
+      "*.firebaseapp.com",
+      "*.googleapis.com",
+      "accounts.google.com"
+    ]
   },
   "android": {
+    "allowMixedContent": true,
     "buildOptions": {
       "keystorePath": null,
       "keystoreAlias": null
