@@ -89,6 +89,8 @@ function checkPerfectDay() {
 }
 
 // ── Today's Habits List (Dashboard) ──────────────────────────
+let _reorderModeActive = false;
+
 export function renderTodayHabits(containerId = 'today-habits-list') {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -98,15 +100,18 @@ export function renderTodayHabits(containerId = 'today-habits-list') {
   const todayHabits = habits.filter(h => isHabitScheduledForDate(h, todayStr));
 
   const emptyEl = document.getElementById('habits-empty');
+  const reorderBtn = document.getElementById('habits-reorder-btn');
 
   if (!habits.length) {
     container.innerHTML = '';
     if (emptyEl) emptyEl.classList.remove('hidden');
+    if (reorderBtn) reorderBtn.style.display = 'none';
     return;
   }
 
   if (!todayHabits.length) {
     if (emptyEl) emptyEl.classList.add('hidden');
+    if (reorderBtn) reorderBtn.style.display = 'none';
     container.innerHTML = `
       <div class="empty-state" style="padding:28px 16px">
         <div class="empty-icon" style="margin-bottom:8px">${ICONS_SVG['clock']}</div>
@@ -119,21 +124,37 @@ export function renderTodayHabits(containerId = 'today-habits-list') {
     `;
     return;
   }
+
   if (emptyEl) emptyEl.classList.add('hidden');
 
-  // Sort: incomplete first
-  const sorted = [...todayHabits].sort((a, b) => {
-    const ac = isCompleted(a.id, todayStr) ? 1 : 0;
-    const bc = isCompleted(b.id, todayStr) ? 1 : 0;
-    return ac - bc;
-  });
+  // Show reorder button (only when there are 2+ habits)
+  if (reorderBtn) {
+    reorderBtn.style.display = todayHabits.length >= 2 ? 'inline-flex' : 'none';
+  }
+
+  // Sort: in reorder mode keep stored order; otherwise incomplete first
+  const sorted = _reorderModeActive
+    ? [...todayHabits]
+    : [...todayHabits].sort((a, b) => {
+        const ac = isCompleted(a.id, todayStr) ? 1 : 0;
+        const bc = isCompleted(b.id, todayStr) ? 1 : 0;
+        return ac - bc;
+      });
 
   container.innerHTML = sorted.map(h => {
     const done    = isCompleted(h.id, todayStr);
     const streak  = calculateHabitStreak(h.id);
+    const dragHandle = _reorderModeActive ? `
+      <span class="habit-drag-handle" title="Drag to reorder">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </span>` : '';
+
     return `
-      <div class="habit-item ${done ? 'completed' : ''} slide-in-up" data-habit-id="${h.id}">
-        <button class="habit-check-btn" onclick="handleHabitToggleGlobal('${h.id}', this)" title="${done ? 'Completed' : 'Mark Complete'}">
+      <div class="habit-item ${done ? 'completed' : ''} ${_reorderModeActive ? 'reorder-mode' : ''} slide-in-up" data-habit-id="${h.id}" draggable="${_reorderModeActive}">
+        ${dragHandle}
+        <button class="habit-check-btn ${_reorderModeActive ? 'disabled-in-reorder' : ''}" onclick="${_reorderModeActive ? '' : `handleHabitToggleGlobal('${h.id}', this)`}" title="${_reorderModeActive ? 'Exit reorder mode to complete habits' : (done ? 'Completed' : 'Mark Complete')}">
           ${done ? '✓' : ''}
         </button>
         <span class="habit-item-icon">${getHabitSvg(h.icon, 18)}</span>
@@ -149,9 +170,193 @@ export function renderTodayHabits(containerId = 'today-habits-list') {
       </div>
     `;
   }).join('');
+
+  // Attach drag-and-drop if in reorder mode
+  if (_reorderModeActive) {
+    _attachDragDrop(container, habits, todayHabits);
+  }
+}
+
+/**
+ * Toggle reorder mode on/off.
+ * Exposed as a global for the inline onclick in HTML.
+ */
+window.toggleHabitsReorderMode = function() {
+  _reorderModeActive = !_reorderModeActive;
+  const btn = document.getElementById('habits-reorder-btn');
+  if (btn) {
+    if (_reorderModeActive) {
+      btn.classList.add('active');
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Done`;
+    } else {
+      btn.classList.remove('active');
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        Reorder`;
+    }
+  }
+  renderTodayHabits('today-habits-list');
+};
+
+/**
+ * Attach mouse + touch drag-and-drop to the habit list container.
+ */
+function _attachDragDrop(container, allHabits, todayHabits) {
+  let dragEl = null;
+  let placeholder = null;
+
+  // ── Mouse drag (desktop) ──────────────────────────────────
+  container.querySelectorAll('[draggable="true"]').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragEl = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      placeholder = document.createElement('div');
+      placeholder.className = 'habit-drag-placeholder';
+      placeholder.style.height = item.offsetHeight + 'px';
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      if (placeholder && placeholder.parentNode) placeholder.remove();
+      dragEl = null;
+      _saveHabitOrder(container, allHabits);
+    });
+  });
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!dragEl) return;
+    const target = _getDragTarget(e.clientY, container);
+    if (target && target !== dragEl) {
+      const rect = target.getBoundingClientRect();
+      const mid  = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        container.insertBefore(placeholder, target);
+        container.insertBefore(dragEl, placeholder);
+      } else {
+        container.insertBefore(placeholder, target.nextSibling);
+        container.insertBefore(dragEl, placeholder.nextSibling);
+      }
+    }
+  });
+
+  // ── Touch drag (mobile) ───────────────────────────────────
+  container.querySelectorAll('.habit-drag-handle').forEach(handle => {
+    const item = handle.closest('[data-habit-id]');
+    if (!item) return;
+
+    let startY = 0;
+    let startTop = 0;
+    let clone = null;
+    let origRect = null;
+
+    handle.addEventListener('touchstart', e => {
+      const touch = e.touches[0];
+      startY = touch.clientY;
+      dragEl = item;
+      origRect = item.getBoundingClientRect();
+      startTop = origRect.top + window.scrollY;
+
+      // Create floating clone
+      clone = item.cloneNode(true);
+      clone.style.cssText = `
+        position:fixed;left:${origRect.left}px;top:${origRect.top}px;
+        width:${origRect.width}px;z-index:9999;opacity:0.92;
+        pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,0.18);
+        border-radius:14px;transition:none;`;
+      document.body.appendChild(clone);
+
+      // Placeholder in original position
+      placeholder = document.createElement('div');
+      placeholder.className = 'habit-drag-placeholder';
+      placeholder.style.height = origRect.height + 'px';
+      item.parentNode.insertBefore(placeholder, item);
+      item.style.display = 'none';
+
+      e.preventDefault();
+    }, { passive: false });
+
+    handle.addEventListener('touchmove', e => {
+      if (!clone || !dragEl) return;
+      const touch = e.touches[0];
+      const dy = touch.clientY - startY;
+      clone.style.top = (origRect.top + dy) + 'px';
+
+      // Find insertion point
+      const target = _getTouchTarget(touch.clientY, container, item);
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        const mid  = rect.top + rect.height / 2;
+        if (touch.clientY < mid) {
+          container.insertBefore(placeholder, target);
+        } else {
+          container.insertBefore(placeholder, target.nextSibling);
+        }
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    handle.addEventListener('touchend', () => {
+      if (!clone || !dragEl) return;
+      // Restore item in placeholder's position
+      placeholder.parentNode.insertBefore(dragEl, placeholder);
+      dragEl.style.display = '';
+      placeholder.remove();
+      clone.remove();
+      clone = null;
+      dragEl = null;
+      _saveHabitOrder(container, allHabits);
+    });
+  });
+}
+
+function _getDragTarget(clientY, container) {
+  const items = [...container.querySelectorAll('[data-habit-id]:not(.dragging)')];
+  return items.find(el => {
+    const rect = el.getBoundingClientRect();
+    return clientY >= rect.top && clientY <= rect.bottom;
+  }) || null;
+}
+
+function _getTouchTarget(clientY, container, exclude) {
+  const items = [...container.querySelectorAll('[data-habit-id]')].filter(el => el !== exclude);
+  return items.find(el => {
+    const rect = el.getBoundingClientRect();
+    return clientY >= rect.top && clientY <= rect.bottom;
+  }) || null;
+}
+
+/**
+ * Read the current DOM order of habit IDs and save back to localStorage.
+ */
+function _saveHabitOrder(container, allHabits) {
+  const orderedIds = [...container.querySelectorAll('[data-habit-id]')]
+    .map(el => el.dataset.habitId);
+
+  // Reorder only the habits in allHabits that appear in orderedIds; keep others at end
+  const reordered = [...allHabits];
+  orderedIds.forEach((id, newIdx) => {
+    const oldIdx = reordered.findIndex(h => h.id === id);
+    if (oldIdx !== -1 && oldIdx !== newIdx) {
+      const [moved] = reordered.splice(oldIdx, 1);
+      reordered.splice(newIdx, 0, moved);
+    }
+  });
+
+  // Reconstruct full habits list preserving archived habits
+  import('./data.js?v=6.0').then(({ getHabits, saveHabits }) => {
+    const all = getHabits();
+    const archived = all.filter(h => !!h.archivedAt);
+    saveHabits([...reordered, ...archived]);
+  });
 }
 
 function diffLabel(d) { return { easy: 'Easy', medium: 'Med', hard: 'Hard' }[d] || 'Med'; }
+
+
 
 // ── Habits Page ───────────────────────────────────────────────
 export function renderHabitsPage(filter = 'all') {

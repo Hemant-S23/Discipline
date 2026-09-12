@@ -384,9 +384,16 @@
       <div class="card habits-card">
         <div class="card-header">
           <h2>Today's Habits</h2>
-          <button class="btn-primary" style="padding:8px 16px;font-size:13px" data-action="add-habit">+ Add</button>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn-reorder" id="habits-reorder-btn" onclick="toggleHabitsReorderMode()" title="Drag to reorder habits" style="display:none">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              Reorder
+            </button>
+            <button class="btn-primary" style="padding:8px 16px;font-size:13px" data-action="add-habit">+ Add</button>
+          </div>
         </div>
         <div class="habits-list" id="today-habits-list"></div>
+
         <div class="empty-state hidden" id="habits-empty">
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>

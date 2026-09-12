@@ -377,6 +377,87 @@
 .diff-medium { background: var(--accent-10);  color: var(--accent);  }
 .diff-hard   { background: var(--danger-10);  color: var(--danger);  }
 
+/* ── Reorder Button ──────────────────────────────────────────── */
+.btn-reorder {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--t);
+  white-space: nowrap;
+}
+.btn-reorder:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-10);
+}
+.btn-reorder.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-reorder.active:hover { opacity: 0.88; }
+
+/* ── Drag Handle ─────────────────────────────────────────────── */
+.habit-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text-3);
+  cursor: grab;
+  touch-action: none;
+  transition: color var(--t), background var(--t);
+}
+.habit-drag-handle:hover {
+  color: var(--accent);
+  background: var(--accent-10);
+}
+.habit-drag-handle:active { cursor: grabbing; }
+
+/* ── Reorder Mode State ───────────────────────────────────────── */
+.habit-item.reorder-mode {
+  cursor: default;
+  border-color: var(--accent-10);
+  background: var(--surface-2);
+  animation: none;
+}
+.habit-item.reorder-mode:hover {
+  transform: none;
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+.habit-item.dragging {
+  opacity: 0.45;
+  border: 2px dashed var(--accent) !important;
+  background: var(--accent-10) !important;
+}
+.habit-drag-placeholder {
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-10);
+  opacity: 0.45;
+  margin: 0;
+  box-sizing: border-box;
+}
+.habit-check-btn.disabled-in-reorder {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+
+
 /* ── Habit Cards (Habits Page) ───────────────────────────────── */
 .habits-grid {
   display: grid;
