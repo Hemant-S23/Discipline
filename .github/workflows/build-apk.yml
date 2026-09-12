@@ -1,0 +1,102 @@
+name: Build Discipline APK
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'                   # triggers release build on version tags e.g. v1.0.0
+  workflow_dispatch:            # allow manual trigger from GitHub UI
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js ─────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm install
+
+      # ── 3. Copy web assets → www/ ──────────────────────────────
+      - name: Build web assets (copy to www/)
+        run: node scripts/copy-web.js
+
+      # ── 4. Java 17 ─────────────────────────────────────────────
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # ── 5. Android SDK ─────────────────────────────────────────
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── 6. Capacitor — add android + sync ──────────────────────
+      - name: Add Capacitor Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor (copy web assets into Android)
+        run: npx cap sync android
+
+      # ── 7. Grant Gradle execute permission ─────────────────────
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x android/gradlew
+
+      # ── 8. Build DEBUG APK (always) ────────────────────────────
+      - name: Build Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      # ── 9. Upload debug APK as artifact ────────────────────────
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: discipline-debug-${{ github.run_number }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      # ── 10. Build RELEASE APK (only on version tags) ──────────
+      - name: Build Release APK (unsigned)
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      # ── 11. Sign release APK (if keystore secrets are set) ────
+      - name: Sign Release APK
+        if: |
+          startsWith(github.ref, 'refs/tags/v') &&
+          secrets.KEYSTORE_BASE64 != ''
+        uses: r0adkll/sign-android-release@v1
+        id: sign_apk
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      # ── 12. Create GitHub Release (on version tags) ────────────
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Discipline ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            ${{ steps.sign_apk.outputs.signedReleaseFile || 'android/app/build/outputs/apk/release/app-release-unsigned.apk' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,23 @@
+{
+  "name": "discipline-app",
+  "version": "1.0.0",
+  "description": "Discipline — Habit & Streak Tracker",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/copy-web.js",
+    "cap:add": "npx cap add android",
+    "cap:sync": "npx cap sync android",
+    "cap:copy": "npx cap copy android",
+    "android:debug": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
+    "android:release": "npm run build && npx cap sync android && cd android && ./gradlew assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/push-notifications": "^6.0.2",
+    "@capacitor/local-notifications": "^6.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
