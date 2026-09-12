@@ -74,17 +74,19 @@ jobs:
 
       # ── 11. Sign release APK (if keystore secrets are set) ────
       - name: Sign Release APK
-        if: |
-          startsWith(github.ref, 'refs/tags/v') &&
-          secrets.KEYSTORE_BASE64 != ''
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: r0adkll/sign-android-release@v1
         id: sign_apk
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         with:
           releaseDirectory: android/app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        continue-on-error: true   # If no keystore secret, just upload unsigned APK
+
 
       # ── 12. Create GitHub Release (on version tags) ────────────
       - name: Create GitHub Release
