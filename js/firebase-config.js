@@ -11,7 +11,7 @@ import {
   sendEmailVerification
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import {
-  getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection
+  getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 export const firebaseConfig = {
@@ -52,5 +52,5 @@ export {
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
   sendEmailVerification,
-  doc, setDoc, getDoc, updateDoc, deleteDoc, collection
+  doc, setDoc, getDoc, updateDoc, deleteDoc, collection, onSnapshot
 };

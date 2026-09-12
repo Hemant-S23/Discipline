@@ -14,6 +14,11 @@ export const KEYS = {
 };
 
 // ── Helpers ──────────────────────────────────────────────────
+let dataChangeListener = null;
+export function registerDataChangeListener(fn) {
+  dataChangeListener = fn;
+}
+
 export function load(key, fallback = null) {
   try {
     const v = localStorage.getItem(key);
@@ -21,7 +26,14 @@ export function load(key, fallback = null) {
   } catch { return fallback; }
 }
 export function save(key, data) {
-  try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('Storage error', e); }
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    if (typeof dataChangeListener === 'function') {
+      dataChangeListener(key, data);
+    }
+  } catch (e) {
+    console.warn('Storage error', e);
+  }
 }
 export function today() {
   const d = new Date();
@@ -90,7 +102,7 @@ export function updateHabit(id, updates) {
   const habits = getHabits();
   const idx = habits.findIndex(h => h.id === id);
   if (idx !== -1) {
-    habits[idx] = { ...habits[idx], ...updates };
+    habits[idx] = { ...habits[idx], ...updates, updatedAt: new Date().toISOString() };
     saveHabits(habits);
     return habits[idx];
   }

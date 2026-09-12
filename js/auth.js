@@ -8,16 +8,88 @@ import {
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
   sendEmailVerification,
-  doc, setDoc, getDoc, deleteDoc
+  doc, setDoc, getDoc, deleteDoc, onSnapshot
 } from './firebase-config.js?v=6.0';
-import { getUser, updateUser, save, load, KEYS, resetAllData } from './data.js?v=6.0';
+import { getUser, updateUser, save, load, KEYS, resetAllData, registerDataChangeListener } from './data.js?v=6.0';
 import { showToast, closeModal, openModal } from './ui.js?v=6.0';
 import { validateEmail } from './email-validator.js?v=6.0';
 
 let currentAuthUser = null;
+let isSyncingFromCloud = false;
+let unsubscribeSnapshot = null;
+let cloudUploadTimer = null;
 
 export function getAuthUser() {
-  return currentAuthUser;
+  return currentAuthUser || (auth && auth.currentUser);
+}
+
+// Automatically sync any local modifications to Firestore in the background
+registerDataChangeListener((key) => {
+  if (isSyncingFromCloud) return;
+  const user = currentAuthUser || (auth && auth.currentUser);
+  if (!user || !user.uid) return;
+
+  clearTimeout(cloudUploadTimer);
+  cloudUploadTimer = setTimeout(() => {
+    uploadLocalDataToCloud(user.uid);
+  }, 1000);
+});
+
+// Real-time listener: listens to remote changes on Firestore and updates local UI
+export function startRealtimeSync(uid) {
+  if (unsubscribeSnapshot) {
+    try { unsubscribeSnapshot(); } catch(e) {}
+    unsubscribeSnapshot = null;
+  }
+  if (!isFirebaseConfigured || !db || !uid) return;
+
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    unsubscribeSnapshot = onSnapshot(userDocRef, (snap) => {
+      if (!snap.exists()) return;
+      if (snap.metadata && snap.metadata.hasPendingWrites) {
+        // Skip updates that originated from our own client
+        return;
+      }
+      // Remote cloud update received — merge and refresh view
+      syncCloudData(uid).then(() => {
+        if (window._refreshAppUI) window._refreshAppUI();
+      });
+    }, (err) => {
+      console.warn('Real-time sync snapshot error:', err);
+    });
+  } catch (err) {
+    console.warn('Could not establish real-time sync snapshot:', err);
+  }
+}
+
+export function stopRealtimeSync() {
+  if (unsubscribeSnapshot) {
+    try { unsubscribeSnapshot(); } catch(e) {}
+    unsubscribeSnapshot = null;
+  }
+}
+
+// Handle app foreground / tab focus sync
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const u = currentAuthUser || (auth && auth.currentUser);
+      if (u && u.uid) {
+        syncCloudData(u.uid).then(() => {
+          if (window._refreshAppUI) window._refreshAppUI();
+        });
+      }
+    }
+  });
+  window.addEventListener('focus', () => {
+    const u = currentAuthUser || (auth && auth.currentUser);
+    if (u && u.uid) {
+      syncCloudData(u.uid).then(() => {
+        if (window._refreshAppUI) window._refreshAppUI();
+      });
+    }
+  });
 }
 
 // Called by bootApp() BEFORE any routing — checks if we just came back from Google redirect
@@ -27,28 +99,23 @@ export async function handleRedirectResult() {
     const result = await getRedirectResult(auth);
     if (result && result.user) {
       currentAuthUser = result.user;
+      const user = getUser();
       const name = result.user.displayName || result.user.email.split('@')[0];
+      const photo = result.user.photoURL || user.photoUrl || null;
       const hasCloudHabits = await syncCloudData(result.user.uid);
+      startRealtimeSync(result.user.uid);
 
-      if (hasCloudHabits) {
-        updateUser({
-          email: result.user.email,
-          name: result.user.displayName || name,
-          isLoggedIn: true,
-          authDone: true,
-          onboardingDone: true
-        });
-      } else {
-        updateUser({
-          email: result.user.email,
-          name: result.user.displayName || name,
-          isLoggedIn: true,
-          authDone: true,
-          onboardingDone: false
-        });
-      }
+      updateUser({
+        email: result.user.email,
+        name: result.user.displayName || name,
+        photoUrl: photo,
+        isLoggedIn: true,
+        authDone: true,
+        onboardingDone: hasCloudHabits
+      });
 
       showToast(`Signed in as ${result.user.displayName || name}!`, 'success');
+      if (window._refreshAppUI) window._refreshAppUI();
       return result.user;
     }
   } catch (err) {
@@ -78,16 +145,23 @@ export async function initAuth(onUserChange) {
           return;
         }
 
+        const updates = { email: firebaseUser.email, isLoggedIn: true, authDone: true };
         if (firebaseUser.displayName && !user.nameCustomized) {
-          updateUser({ name: firebaseUser.displayName, email: firebaseUser.email, isLoggedIn: true, authDone: true });
-        } else {
-          updateUser({ email: firebaseUser.email, isLoggedIn: true, authDone: true });
+          updates.name = firebaseUser.displayName;
         }
+        if (firebaseUser.photoURL && !user.photoUrl) {
+          updates.photoUrl = firebaseUser.photoURL;
+        }
+        updateUser(updates);
+
         await syncCloudData(firebaseUser.uid);
+        startRealtimeSync(firebaseUser.uid);
       } else {
         currentAuthUser = null;
+        stopRealtimeSync();
       }
       if (typeof onUserChange === 'function') onUserChange(currentAuthUser || getUser());
+      if (window._refreshAppUI) window._refreshAppUI();
     });
   } else {
     const user = getUser();
@@ -96,75 +170,195 @@ export async function initAuth(onUserChange) {
 }
 
 export async function syncCloudData(uid) {
-  if (!isFirebaseConfigured || !db) return false;
+  if (!isFirebaseConfigured || !db || !uid) return false;
   try {
     const userDocRef = doc(db, 'users', uid);
     const snap = await getDoc(userDocRef);
 
     if (snap.exists()) {
       const cloudData = snap.data();
-      const localHabits = load(KEYS.HABITS, []);
-      const cloudHabits = cloudData.habits && Array.isArray(cloudData.habits) && cloudData.habits.length > 0;
+      isSyncingFromCloud = true;
+      let shouldUploadMerged = false;
 
-      // If cloud has habits, restore them. If cloud is empty but local has habits (e.g. from onboarding), keep local & sync up!
-      if (cloudHabits) {
-        save(KEYS.HABITS, cloudData.habits);
-      } else if (localHabits.length > 0) {
-        await uploadLocalDataToCloud(uid);
-      }
+      try {
+        // 1. Habits Merge: Union by id with conflict resolution
+        const localHabits = load(KEYS.HABITS, []) || [];
+        const cloudHabits = (cloudData.habits && Array.isArray(cloudData.habits)) ? cloudData.habits : [];
 
-      if (cloudData.tasks && Array.isArray(cloudData.tasks)) {
-        save(KEYS.TASKS, cloudData.tasks);
-      }
-      if (cloudData.completions && Array.isArray(cloudData.completions) && cloudData.completions.length > 0) {
-        save(KEYS.COMPLETIONS, cloudData.completions);
-      }
-      if (cloudData.checkins && Array.isArray(cloudData.checkins) && cloudData.checkins.length > 0) {
-        save(KEYS.CHECKINS, cloudData.checkins);
-      }
-      if (cloudData.achievements && Array.isArray(cloudData.achievements) && cloudData.achievements.length > 0) {
-        save(KEYS.ACHIEVEMENTS, cloudData.achievements);
-      }
-      if (cloudData.rewards && Array.isArray(cloudData.rewards) && cloudData.rewards.length > 0) {
-        save(KEYS.REWARDS, cloudData.rewards);
-      }
-      // Restore profile but keep local onboardingDone state based on cloud habits presence
-      if (cloudData.userProfile) {
-        const mergedProfile = { ...getUser(), ...cloudData.userProfile };
-        // onboardingDone is determined by whether user has cloud habits, not by the stored flag
-        mergedProfile.onboardingDone = cloudHabits || !!cloudData.userProfile.onboardingDone;
+        if (cloudHabits.length > 0 || localHabits.length > 0) {
+          const habitMap = new Map();
+          cloudHabits.forEach(h => {
+            if (h && h.id) habitMap.set(h.id, h);
+          });
+          localHabits.forEach(h => {
+            if (h && h.id) {
+              if (!habitMap.has(h.id)) {
+                // Local has a habit created on this device / offline: preserve it!
+                habitMap.set(h.id, h);
+                shouldUploadMerged = true;
+              } else {
+                // Both have it: compare timestamps if available
+                const existing = habitMap.get(h.id);
+                const localTs = h.updatedAt || h.createdAt || '';
+                const cloudTs = existing.updatedAt || existing.createdAt || '';
+                if (localTs && cloudTs && localTs > cloudTs) {
+                  habitMap.set(h.id, h);
+                  shouldUploadMerged = true;
+                }
+              }
+            }
+          });
+          save(KEYS.HABITS, Array.from(habitMap.values()));
+        }
+
+        // 2. Completions Merge: Union by habitId + date
+        const localCompletions = load(KEYS.COMPLETIONS, []) || [];
+        const cloudCompletions = (cloudData.completions && Array.isArray(cloudData.completions)) ? cloudData.completions : [];
+        if (cloudCompletions.length > 0 || localCompletions.length > 0) {
+          const completionMap = new Map();
+          cloudCompletions.forEach(c => {
+            if (c && c.habitId && c.date) completionMap.set(`${c.habitId}_${c.date}`, c);
+          });
+          localCompletions.forEach(c => {
+            if (c && c.habitId && c.date) {
+              const key = `${c.habitId}_${c.date}`;
+              if (!completionMap.has(key)) {
+                completionMap.set(key, c);
+                shouldUploadMerged = true;
+              }
+            }
+          });
+          save(KEYS.COMPLETIONS, Array.from(completionMap.values()));
+        }
+
+        // 3. Tasks Merge: Union by id
+        const localTasks = load(KEYS.TASKS, []) || [];
+        const cloudTasks = (cloudData.tasks && Array.isArray(cloudData.tasks)) ? cloudData.tasks : [];
+        if (cloudTasks.length > 0 || localTasks.length > 0) {
+          const taskMap = new Map();
+          cloudTasks.forEach(t => { if (t && t.id) taskMap.set(t.id, t); });
+          localTasks.forEach(t => {
+            if (t && t.id) {
+              if (!taskMap.has(t.id)) {
+                taskMap.set(t.id, t);
+                shouldUploadMerged = true;
+              } else if (t.completed && !taskMap.get(t.id).completed) {
+                taskMap.set(t.id, t);
+                shouldUploadMerged = true;
+              }
+            }
+          });
+          save(KEYS.TASKS, Array.from(taskMap.values()));
+        }
+
+        // 4. Check-ins Merge: Union by date
+        const localCheckins = load(KEYS.CHECKINS, []) || [];
+        const cloudCheckins = (cloudData.checkins && Array.isArray(cloudData.checkins)) ? cloudData.checkins : [];
+        if (cloudCheckins.length > 0 || localCheckins.length > 0) {
+          const checkinMap = new Map();
+          cloudCheckins.forEach(c => { if (c && c.date) checkinMap.set(c.date, c); });
+          localCheckins.forEach(c => {
+            if (c && c.date && !checkinMap.has(c.date)) {
+              checkinMap.set(c.date, c);
+              shouldUploadMerged = true;
+            }
+          });
+          save(KEYS.CHECKINS, Array.from(checkinMap.values()));
+        }
+
+        // 5. Achievements Merge: Union by id
+        const localAchievements = load(KEYS.ACHIEVEMENTS, []) || [];
+        const cloudAchievements = (cloudData.achievements && Array.isArray(cloudData.achievements)) ? cloudData.achievements : [];
+        if (cloudAchievements.length > 0 || localAchievements.length > 0) {
+          const achMap = new Map();
+          cloudAchievements.forEach(a => { if (a && a.id) achMap.set(a.id, a); });
+          localAchievements.forEach(a => {
+            if (a && a.id && !achMap.has(a.id)) {
+              achMap.set(a.id, a);
+              shouldUploadMerged = true;
+            }
+          });
+          save(KEYS.ACHIEVEMENTS, Array.from(achMap.values()));
+        }
+
+        // 6. Rewards Merge: Union
+        const localRewards = load(KEYS.REWARDS, []) || [];
+        const cloudRewards = (cloudData.rewards && Array.isArray(cloudData.rewards)) ? cloudData.rewards : [];
+        if (cloudRewards.length > 0 || localRewards.length > 0) {
+          const rewSet = new Set([...cloudRewards, ...localRewards]);
+          save(KEYS.REWARDS, Array.from(rewSet));
+        }
+
+        // 7. XP Log Merge: Union by timestamp
+        const localXpLog = load(KEYS.XP_LOG, []) || [];
+        const cloudXpLog = (cloudData.xpLog && Array.isArray(cloudData.xpLog)) ? cloudData.xpLog : [];
+        if (cloudXpLog.length > 0 || localXpLog.length > 0) {
+          const logMap = new Map();
+          cloudXpLog.forEach(l => { if (l && l.timestamp) logMap.set(l.timestamp, l); });
+          localXpLog.forEach(l => {
+            if (l && l.timestamp && !logMap.has(l.timestamp)) {
+              logMap.set(l.timestamp, l);
+              shouldUploadMerged = true;
+            }
+          });
+          save(KEYS.XP_LOG, Array.from(logMap.values()));
+        }
+
+        // 8. User Profile Merge: Keep highest XP, preserve photoUrl
+        const localUser = getUser();
+        const cloudProfile = cloudData.userProfile || {};
+        const maxXP = Math.max(localUser.totalXP || 0, cloudProfile.totalXP || 0);
+        const resolvedPhoto = cloudProfile.photoUrl || localUser.photoUrl || (currentAuthUser && currentAuthUser.photoURL) || null;
+
+        const mergedProfile = {
+          ...localUser,
+          ...cloudProfile,
+          totalXP: maxXP,
+          photoUrl: resolvedPhoto,
+          isLoggedIn: true,
+          authDone: true,
+          onboardingDone: true
+        };
         save(KEYS.USER, mergedProfile);
+
+        if (shouldUploadMerged) {
+          await uploadLocalDataToCloud(uid);
+        }
+      } finally {
+        isSyncingFromCloud = false;
       }
 
-      return cloudHabits; // true = returning user with data, false = brand new user
+      return true;
     } else {
-      // No cloud doc yet — fresh account
+      // Fresh cloud account: immediately upload current local data
       await uploadLocalDataToCloud(uid);
       return false;
     }
   } catch (e) {
     console.error('Error syncing cloud data:', e);
+    isSyncingFromCloud = false;
     return false;
   }
 }
 
 export async function uploadLocalDataToCloud(uid) {
-  if (!isFirebaseConfigured || !db) return;
+  if (!isFirebaseConfigured || !db || !uid) return;
   try {
     const userDocRef = doc(db, 'users', uid);
     const payload = {
-      habits: load(KEYS.HABITS, []),
-      completions: load(KEYS.COMPLETIONS, []),
-      tasks: load(KEYS.TASKS, []),
-      checkins: load(KEYS.CHECKINS, []),
-      achievements: load(KEYS.ACHIEVEMENTS, []),
-      rewards: load(KEYS.REWARDS, []),
+      habits: load(KEYS.HABITS, []) || [],
+      completions: load(KEYS.COMPLETIONS, []) || [],
+      tasks: load(KEYS.TASKS, []) || [],
+      checkins: load(KEYS.CHECKINS, []) || [],
+      achievements: load(KEYS.ACHIEVEMENTS, []) || [],
+      rewards: load(KEYS.REWARDS, []) || [],
+      xpLog: load(KEYS.XP_LOG, []) || [],
       userProfile: getUser(),
       lastSyncedAt: new Date().toISOString()
     };
     await setDoc(userDocRef, payload, { merge: true });
   } catch (e) {
-    console.error('Error uploading data to cloud:', e);
+    console.warn('Error uploading data to cloud:', e);
   }
 }
 
@@ -189,10 +383,12 @@ export async function loginWithEmail(rawEmail, password) {
       }
 
       await syncCloudData(cred.user.uid);
+      startRealtimeSync(cred.user.uid);
       closeModal('modal-auth');
       showToast('Successfully signed in.', 'success');
       updateUser({ email: cred.user.email, name: cred.user.displayName || email.split('@')[0], isLoggedIn: true, authDone: true });
       if (window._updateAccountUI) window._updateAccountUI(cred.user);
+      if (window._refreshAppUI) window._refreshAppUI();
       return cred.user;
     } catch (err) {
       console.warn('Firebase signIn error:', err.code);
@@ -308,14 +504,19 @@ export async function loginWithGoogle() {
 
       // Web browser: use popup (instant, no page reload needed)
       const cred = await signInWithPopup(auth, googleProvider);
+      currentAuthUser = cred.user;
+      const user = getUser();
       const name = cred.user.displayName || cred.user.email.split('@')[0];
+      const photo = cred.user.photoURL || user.photoUrl || null;
 
       // Check cloud for existing data — determines if onboarding is needed
       const hasCloudHabits = await syncCloudData(cred.user.uid);
+      startRealtimeSync(cred.user.uid);
 
       updateUser({
         email: cred.user.email,
         name: cred.user.displayName || name,
+        photoUrl: photo,
         isLoggedIn: true,
         authDone: true,
         onboardingDone: hasCloudHabits
@@ -323,6 +524,7 @@ export async function loginWithGoogle() {
 
       showToast(`Welcome${hasCloudHabits ? ' back' : ''}, ${cred.user.displayName || name}!`, 'success');
       if (window._updateAccountUI) window._updateAccountUI(cred.user);
+      if (window._refreshAppUI) window._refreshAppUI();
       return cred.user;
     } catch (err) {
       console.warn('Google Sign-In error:', err.code, err.message);
@@ -368,12 +570,14 @@ export async function resetPassword(email) {
 }
 
 export async function logoutUser() {
+  stopRealtimeSync();
   if (isFirebaseConfigured && auth) {
     try { await signOut(auth); } catch(e) {}
   }
   updateUser({ email: null, isLoggedIn: false, isGuest: false, authDone: false });
   showToast('Logged out. Switched to guest mode.', 'info');
   if (window._updateAccountUI) window._updateAccountUI(null);
+  if (window._refreshAppUI) window._refreshAppUI();
 }
 
 export async function deleteAccountAndData() {

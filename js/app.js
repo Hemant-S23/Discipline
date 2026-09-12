@@ -19,7 +19,7 @@ import {
 import { awardXP, XP_BONUSES } from './xp.js?v=6.0';
 import {
   initAuth, loginWithEmail, signUpWithEmail, loginWithGoogle, resetPassword, logoutUser, deleteAccountAndData, handleRedirectResult,
-  checkEmailVerification, resendVerification, cancelEmailVerification
+  checkEmailVerification, resendVerification, cancelEmailVerification, getAuthUser
 } from './auth.js?v=6.0';
 import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
@@ -848,6 +848,9 @@ function initAuthUI() {
 
   initAuth((user) => {
     updateAccountSettingsUI(user);
+    if (typeof window._refreshAppUI === 'function') {
+      window._refreshAppUI();
+    }
   });
 }
 
@@ -864,10 +867,7 @@ function updateAccountSettingsUI(authUser) {
   const displayName = (authUser && authUser.displayName) || user.name;
   const accountIdentifier = rawEmail || (displayName ? `${displayName}` : null);
 
-  if (avatarEl) {
-    const initial = (user.name || rawEmail || 'D').trim().charAt(0).toUpperCase() || 'D';
-    avatarEl.textContent = initial;
-  }
+  updateAllAvatars();
 
   if (authUser || user.email) {
     if (statusEl) statusEl.textContent = accountIdentifier ? `Cloud: ${accountIdentifier}` : 'Cloud Account';
@@ -1135,6 +1135,15 @@ function appInit() {
   window._renderCalendar = renderCalendarPage;
   window.openDayDetailModal = openDayDetailModal;
   window._ui = { showConfetti };
+
+  // Global UI refresh triggered whenever remote cloud sync updates local state
+  window._refreshAppUI = function() {
+    updateAllAvatars();
+    updateAccountSettingsUI(getAuthUser ? getAuthUser() : null);
+    const hashPage = (location.hash || '#dashboard').slice(1);
+    const targetPage = PAGES.includes(hashPage) ? hashPage : (currentPage || 'dashboard');
+    navigateTo(targetPage);
+  };
 
   // Navigate to initial page
   const page = (location.hash || '#dashboard').slice(1);
