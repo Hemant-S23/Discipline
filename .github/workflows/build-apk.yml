@@ -46,6 +46,9 @@ jobs:
       - name: Add Capacitor Android platform
         run: npx cap add android
 
+      - name: Configure Android WebView (Cookies & Single Window)
+        run: node scripts/configure-android.js
+
       - name: Apply Custom Launcher Icons
         run: node scripts/apply-android-icons.js
 

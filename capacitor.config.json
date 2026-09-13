@@ -5,17 +5,20 @@
   "server": {
     "androidScheme": "https",
     "allowNavigation": [
+      "*",
       "*.firebaseapp.com",
       "*.googleapis.com",
       "*.google.com",
       "google.com",
       "accounts.google.com",
       "*.gstatic.com",
-      "*.googleusercontent.com"
+      "*.googleusercontent.com",
+      "*.youtube.com"
     ]
   },
   "android": {
     "allowMixedContent": true,
+    "overrideUserAgent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.127 Mobile Safari/537.36",
     "buildOptions": {
       "keystorePath": null,
       "keystoreAlias": null
