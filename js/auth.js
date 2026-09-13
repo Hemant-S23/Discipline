@@ -108,28 +108,44 @@ export async function handleRedirectResult() {
   if (!isFirebaseConfigured || !auth) return null;
   try {
     const result = await getRedirectResult(auth);
+    try {
+      localStorage.removeItem('discipline_signing_in');
+      sessionStorage.removeItem('discipline_signing_in');
+    } catch(e) {}
+
     if (result && result.user) {
       currentAuthUser = result.user;
       const user = getUser();
       const name = result.user.displayName || result.user.email.split('@')[0];
       const photo = result.user.photoURL || user.photoUrl || null;
-      const hasCloudHabits = await syncCloudData(result.user.uid, result.user.email);
-      startRealtimeSync(result.user.uid, result.user.email);
 
+      // Update auth immediately so user enters app instantly with ZERO lag
       updateUser({
         email: result.user.email,
         name: result.user.displayName || name,
         photoUrl: photo,
         isLoggedIn: true,
         authDone: true,
-        onboardingDone: hasCloudHabits
+        onboardingDone: true
       });
 
-      showToast(`Signed in as ${result.user.displayName || name}!`, 'success');
+      showToast(`Welcome, ${result.user.displayName || name}!`, 'success');
       if (window._refreshAppUI) window._refreshAppUI();
+
+      // Cloud sync & realtime listener in parallel
+      syncCloudData(result.user.uid, result.user.email).then((hasCloudHabits) => {
+        updateUser({ onboardingDone: hasCloudHabits });
+        if (window._refreshAppUI) window._refreshAppUI();
+      });
+      startRealtimeSync(result.user.uid, result.user.email);
+
       return result.user;
     }
   } catch (err) {
+    try {
+      localStorage.removeItem('discipline_signing_in');
+      sessionStorage.removeItem('discipline_signing_in');
+    } catch(e) {}
     const ignoredCodes = [
       'auth/no-redirect-operation-pending',
       'auth/null-user'
@@ -537,7 +553,11 @@ export async function loginWithGoogle() {
       // to handle the firebaseapp.com auth handler internally, so getRedirectResult()
       // will pick up the result when the app resumes back to its origin.
       if (isCapacitorApp()) {
-        showToast('Redirecting to Google...', 'info', 2000);
+        try {
+          localStorage.setItem('discipline_signing_in', 'google');
+          sessionStorage.setItem('discipline_signing_in', 'google');
+        } catch(e) {}
+        showToast('Connecting to Google...', 'info', 2500);
         await signInWithRedirect(auth, googleProvider);
         return null; // Result will be handled by handleRedirectResult() on next load
       }

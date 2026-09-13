@@ -7,7 +7,11 @@
     "allowNavigation": [
       "*.firebaseapp.com",
       "*.googleapis.com",
-      "accounts.google.com"
+      "*.google.com",
+      "google.com",
+      "accounts.google.com",
+      "*.gstatic.com",
+      "*.googleusercontent.com"
     ]
   },
   "android": {

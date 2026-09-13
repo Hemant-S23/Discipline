@@ -1162,6 +1162,30 @@ async function bootApp() {
   const onboardingOverlay = document.getElementById('onboarding-overlay');
   const appShell = document.getElementById('app');
 
+  const isRedirectReturn = (typeof localStorage !== 'undefined' && localStorage.getItem('discipline_signing_in')) ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('discipline_signing_in')) ||
+    location.href.includes('apiKey=') || location.href.includes('state=');
+
+  if (isRedirectReturn) {
+    if (landingOverlay) landingOverlay.classList.add('hidden');
+    if (appShell) appShell.classList.remove('hidden');
+    document.documentElement.classList.add('user-logged-in');
+
+    const redirectUser = await handleRedirectResult();
+    if (redirectUser) {
+      updateUser({ isLoggedIn: true, authDone: true });
+      proceedAfterAuth();
+      return;
+    } else {
+      const currentUser = getUser();
+      if (!currentUser.isLoggedIn && !currentUser.isGuest) {
+        if (landingOverlay) landingOverlay.classList.remove('hidden');
+        if (appShell) appShell.classList.add('hidden');
+        document.documentElement.classList.remove('user-logged-in');
+      }
+    }
+  }
+
   if (isAuthDone) {
     if (landingOverlay) landingOverlay.classList.add('hidden');
 
