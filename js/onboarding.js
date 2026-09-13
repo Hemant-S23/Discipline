@@ -214,7 +214,7 @@ window.finishOnboarding = async function() {
   const authUser = auth?.currentUser;
   if (authUser && isFirebaseConfigured) {
     try {
-      await uploadLocalDataToCloud(authUser.uid);
+      await uploadLocalDataToCloud(authUser.uid, authUser.email);
     } catch (e) {
       console.warn('Onboarding cloud sync:', e);
     }

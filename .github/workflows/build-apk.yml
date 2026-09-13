@@ -58,6 +58,11 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
+      # ── 8b. Print Signing Certificate Fingerprints (SHA-1 / SHA-256) ──
+      - name: Print SHA-1 and SHA-256 Fingerprints
+        working-directory: android
+        run: ./gradlew signingReport
+
       # ── 9. Upload debug APK as artifact ────────────────────────
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4

@@ -23,28 +23,39 @@ export function getAuthUser() {
   return currentAuthUser || (auth && auth.currentUser);
 }
 
+// Canonical account key based on user email (guarantees Web and APK share 100% identical document)
+export function getAccountKey(uid, email) {
+  const effectiveEmail = email || (currentAuthUser && currentAuthUser.email) || (auth && auth.currentUser && auth.currentUser.email) || getUser().email;
+  if (effectiveEmail && effectiveEmail.includes('@')) {
+    return 'email_' + effectiveEmail.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+  }
+  return uid ? 'uid_' + uid : null;
+}
+
 // Automatically sync any local modifications to Firestore in the background
 registerDataChangeListener((key) => {
   if (isSyncingFromCloud) return;
   const user = currentAuthUser || (auth && auth.currentUser);
-  if (!user || !user.uid) return;
+  if (!user || (!user.uid && !user.email)) return;
 
   clearTimeout(cloudUploadTimer);
   cloudUploadTimer = setTimeout(() => {
-    uploadLocalDataToCloud(user.uid);
+    uploadLocalDataToCloud(user.uid, user.email);
   }, 1000);
 });
 
 // Real-time listener: listens to remote changes on Firestore and updates local UI
-export function startRealtimeSync(uid) {
+export function startRealtimeSync(uid, email) {
   if (unsubscribeSnapshot) {
     try { unsubscribeSnapshot(); } catch(e) {}
     unsubscribeSnapshot = null;
   }
-  if (!isFirebaseConfigured || !db || !uid) return;
+  if (!isFirebaseConfigured || !db) return;
+  const accountKey = getAccountKey(uid, email);
+  if (!accountKey && !uid) return;
 
   try {
-    const userDocRef = doc(db, 'users', uid);
+    const userDocRef = doc(db, 'users', accountKey || uid);
     unsubscribeSnapshot = onSnapshot(userDocRef, (snap) => {
       if (!snap.exists()) return;
       if (snap.metadata && snap.metadata.hasPendingWrites) {
@@ -52,7 +63,7 @@ export function startRealtimeSync(uid) {
         return;
       }
       // Remote cloud update received — merge and refresh view
-      syncCloudData(uid).then(() => {
+      syncCloudData(uid, email).then(() => {
         if (window._refreshAppUI) window._refreshAppUI();
       });
     }, (err) => {
@@ -75,8 +86,8 @@ if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       const u = currentAuthUser || (auth && auth.currentUser);
-      if (u && u.uid) {
-        syncCloudData(u.uid).then(() => {
+      if (u) {
+        syncCloudData(u.uid, u.email).then(() => {
           if (window._refreshAppUI) window._refreshAppUI();
         });
       }
@@ -84,8 +95,8 @@ if (typeof document !== 'undefined') {
   });
   window.addEventListener('focus', () => {
     const u = currentAuthUser || (auth && auth.currentUser);
-    if (u && u.uid) {
-      syncCloudData(u.uid).then(() => {
+    if (u) {
+      syncCloudData(u.uid, u.email).then(() => {
         if (window._refreshAppUI) window._refreshAppUI();
       });
     }
@@ -102,8 +113,8 @@ export async function handleRedirectResult() {
       const user = getUser();
       const name = result.user.displayName || result.user.email.split('@')[0];
       const photo = result.user.photoURL || user.photoUrl || null;
-      const hasCloudHabits = await syncCloudData(result.user.uid);
-      startRealtimeSync(result.user.uid);
+      const hasCloudHabits = await syncCloudData(result.user.uid, result.user.email);
+      startRealtimeSync(result.user.uid, result.user.email);
 
       updateUser({
         email: result.user.email,
@@ -154,8 +165,8 @@ export async function initAuth(onUserChange) {
         }
         updateUser(updates);
 
-        await syncCloudData(firebaseUser.uid);
-        startRealtimeSync(firebaseUser.uid);
+        await syncCloudData(firebaseUser.uid, firebaseUser.email);
+        startRealtimeSync(firebaseUser.uid, firebaseUser.email);
       } else {
         currentAuthUser = null;
         stopRealtimeSync();
@@ -169,11 +180,29 @@ export async function initAuth(onUserChange) {
   }
 }
 
-export async function syncCloudData(uid) {
-  if (!isFirebaseConfigured || !db || !uid) return false;
+export async function syncCloudData(uid, email) {
+  if (!isFirebaseConfigured || !db) return false;
+  const accountKey = getAccountKey(uid, email);
+  if (!accountKey && !uid) return false;
+
   try {
-    const userDocRef = doc(db, 'users', uid);
-    const snap = await getDoc(userDocRef);
+    let snap = null;
+    let targetDocRef = null;
+
+    // 1. Try reading canonical email-keyed document
+    if (accountKey) {
+      targetDocRef = doc(db, 'users', accountKey);
+      snap = await getDoc(targetDocRef);
+    }
+
+    // 2. Fallback to legacy raw UID document
+    if ((!snap || !snap.exists()) && uid) {
+      const legacyDocRef = doc(db, 'users', uid);
+      const legacySnap = await getDoc(legacyDocRef);
+      if (legacySnap && legacySnap.exists()) {
+        snap = legacySnap;
+      }
+    }
 
     if (snap.exists()) {
       const cloudData = snap.data();
@@ -321,8 +350,8 @@ export async function syncCloudData(uid) {
         };
         save(KEYS.USER, mergedProfile);
 
-        if (shouldUploadMerged) {
-          await uploadLocalDataToCloud(uid);
+        if (shouldUploadMerged || (accountKey && targetDocRef && (!snap.ref || snap.ref.id !== accountKey))) {
+          await uploadLocalDataToCloud(uid, email);
         }
       } finally {
         isSyncingFromCloud = false;
@@ -331,7 +360,7 @@ export async function syncCloudData(uid) {
       return true;
     } else {
       // Fresh cloud account: immediately upload current local data
-      await uploadLocalDataToCloud(uid);
+      await uploadLocalDataToCloud(uid, email);
       return false;
     }
   } catch (e) {
@@ -341,10 +370,12 @@ export async function syncCloudData(uid) {
   }
 }
 
-export async function uploadLocalDataToCloud(uid) {
-  if (!isFirebaseConfigured || !db || !uid) return;
+export async function uploadLocalDataToCloud(uid, email) {
+  if (!isFirebaseConfigured || !db) return;
+  const accountKey = getAccountKey(uid, email);
+  if (!accountKey && !uid) return;
+
   try {
-    const userDocRef = doc(db, 'users', uid);
     const payload = {
       habits: load(KEYS.HABITS, []) || [],
       completions: load(KEYS.COMPLETIONS, []) || [],
@@ -354,9 +385,18 @@ export async function uploadLocalDataToCloud(uid) {
       rewards: load(KEYS.REWARDS, []) || [],
       xpLog: load(KEYS.XP_LOG, []) || [],
       userProfile: getUser(),
+      accountEmail: (email || (currentAuthUser && currentAuthUser.email) || getUser().email || '').toLowerCase().trim(),
       lastSyncedAt: new Date().toISOString()
     };
-    await setDoc(userDocRef, payload, { merge: true });
+
+    // Primary: Write to canonical email-keyed doc (ensures Web & App share identical doc)
+    if (accountKey) {
+      await setDoc(doc(db, 'users', accountKey), payload, { merge: true });
+    }
+    // Secondary: Also write to legacy uid doc if available
+    if (uid && uid !== accountKey) {
+      await setDoc(doc(db, 'users', uid), payload, { merge: true });
+    }
   } catch (e) {
     console.warn('Error uploading data to cloud:', e);
   }
@@ -382,8 +422,8 @@ export async function loginWithEmail(rawEmail, password) {
         throw new Error('Email not verified. Please check your inbox.');
       }
 
-      await syncCloudData(cred.user.uid);
-      startRealtimeSync(cred.user.uid);
+      await syncCloudData(cred.user.uid, cred.user.email);
+      startRealtimeSync(cred.user.uid, cred.user.email);
       closeModal('modal-auth');
       showToast('Successfully signed in.', 'success');
       updateUser({ email: cred.user.email, name: cred.user.displayName || email.split('@')[0], isLoggedIn: true, authDone: true });
@@ -510,8 +550,8 @@ export async function loginWithGoogle() {
       const photo = cred.user.photoURL || user.photoUrl || null;
 
       // Check cloud for existing data — determines if onboarding is needed
-      const hasCloudHabits = await syncCloudData(cred.user.uid);
-      startRealtimeSync(cred.user.uid);
+      const hasCloudHabits = await syncCloudData(cred.user.uid, cred.user.email);
+      startRealtimeSync(cred.user.uid, cred.user.email);
 
       updateUser({
         email: cred.user.email,
@@ -662,7 +702,7 @@ export async function checkEmailVerification() {
         authDone: true,
         nameCustomized: true
       });
-      await uploadLocalDataToCloud(user.uid);
+      await uploadLocalDataToCloud(user.uid, user.email);
       closeModal('modal-verify-email');
       showToast('Email verified! Welcome to Discipline.', 'success');
       if (window._updateAccountUI) window._updateAccountUI(user);
