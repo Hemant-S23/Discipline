@@ -5,9 +5,8 @@ node_modules/
 www/
 
 # Android project (generated fresh in CI from source)
-# Uncomment below if you want to exclude android/ from git too.
-# Keeping it excluded keeps repo small; CI rebuilds it every time.
-android/
+/android/
+!icons/android/
 
 # iOS (if added later)
 ios/

@@ -46,6 +46,9 @@ jobs:
       - name: Add Capacitor Android platform
         run: npx cap add android
 
+      - name: Apply Custom Launcher Icons
+        run: node scripts/apply-android-icons.js
+
       - name: Sync Capacitor (copy web assets into Android)
         run: npx cap sync android
 
