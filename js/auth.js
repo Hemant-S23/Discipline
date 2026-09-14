@@ -558,8 +558,7 @@ export async function loginWithGoogle() {
           try {
             await GoogleAuth.initialize({
               clientId: '356781067799-5su4b6r7tfgpgpm590cd4b0f1853jeu5.apps.googleusercontent.com',
-              scopes: ['profile', 'email'],
-              grantOfflineAccess: true
+              scopes: ['profile', 'email']
             });
           } catch(initErr) {
             console.log('[GoogleAuth] initialize notice:', initErr);

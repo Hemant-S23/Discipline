@@ -31,3 +31,4 @@ Thumbs.db
 .env.local
 google-services.json
 !android-config/google-services.json
+!android-config/debug.keystore
