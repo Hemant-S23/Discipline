@@ -55,6 +55,9 @@ jobs:
       - name: Sync Capacitor (copy web assets into Android)
         run: npx cap sync android
 
+      - name: Configure Android Native Settings (Google Services & Auth)
+        run: node scripts/configure-android.js
+
       # ── 7. Grant Gradle execute permission ─────────────────────
       - name: Grant Gradle wrapper execute permission
         run: chmod +x android/gradlew

@@ -5,6 +5,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  signInWithCredential,
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
   onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
@@ -46,8 +47,8 @@ try {
 }
 
 export {
-  app, auth, db, googleProvider, isFirebaseConfigured,
-  signInWithPopup, signInWithRedirect, getRedirectResult,
+  app, auth, db, googleProvider, GoogleAuthProvider, isFirebaseConfigured,
+  signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,

@@ -25,6 +25,11 @@
     }
   },
   "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "356781067799-5su4b6r7tfgpgpm590cd4b0f1853jeu5.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
+    },
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]
     },

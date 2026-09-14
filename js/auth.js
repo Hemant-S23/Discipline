@@ -3,8 +3,9 @@
 // ============================================================
 
 import {
-  auth, db, googleProvider, isFirebaseConfigured,
-  signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  auth, db, googleProvider, GoogleAuthProvider, isFirebaseConfigured,
+  signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, deleteUser, sendPasswordResetEmail, updateProfile,
   EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup,
   sendEmailVerification,
@@ -548,18 +549,65 @@ function isCapacitorApp() {
 export async function loginWithGoogle() {
   if (isFirebaseConfigured && auth) {
     try {
-      // In Capacitor (Android/iOS), popups are blocked by the native WebView.
-      // We MUST use signInWithRedirect. The WebView is configured (via allowNavigation)
-      // to handle the firebaseapp.com auth handler internally, so getRedirectResult()
-      // will pick up the result when the app resumes back to its origin.
+      // In native mobile app (Android / iOS), use native Google One-Tap sheet
+      // to avoid WebView OAuth blocking (Error 400: disallowed_useragent).
       if (isCapacitorApp()) {
-        try {
-          localStorage.setItem('discipline_signing_in', 'google');
-          sessionStorage.setItem('discipline_signing_in', 'google');
-        } catch(e) {}
-        showToast('Connecting to Google...', 'info', 2500);
-        await signInWithRedirect(auth, googleProvider);
-        return null; // Result will be handled by handleRedirectResult() on next load
+        const GoogleAuth = window.Capacitor?.Plugins?.GoogleAuth;
+        if (GoogleAuth) {
+          showToast('Connecting to Google...', 'info', 2000);
+          try {
+            await GoogleAuth.initialize({
+              clientId: '356781067799-5su4b6r7tfgpgpm590cd4b0f1853jeu5.apps.googleusercontent.com',
+              scopes: ['profile', 'email'],
+              grantOfflineAccess: true
+            });
+          } catch(initErr) {
+            console.log('[GoogleAuth] initialize notice:', initErr);
+          }
+
+          let googleUser;
+          try {
+            googleUser = await GoogleAuth.signIn();
+          } catch(err) {
+            const errStr = (err?.message || err?.code || JSON.stringify(err) || '').toLowerCase();
+            if (err?.code === '12501' || errStr.includes('cancel') || errStr.includes('cancelled') || errStr.includes('canceled')) {
+              showToast('Google sign-in was cancelled.', 'info');
+              return null;
+            }
+            console.warn('[GoogleAuth] native signIn error:', err);
+            throw err;
+          }
+
+          const idToken = googleUser?.authentication?.idToken || googleUser?.idToken;
+          if (!idToken) {
+            throw new Error('No Google authentication token received.');
+          }
+
+          const credential = GoogleAuthProvider.credential(idToken);
+          const cred = await signInWithCredential(auth, credential);
+
+          currentAuthUser = cred.user;
+          const user = getUser();
+          const name = cred.user.displayName || googleUser.name || cred.user.email.split('@')[0];
+          const photo = cred.user.photoURL || googleUser.imageUrl || user.photoUrl || null;
+
+          const hasCloudHabits = await syncCloudData(cred.user.uid, cred.user.email);
+          startRealtimeSync(cred.user.uid, cred.user.email);
+
+          updateUser({
+            email: cred.user.email,
+            name: cred.user.displayName || name,
+            photoUrl: photo,
+            isLoggedIn: true,
+            authDone: true,
+            onboardingDone: hasCloudHabits
+          });
+
+          showToast(`Welcome${hasCloudHabits ? ' back' : ''}, ${cred.user.displayName || name}!`, 'success');
+          if (window._updateAccountUI) window._updateAccountUI(cred.user);
+          if (window._refreshAppUI) window._refreshAppUI();
+          return cred.user;
+        }
       }
 
       // Web browser: use popup (instant, no page reload needed)
@@ -589,7 +637,7 @@ export async function loginWithGoogle() {
     } catch (err) {
       console.warn('Google Sign-In error:', err.code, err.message);
       if (err.code === 'auth/popup-blocked') {
-        // Popup blocked even on web — fallback to redirect
+        // Popup blocked on web — fallback to redirect
         showToast('Popup was blocked. Redirecting to Google...', 'info');
         await signInWithRedirect(auth, googleProvider);
         return null;
@@ -631,6 +679,9 @@ export async function resetPassword(email) {
 
 export async function logoutUser() {
   stopRealtimeSync();
+  if (window.Capacitor?.Plugins?.GoogleAuth?.signOut) {
+    try { await window.Capacitor.Plugins.GoogleAuth.signOut(); } catch(e) {}
+  }
   if (isFirebaseConfigured && auth) {
     try { await signOut(auth); } catch(e) {}
   }
