@@ -41,6 +41,7 @@ jobs:
       # ── 5. Android SDK ─────────────────────────────────────────
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        continue-on-error: true
 
       # ── 6. Capacitor — add android + sync ──────────────────────
       - name: Add Capacitor Android platform
@@ -70,7 +71,12 @@ jobs:
       # ── 8b. Print Signing Certificate Fingerprints (SHA-1 / SHA-256) ──
       - name: Print SHA-1 and SHA-256 Fingerprints
         working-directory: android
-        run: ./gradlew signingReport
+        run: |
+          ./gradlew signingReport | tee signing_report.txt
+          echo "### Android Signing Fingerprints" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          grep -E "Variant:|Config:|Store:|Alias:|MD5:|SHA1:|SHA-256:" signing_report.txt >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       # ── 9. Upload debug APK as artifact ────────────────────────
       - name: Upload Debug APK
