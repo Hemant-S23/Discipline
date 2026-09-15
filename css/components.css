@@ -4004,8 +4004,17 @@
 }
 
 .day-modal-habit-icon {
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
+  color: var(--accent);
+}
+
+.day-modal-habit-icon svg {
+  display: block;
 }
 
 .day-modal-habit-name {

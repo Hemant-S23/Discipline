@@ -290,7 +290,7 @@ function renderDayModalHabits(dateStr) {
     return `
       <div class="day-modal-habit-row ${done ? 'done' : ''}">
         <div class="day-modal-habit-info">
-          <span class="day-modal-habit-icon">${h.icon}</span>
+          <span class="day-modal-habit-icon">${getHabitSvg(h.icon, 18)}</span>
           <span class="day-modal-habit-name">${escapeHtml(h.name)}</span>
         </div>
         ${statusHtml}
