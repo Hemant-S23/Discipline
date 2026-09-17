@@ -25,6 +25,7 @@ import {
   showToast, showXPFloat, openModal, closeModal, closeAllModals, showConfirmModal, showConfetti, getDailyQuote, CATEGORY_ICONS
 } from './ui.js?v=6.0';
 import { getHabitSvg, ICONS_SVG } from './icons.js?v=6.0';
+import { initReminders, requestNotificationPermission } from './reminders.js?v=6.0';
 
 // ── Pages ─────────────────────────────────────────────────────
 const PAGES = ['dashboard', 'habits', 'streaks', 'analytics', 'achievements', 'rewards', 'calendar', 'settings'];
@@ -177,6 +178,16 @@ function initHabitForm() {
   // Form submit
   const form = document.getElementById('habit-form');
   if (form) form.addEventListener('submit', e => { e.preventDefault(); submitHabitForm(); });
+
+  // Reminder input change — request notification permission early
+  const reminderInput = document.getElementById('habit-reminder-input');
+  if (reminderInput) {
+    reminderInput.addEventListener('change', () => {
+      if (reminderInput.value) {
+        requestNotificationPermission();
+      }
+    });
+  }
 
   // Habits filter tabs
   document.querySelectorAll('.habits-filter-tab').forEach(tab => {
@@ -1129,6 +1140,7 @@ function appInit() {
   initGlobalButtons();
   restoreActiveReward();
   updateAllAvatars();
+  initReminders();
 
   // Expose global render function for cross-module use
   window._renderDashboard = renderDashboard;

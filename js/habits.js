@@ -12,6 +12,7 @@ import { calculateHabitStreak, checkMilestone } from './streaks.js?v=6.0';
 import { checkAndUnlockAchievements } from './achievements.js?v=6.0';
 import { showToast, showXPFloat, openModal, closeModal, animateHabitComplete, CATEGORY_ICONS, CATEGORY_LABELS } from './ui.js?v=6.0';
 import { getHabitSvg, getCategorySvg, getAchievementSvg, ICONS_SVG, HABIT_GLYPH_KEYS } from './icons.js?v=6.0';
+import { scheduleHabitReminder, cancelHabitReminder, requestNotificationPermission } from './reminders.js?v=6.0';
 
 // ── Habit Completion ──────────────────────────────────────────
 export function handleHabitToggle(habitId, checkBtnEl) {
@@ -543,10 +544,12 @@ export function submitHabitForm() {
   const data = { name, icon: selectedIcon, category, frequency, customDays, difficulty, xpReward, reminderTime: reminder, color: selectedColor };
 
   if (editingHabitId) {
-    updateHabit(editingHabitId, data);
+    const updated = updateHabit(editingHabitId, data);
+    scheduleHabitReminder(updated || { id: editingHabitId, ...data });
     showToast('✓ Habit updated!', 'success');
   } else {
-    addHabit(data);
+    const created = addHabit(data);
+    scheduleHabitReminder(created);
     showToast('✓ Habit created!', 'success');
   }
 
@@ -609,6 +612,7 @@ window.confirmArchive = function(id) {
 
   if (confirmBtn) {
     confirmBtn.onclick = () => {
+      cancelHabitReminder(id);
       archiveHabit(id);
       closeModal('modal-archive');
       showToast('Habit archived', 'info');
@@ -642,6 +646,7 @@ window.confirmDeleteHabit = function(id) {
 
   if (confirmBtn) {
     confirmBtn.onclick = () => {
+      cancelHabitReminder(id);
       deleteHabitPermanently(id);
       closeModal('modal-delete-habit');
       closeModal('modal-habit');

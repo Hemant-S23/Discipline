@@ -130,3 +130,30 @@ if (fs.existsSync(path.dirname(MAIN_ACTIVITY))) {
   fs.writeFileSync(MAIN_ACTIVITY, MAIN_ACTIVITY_CONTENT, 'utf8');
   console.log('[SUCCESS] MainActivity.java configured with GoogleAuth and WebView settings');
 }
+
+// 5. Configure AndroidManifest.xml notification & alarm permissions
+const MANIFEST_XML = path.join(APP_DIR, 'src', 'main', 'AndroidManifest.xml');
+if (fs.existsSync(MANIFEST_XML)) {
+  let manifestContent = fs.readFileSync(MANIFEST_XML, 'utf8');
+  const requiredPerms = [
+    '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
+    '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />',
+    '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
+    '<uses-permission android:name="android.permission.VIBRATE" />',
+    '<uses-permission android:name="android.permission.WAKE_LOCK" />'
+  ];
+  let updated = false;
+  for (const perm of requiredPerms) {
+    if (!manifestContent.includes(perm)) {
+      manifestContent = manifestContent.replace('</manifest>', `    ${perm}\n</manifest>`);
+      updated = true;
+    }
+  }
+  if (updated) {
+    fs.writeFileSync(MANIFEST_XML, manifestContent, 'utf8');
+    console.log('[SUCCESS] Added notification permissions to AndroidManifest.xml');
+  } else {
+    console.log('[INFO] Notification permissions already present in AndroidManifest.xml');
+  }
+}
+

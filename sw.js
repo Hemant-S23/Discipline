@@ -3,7 +3,7 @@
 // Offline caching, fast background updates, and standalone support
 // ============================================================
 
-const CACHE_NAME = 'discipline-v1.0.3';
+const CACHE_NAME = 'discipline-v1.0.4';
 
 const PRECACHE_ASSETS = [
   './',
@@ -35,7 +35,8 @@ const PRECACHE_ASSETS = [
   './js/icons.js',
   './js/email-validator.js',
   './js/onboarding.js',
-  './js/firebase-config.js'
+  './js/firebase-config.js',
+  './js/reminders.js'
 ];
 
 // Install Event: Precache core application shell
