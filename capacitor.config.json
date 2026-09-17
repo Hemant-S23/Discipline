@@ -35,9 +35,8 @@
       "presentationOptions": ["badge", "sound", "alert"]
     },
     "LocalNotifications": {
-      "smallIcon": "ic_stat_icon_config_sample",
-      "iconColor": "#7C6FF7",
-      "sound": "beep.wav"
+      "smallIcon": "ic_launcher",
+      "iconColor": "#7C6FF7"
     }
   }
 }

@@ -1,11 +1,39 @@
 // ============================================================
 // reminders.js — Cross-platform Daily Habit Reminders
 // Supports Native Android (LocalNotifications) + Web Notifications
+// Features: Notification Channels, Exact Alarms, PNG Icons & Motivational Quotes
 // ============================================================
 
 import { getActiveHabits, getHabits, isCompleted, today } from './data.js?v=6.0';
 import { calculateHabitStreak } from './streaks.js?v=6.0';
 import { showToast } from './ui.js?v=6.0';
+
+export const CHANNEL_ID = 'discipline_reminders';
+
+/**
+ * Curated motivational quotes focusing on discipline, habit, and obsession.
+ */
+export const MOTIVATIONAL_QUOTES = [
+  "Discipline is choosing between what you want now and what you want most.",
+  "Obsession is what lazy people call dedication.",
+  "We don't rise to our expectations; we fall to the level of our training.",
+  "Consistency is the DNA of mastery.",
+  "Action cures anxiety; relentless discipline builds freedom.",
+  "The pain of discipline is far lighter than the pain of regret.",
+  "Small disciplined habits compounded daily create unstoppable results.",
+  "You don't need fleeting motivation. You need unbroken discipline.",
+  "Win the morning, conquer the day. Show up now.",
+  "Greatness is forged in the silence of daily repetition.",
+  "Be obsessed with becoming the highest version of yourself.",
+  "The only bad habit session is the one you skipped.",
+  "Self-discipline is the master key to personal freedom.",
+  "Repetition creates conviction; conviction creates destiny."
+];
+
+export function getRandomMotivationalQuote() {
+  const idx = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+  return MOTIVATIONAL_QUOTES[idx];
+}
 
 /**
  * Generate a deterministic positive 32-bit integer from a habit string ID.
@@ -22,13 +50,56 @@ export function getNotificationId(habitId) {
 }
 
 /**
+ * Calculate the next upcoming Date for a given hour and minute.
+ * If the time has already passed today, schedules for tomorrow.
+ */
+export function getNextScheduledDate(hour, minute) {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hour, minute, 0, 0);
+  if (target.getTime() <= now.getTime()) {
+    target.setDate(target.getDate() + 1);
+  }
+  return target;
+}
+
+/**
+ * Ensure Android 8.0+ Notification Channel exists with high priority.
+ * Modern Android drops notifications if no channel is specified!
+ */
+export async function ensureNotificationChannel() {
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    const LocalNotifications = window.Capacitor.Plugins?.LocalNotifications;
+    if (LocalNotifications && LocalNotifications.createChannel) {
+      try {
+        await LocalNotifications.createChannel({
+          id: CHANNEL_ID,
+          name: 'Habit & Discipline Reminders',
+          description: 'Daily habit reminders with motivational quotes',
+          importance: 5, // High priority: pops heads-up banner & plays sound
+          visibility: 1, // Visible on lockscreen
+          vibration: true,
+          lights: true,
+          lightColor: '#7C6FF7'
+        });
+        console.log('[Reminders] Android notification channel ensured:', CHANNEL_ID);
+      } catch (err) {
+        console.warn('[Reminders] Error creating notification channel:', err);
+      }
+    }
+  }
+}
+
+/**
  * Request notification permissions across Native (Capacitor) and Web.
  */
 export async function requestNotificationPermission() {
+  // 1. Native Android / iOS via Capacitor
   if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
     const LocalNotifications = window.Capacitor.Plugins?.LocalNotifications;
     if (LocalNotifications) {
       try {
+        await ensureNotificationChannel();
         const check = await LocalNotifications.checkPermissions();
         if (check.display === 'granted') return true;
         const req = await LocalNotifications.requestPermissions();
@@ -40,7 +111,7 @@ export async function requestNotificationPermission() {
     return false;
   }
 
-  // Web Browser
+  // 2. Web Browser
   if ('Notification' in window) {
     if (Notification.permission === 'granted') return true;
     if (Notification.permission !== 'denied') {
@@ -75,9 +146,10 @@ export async function scheduleHabitReminder(habit) {
 
   const notifId = getNotificationId(habit.id);
   const streak = calculateHabitStreak(habit.id);
-  const streakMsg = streak.current > 0 ? ` (${streak.current} day streak! 🔥)` : '';
-  const title = `Time to ${habit.name}!`;
-  const body = `Stay disciplined today${streakMsg}. Tap to complete.`;
+  const streakMsg = streak.current > 0 ? ` (${streak.current}d streak 🔥)` : '';
+  const quote = getRandomMotivationalQuote();
+  const title = `Time to ${habit.name}!${streakMsg}`;
+  const body = `"${quote}" · Tap to mark complete.`;
 
   // 1. Android Native (Capacitor LocalNotifications)
   if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
@@ -85,25 +157,32 @@ export async function scheduleHabitReminder(habit) {
     if (LocalNotifications) {
       try {
         await requestNotificationPermission();
+        await ensureNotificationChannel();
+
         // Cancel previous notification if any
         try {
           await LocalNotifications.cancel({ notifications: [{ id: notifId }] });
         } catch (e) {}
+
+        const nextDate = getNextScheduledDate(hour, minute);
 
         await LocalNotifications.schedule({
           notifications: [{
             id: notifId,
             title: title,
             body: body,
+            channelId: CHANNEL_ID,
+            smallIcon: 'ic_launcher',
+            iconColor: '#7C6FF7',
             schedule: {
-              on: { hour: hour, minute: minute },
-              repeats: true,
+              at: nextDate,
+              every: 'day',
               allowWhileIdle: true
             },
             extra: { habitId: habit.id }
           }]
         });
-        console.log(`[Reminders] Native reminder scheduled for "${habit.name}" at ${hour}:${String(minute).padStart(2, '0')} (ID: ${notifId})`);
+        console.log(`[Reminders] Native reminder scheduled for "${habit.name}" at ${nextDate.toISOString()} (every: 'day', ID: ${notifId}, channel: ${CHANNEL_ID})`);
       } catch (err) {
         console.warn('[Reminders] Error scheduling native reminder:', err);
       }
@@ -143,6 +222,8 @@ export async function cancelHabitReminder(habitId) {
  */
 export async function syncAllHabitReminders() {
   try {
+    await ensureNotificationChannel();
+
     const activeHabits = getActiveHabits();
     const allHabits = getHabits();
     const activeIds = new Set(activeHabits.map(h => h.id));
@@ -193,16 +274,21 @@ function _startWebReminderChecker() {
         if (!h.reminderTime || h.reminderTime !== currentMinuteStr) continue;
         if (isCompleted(h.id, todayStr)) continue;
 
-        // Fire web notification if permitted
+        const streak = calculateHabitStreak(h.id);
+        const streakMsg = streak.current > 0 ? ` (${streak.current}d streak 🔥)` : '';
+        const quote = getRandomMotivationalQuote();
+        const title = `Time to ${h.name}!${streakMsg}`;
+        const body = `"${quote}" · Tap to complete.`;
+
+        // Fire web notification if permitted (using high-res PNG for Android Chrome compatibility)
         if ('Notification' in window && Notification.permission === 'granted') {
-          const streak = calculateHabitStreak(h.id);
-          const streakMsg = streak.current > 0 ? ` (${streak.current} day streak! 🔥)` : '';
-          new Notification(`Time to ${h.name}!`, {
-            body: `Stay disciplined today${streakMsg}. Tap to mark as complete.`,
-            icon: './favicon.svg'
+          new Notification(title, {
+            body: body,
+            icon: './icons/icon-192.png',
+            badge: './icons/icon-192.png'
           });
         } else {
-          showToast(`⏰ Reminder: Time for ${h.name}!`, 'info', 6000);
+          showToast(`⏰ ${title} — ${quote}`, 'info', 6000);
         }
       }
     } catch (e) {}
@@ -213,6 +299,9 @@ function _startWebReminderChecker() {
  * Initialize reminder listeners and notification click handlers.
  */
 export function initReminders() {
+  // Ensure Android notification channel is registered on startup
+  ensureNotificationChannel();
+
   // Listen for native notification clicks
   if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
     const LocalNotifications = window.Capacitor.Plugins?.LocalNotifications;
