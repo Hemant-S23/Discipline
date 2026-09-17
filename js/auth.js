@@ -564,6 +564,12 @@ export async function loginWithGoogle() {
             console.log('[GoogleAuth] initialize notice:', initErr);
           }
 
+          // If no user is currently authenticated in Firebase, clear any cached native Google session
+          // so Google Play Services always displays the Google Account Chooser dialog
+          if (!auth.currentUser) {
+            try { await GoogleAuth.signOut(); } catch(e) {}
+          }
+
           let googleUser;
           try {
             googleUser = await GoogleAuth.signIn();
@@ -678,8 +684,9 @@ export async function resetPassword(email) {
 
 export async function logoutUser() {
   stopRealtimeSync();
-  if (window.Capacitor?.Plugins?.GoogleAuth?.signOut) {
+  if (window.Capacitor?.Plugins?.GoogleAuth) {
     try { await window.Capacitor.Plugins.GoogleAuth.signOut(); } catch(e) {}
+    try { if (window.Capacitor.Plugins.GoogleAuth.disconnect) await window.Capacitor.Plugins.GoogleAuth.disconnect(); } catch(e) {}
   }
   if (isFirebaseConfigured && auth) {
     try { await signOut(auth); } catch(e) {}
@@ -691,39 +698,64 @@ export async function logoutUser() {
 }
 
 export async function deleteAccountAndData() {
-  const user = auth?.currentUser;
+  stopRealtimeSync();
 
-  if (user && isFirebaseConfigured) {
-    // 1. Delete user's document in Firestore (best-effort)
-    if (db) {
+  const user = auth?.currentUser;
+  const currentUser = getUser();
+  const email = (user?.email || currentUser?.email || '').toLowerCase().trim();
+  const uid = user?.uid || currentUser?.uid || '';
+  const accountKey = getAccountKey(uid, email);
+
+  // 1. Delete user's document in Firestore BEFORE deleting auth user or signing out!
+  if (isFirebaseConfigured && db) {
+    if (accountKey) {
       try {
-        await deleteDoc(doc(db, 'users', user.uid));
+        await deleteDoc(doc(db, 'users', accountKey));
+        console.log('[DeleteAccount] Deleted Firestore user doc (accountKey):', accountKey);
       } catch (docErr) {
-        console.warn('Could not delete user Firestore doc (permissions or non-existent):', docErr?.code, docErr);
+        console.warn('Could not delete user Firestore doc (accountKey):', docErr?.code, docErr);
       }
     }
 
-    // 2. Delete the user from Firebase Authentication (best-effort)
+    if (uid && uid !== accountKey) {
+      try {
+        await deleteDoc(doc(db, 'users', uid));
+        console.log('[DeleteAccount] Deleted Firestore user doc (uid):', uid);
+      } catch (docErr) {
+        console.warn('Could not delete user Firestore doc (uid):', docErr?.code, docErr);
+      }
+    }
+  }
+
+  // 2. Disconnect and Sign Out native Google Auth (clears Google Play Services cache on Android)
+  if (window.Capacitor?.Plugins?.GoogleAuth) {
+    try { await window.Capacitor.Plugins.GoogleAuth.signOut(); } catch(e) {}
+    try { if (window.Capacitor.Plugins.GoogleAuth.disconnect) await window.Capacitor.Plugins.GoogleAuth.disconnect(); } catch(e) {}
+  }
+
+  // 3. Delete the user from Firebase Authentication (best-effort)
+  if (user) {
     try {
       await deleteUser(user);
     } catch (authErr) {
       console.warn('deleteUser error/notice:', authErr?.code, authErr?.message);
     }
+  }
 
-    // Guarantee Firebase session is signed out so user is never kept logged in
+  // 4. Guarantee Firebase session is signed out so user is never kept logged in
+  if (isFirebaseConfigured && auth) {
     try {
       await signOut(auth);
     } catch (e) {}
   }
 
-  // Remove from local registered accounts list if stored
-  const currentUser = getUser();
-  if (currentUser?.email) {
-    const accounts = load('discipline_accounts', []).filter(a => a.email.toLowerCase() !== currentUser.email.toLowerCase());
+  // 5. Remove from local registered accounts list if stored
+  if (email) {
+    const accounts = load('discipline_accounts', []).filter(a => a.email.toLowerCase() !== email);
     save('discipline_accounts', accounts);
   }
 
-  // Clear all local app state & active reward
+  // 6. Clear all local app state & active reward
   try {
     localStorage.removeItem('discipline_active_reward');
     localStorage.removeItem('discipline_accounts');
