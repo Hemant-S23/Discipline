@@ -1006,7 +1006,13 @@
           <input type="time" class="form-input" id="habit-reminder-input" />
         </div>
 
-        <button type="submit" class="btn-primary full-width" id="habit-modal-submit">Create Habit</button>
+        <div class="habit-modal-actions-row" style="display:flex;gap:10px;align-items:center;margin-top:16px;">
+          <button type="button" id="habit-modal-delete-btn" class="btn-secondary" style="display:none;align-items:center;justify-content:center;gap:6px;color:var(--danger,#ef4444);border-color:rgba(239,68,68,0.3);padding:13px 20px;font-weight:600;border-radius:var(--radius-pill);white-space:nowrap;" onclick="handleModalDeleteHabit()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span>Delete</span>
+          </button>
+          <button type="submit" class="btn-primary full-width" id="habit-modal-submit" style="flex:1">Create Habit</button>
+        </div>
       </form>
     </div>
   </div>
@@ -1202,6 +1208,54 @@
         <button type="button" class="btn-secondary" data-close-modal="modal-archive">Cancel</button>
         <button type="button" class="btn-archive-confirm" id="archive-confirm-action-btn">
           <span>Archive Habit</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Custom Delete Habit Confirmation Modal ─────────────────── -->
+<div id="modal-delete-habit" class="modal-overlay">
+  <div class="modal archive-modal">
+    <div class="modal-header">
+      <div class="archive-header-title">
+        <div class="archive-icon-badge confirm-icon-badge" style="color:var(--danger,#ef4444)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <h2>Delete Habit</h2>
+      </div>
+      <button class="modal-close" data-close-modal="modal-delete-habit">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="archive-modal-subtext">Are you sure you want to permanently delete this habit?</p>
+      
+      <div class="archive-habit-card-preview" id="delete-habit-preview">
+        <div class="archive-habit-icon" id="delete-modal-habit-icon"></div>
+        <div class="archive-habit-info">
+          <div class="archive-habit-name" id="delete-modal-habit-name">Habit</div>
+          <div class="archive-habit-meta" id="delete-modal-habit-meta">Category · Frequency</div>
+        </div>
+        <div class="archive-habit-badge" id="delete-modal-habit-streak" style="color:var(--danger,#ef4444);background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25)">0 day streak</div>
+      </div>
+
+      <div class="archive-notice-box" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.25);color:var(--text-2)">
+        <span class="notice-icon" style="color:var(--danger,#ef4444);display:flex;align-items:center;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <span class="notice-text">
+          <strong>Warning:</strong> This cannot be undone. This habit and all of its history will be permanently deleted.
+        </span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-close-modal="modal-delete-habit">Cancel</button>
+        <button type="button" class="btn-delete-confirm" id="delete-confirm-action-btn">
+          <span>Delete Habit</span>
         </button>
       </div>
     </div>

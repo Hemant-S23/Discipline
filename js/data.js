@@ -118,6 +118,8 @@ export function restoreHabit(id) {
 export function deleteHabitPermanently(id) {
   const habits = getHabits().filter(h => h.id !== id);
   saveHabits(habits);
+  const completions = getCompletions().filter(c => c.habitId !== id);
+  saveCompletions(completions);
 }
 export function getHabitById(id) {
   return getHabits().find(h => h.id === id) || null;

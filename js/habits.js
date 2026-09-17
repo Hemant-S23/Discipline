@@ -3,7 +3,7 @@
 // ============================================================
 
 import {
-  getActiveHabits, getArchivedHabits, addHabit, updateHabit, archiveHabit, restoreHabit,
+  getActiveHabits, getArchivedHabits, addHabit, updateHabit, archiveHabit, restoreHabit, deleteHabitPermanently,
   getCompletions, isCompleted, markComplete, hasAwardedXpToday, today, isHabitScheduledForDate,
   getHabitConsistency, getHabitById
 } from './data.js?v=6.0';
@@ -396,6 +396,7 @@ export function renderHabitsPage(filter = 'all') {
           <div class="habit-card-menu">
             <button onclick="openEditHabitModal('${h.id}')" title="Edit" class="icon-action-btn">${ICONS_SVG['edit']}</button>
             <button onclick="confirmArchive('${h.id}')" title="Archive" class="icon-action-btn">${ICONS_SVG['archive']}</button>
+            <button onclick="confirmDeleteHabit('${h.id}')" title="Delete Habit" class="icon-action-btn icon-delete-btn" style="color:var(--danger,#ef4444);">${ICONS_SVG['trash']}</button>
           </div>
         </div>
         <div class="habit-card-stats">
@@ -440,6 +441,8 @@ export function openAddHabitModal() {
   document.getElementById('habit-modal-title').textContent  = 'Create New Habit';
   document.getElementById('habit-modal-submit').textContent = 'Create Habit';
   document.getElementById('habit-form').reset();
+  const deleteBtn = document.getElementById('habit-modal-delete-btn');
+  if (deleteBtn) deleteBtn.style.display = 'none';
 
   // Reset frequency selection to 'daily'
   document.querySelectorAll('.freq-option').forEach(el => {
@@ -469,6 +472,8 @@ export function openEditHabitModal(id) {
 
   document.getElementById('habit-modal-title').textContent  = 'Edit Habit';
   document.getElementById('habit-modal-submit').textContent = 'Save Changes';
+  const deleteBtn = document.getElementById('habit-modal-delete-btn');
+  if (deleteBtn) deleteBtn.style.display = 'inline-flex';
   document.getElementById('habit-name-input').value         = h.name;
   document.getElementById('habit-category-select').value    = h.category;
   document.getElementById('habit-reminder-input').value     = h.reminderTime || '';
@@ -615,6 +620,47 @@ window.confirmArchive = function(id) {
   openModal('modal-archive');
 };
 
+window.confirmDeleteHabit = function(id) {
+  const h = getHabitById(id);
+  if (!h) return;
+
+  const streak = calculateHabitStreak(id);
+
+  const nameEl   = document.getElementById('delete-modal-habit-name');
+  const iconEl   = document.getElementById('delete-modal-habit-icon');
+  const metaEl   = document.getElementById('delete-modal-habit-meta');
+  const streakEl = document.getElementById('delete-modal-habit-streak');
+  const confirmBtn = document.getElementById('delete-confirm-action-btn');
+
+  if (nameEl)   nameEl.textContent = h.name;
+  if (iconEl) {
+    iconEl.innerHTML = getHabitSvg(h.icon, 24);
+    iconEl.style.background = h.color ? h.color + '18' : 'var(--surface-2)';
+  }
+  if (metaEl)   metaEl.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px">${CATEGORY_ICONS[h.category] || ''} ${CATEGORY_LABELS[h.category] || h.category} · ${h.frequency}</span>`;
+  if (streakEl) streakEl.textContent = `${streak.current} ${streak.current === 1 ? 'day' : 'days'} streak`;
+
+  if (confirmBtn) {
+    confirmBtn.onclick = () => {
+      deleteHabitPermanently(id);
+      closeModal('modal-delete-habit');
+      closeModal('modal-habit');
+      showToast('Habit deleted', 'info');
+      renderHabitsPage(window._currentHabitFilter || 'all');
+      renderArchivedHabits();
+      if (window._renderDashboard) window._renderDashboard();
+      if (window.renderStreaksPage) window.renderStreaksPage();
+    };
+  }
+
+  openModal('modal-delete-habit');
+};
+
+window.handleModalDeleteHabit = function() {
+  if (!editingHabitId) return;
+  window.confirmDeleteHabit(editingHabitId);
+};
+
 
 // ── Milestones + Achievement Modals ───────────────────────────
 function showMilestoneModal(milestone, streak) {
@@ -656,7 +702,10 @@ export function renderArchivedHabits() {
         <div class="settings-row-label" style="display:flex;align-items:center;gap:8px">${getHabitSvg(h.icon, 16)} ${h.name}</div>
         <div class="settings-row-desc">Archived ${new Date(h.archivedAt).toLocaleDateString()}</div>
       </div>
-      <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="restoreHabitUI('${h.id}')">Restore</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="restoreHabitUI('${h.id}')">Restore</button>
+        <button class="btn-secondary" style="font-size:12px;padding:6px 12px;color:var(--danger,#ef4444);border-color:rgba(239,68,68,0.25)" onclick="confirmDeleteHabit('${h.id}')">Delete</button>
+      </div>
     </div>
   `).join('');
 }

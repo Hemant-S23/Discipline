@@ -541,6 +541,7 @@
   border: 1px solid var(--border);
 }
 .habit-card-menu button:hover { background: var(--accent-10); color: var(--accent); border-color: var(--accent); }
+.habit-card-menu button.icon-delete-btn:hover { background: var(--danger-10, rgba(239, 68, 68, 0.1)); color: var(--danger, #ef4444); border-color: rgba(239, 68, 68, 0.35); }
 
 .habit-card-stats {
   display: grid;
@@ -3227,6 +3228,29 @@
 }
 
 .btn-archive-confirm:active {
+  transform: scale(0.97);
+}
+
+.btn-delete-confirm {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
+  border: none;
+  transition: all var(--t-spring);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-delete-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.50);
+}
+
+.btn-delete-confirm:active {
   transform: scale(0.97);
 }
 
