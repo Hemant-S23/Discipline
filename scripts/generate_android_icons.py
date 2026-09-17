@@ -40,15 +40,17 @@ def render_foreground_symbol(size):
     target_diameter = visible_diameter * 0.686
     max_radius = target_diameter / 2.0
 
-    stroke_w = max_radius * 0.20
-    r_mid = max_radius * 0.533
-    r_inner = max_radius * 0.267
+    # Exact mathematical geometry matching favicon.svg (R_outer=180, R_mid=114, R_inner=48, stroke=36)
+    # Note: Pillow draws stroke inwards from bounding box, so r_mid_outer must be the outer edge (114/180)
+    stroke_w = max_radius * (36.0 / 180.0)
+    r_mid_outer = max_radius * (114.0 / 180.0)
+    r_inner = max_radius * (48.0 / 180.0)
 
-    # Outer ring
+    # Outer ring (outer boundary = max_radius, inner boundary = max_radius - stroke_w)
     draw.ellipse([cx - max_radius, cy - max_radius, cx + max_radius, cy + max_radius], outline=COLOR, width=int(round(stroke_w)))
-    # Middle ring
-    draw.ellipse([cx - r_mid, cy - r_mid, cx + r_mid, cy + r_mid], outline=COLOR, width=int(round(stroke_w)))
-    # Inner dot
+    # Middle ring (outer boundary = r_mid_outer, inner boundary = r_mid_outer - stroke_w)
+    draw.ellipse([cx - r_mid_outer, cy - r_mid_outer, cx + r_mid_outer, cy + r_mid_outer], outline=COLOR, width=int(round(stroke_w)))
+    # Inner dot (radius = r_inner)
     draw.ellipse([cx - r_inner, cy - r_inner, cx + r_inner, cy + r_inner], fill=COLOR)
 
     return img.resize((size, size), Image.Resampling.LANCZOS)
@@ -67,14 +69,15 @@ def render_legacy_icon(size, round_icon=False):
     target_diameter = canvas_size * 0.686
     max_radius = target_diameter / 2.0
 
-    stroke_w = max_radius * 0.20
-    r_mid = max_radius * 0.533
-    r_inner = max_radius * 0.267
+    # Exact mathematical geometry matching favicon.svg
+    stroke_w = max_radius * (36.0 / 180.0)
+    r_mid_outer = max_radius * (114.0 / 180.0)
+    r_inner = max_radius * (48.0 / 180.0)
 
     # Outer ring
     draw.ellipse([cx - max_radius, cy - max_radius, cx + max_radius, cy + max_radius], outline=COLOR, width=int(round(stroke_w)))
     # Middle ring
-    draw.ellipse([cx - r_mid, cy - r_mid, cx + r_mid, cy + r_mid], outline=COLOR, width=int(round(stroke_w)))
+    draw.ellipse([cx - r_mid_outer, cy - r_mid_outer, cx + r_mid_outer, cy + r_mid_outer], outline=COLOR, width=int(round(stroke_w)))
     # Inner dot
     draw.ellipse([cx - r_inner, cy - r_inner, cx + r_inner, cy + r_inner], fill=COLOR)
 
