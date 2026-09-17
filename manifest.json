@@ -1,10 +1,10 @@
 {
-  "name": "Discipline — Habit & Streak Tracker",
-  "short_name": "Discipline",
+  "name": "GritLoop — Habit & Streak Tracker",
+  "short_name": "GritLoop",
   "description": "Build the person you promised yourself you'd become. Track daily habits, consistency, unbroken streaks, and earn milestone rewards.",
   "start_url": "./",
   "scope": "./",
-  "id": "/discipline-app",
+  "id": "/gritloop-app",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait",

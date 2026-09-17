@@ -1,9 +1,9 @@
 // ============================================================
-// sw.js — Service Worker for Discipline PWA
+// sw.js — Service Worker for GritLoop PWA
 // Offline caching, fast background updates, and standalone support
 // ============================================================
 
-const CACHE_NAME = 'discipline-v1.0.4';
+const CACHE_NAME = 'gritloop-v1.0.0';
 
 const PRECACHE_ASSETS = [
   './',

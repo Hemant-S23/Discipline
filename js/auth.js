@@ -806,7 +806,7 @@ export async function checkEmailVerification() {
       });
       await uploadLocalDataToCloud(user.uid, user.email);
       closeModal('modal-verify-email');
-      showToast('Email verified! Welcome to Discipline.', 'success');
+      showToast('Email verified! Welcome to GritLoop.', 'success');
       if (window._updateAccountUI) window._updateAccountUI(user);
       if (typeof window.proceedAfterAuth === 'function') {
         window.proceedAfterAuth();
