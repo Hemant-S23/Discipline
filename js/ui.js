@@ -241,10 +241,62 @@ export function getTodayLong() {
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-// ── Animate habit check ───────────────────────────────────────
+// ── Animate habit check with Spring Bounce & Particle Sparkles ──
 export function animateHabitComplete(checkEl) {
+  if (!checkEl) return;
   checkEl.classList.add('habit-bounce');
+  triggerCheckSparkles(checkEl);
   setTimeout(() => checkEl.classList.remove('habit-bounce'), 600);
+}
+
+// ── Micro Sparkles Particle Burst ─────────────────────────────
+export function triggerCheckSparkles(btnEl) {
+  if (!btnEl) return;
+  const colors = ['#7C6FF7', '#F59E0B', '#10B981', '#EC4899', '#60A5FA'];
+  const container = document.createElement('div');
+  container.className = 'check-sparkle-container';
+  btnEl.style.position = 'relative';
+  btnEl.appendChild(container);
+
+  const numParticles = 8;
+  for (let i = 0; i < numParticles; i++) {
+    const particle = document.createElement('span');
+    particle.className = 'check-sparkle';
+    const angle = (i / numParticles) * 2 * Math.PI + (Math.random() * 0.3);
+    const distance = 24 + Math.random() * 16;
+    const tx = Math.cos(angle) * distance;
+    const ty = Math.sin(angle) * distance;
+    particle.style.setProperty('--tx', `${tx}px`);
+    particle.style.setProperty('--ty', `${ty}px`);
+    particle.style.backgroundColor = colors[i % colors.length];
+    particle.style.boxShadow = `0 0 6px ${colors[i % colors.length]}`;
+    container.appendChild(particle);
+  }
+
+  setTimeout(() => {
+    container.remove();
+  }, 650);
+}
+
+// ── Smooth Number Counter Animation ───────────────────────────
+export function animateNumber(el, target, duration = 750) {
+  if (!el) return;
+  const start = parseInt(el.textContent, 10) || 0;
+  if (start === target) return;
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(start + (target - start) * ease);
+    el.textContent = current;
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      el.textContent = target;
+    }
+  }
+  requestAnimationFrame(update);
 }
 
 // ── Streak fire pulse ─────────────────────────────────────────

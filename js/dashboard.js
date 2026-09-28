@@ -10,7 +10,7 @@ import {
 import { getLevelInfo, getCurrentLevelInfo, awardXP } from './xp.js?v=6.0';
 import { calculateHabitStreak, calculateGlobalStreak } from './streaks.js?v=6.0';
 import { renderTodayHabits } from './habits.js?v=6.0';
-import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat } from './ui.js?v=6.0';
+import { getGreeting, getDailyQuote, getTodayLong, pctBar, formatNumber, showToast, showXPFloat, animateNumber } from './ui.js?v=6.0';
 
 let chartDaily = null;
 let chartWeekly = null;
@@ -88,7 +88,7 @@ function renderScoreCard() {
   const numEl   = document.getElementById('dash-score-number');
   const ringEl  = document.getElementById('score-ring');
 
-  if (numEl) numEl.textContent = score;
+  if (numEl) animateNumber(numEl, score, 800);
 
   if (ringEl) {
     const circumference = 2 * Math.PI * 45; // r=45

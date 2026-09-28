@@ -79,10 +79,11 @@ function renderMatrix() {
   });
   html += '</tr></thead><tbody>';
 
-  habits.forEach(h => {
+  habits.forEach((h, rowIdx) => {
     const createdDate = h.createdAt ? h.createdAt.slice(0, 10) : todayStr;
+    const delay = Math.min(rowIdx * 35, 400);
 
-    html += `<tr><td><div class="matrix-habit-name"><span class="matrix-habit-icon">${getHabitSvg(h.icon, 15)}</span> ${h.name}</div></td>`;
+    html += `<tr class="matrix-row-fade" style="animation-delay:${delay}ms"><td><div class="matrix-habit-name"><span class="matrix-habit-icon">${getHabitSvg(h.icon, 15)}</span> ${h.name}</div></td>`;
     days.forEach(d => {
       const isBeforeCreated = d.dateStr < createdDate;
       const scheduled = isHabitScheduledForDate(h, d.dateStr);
