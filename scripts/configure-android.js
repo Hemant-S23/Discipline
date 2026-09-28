@@ -67,22 +67,22 @@ if (fs.existsSync(srcKeystore)) {
   console.warn('[WARNING] android-config/debug.keystore not found!');
 }
 
-// 3. Configure strings.xml (add server_client_id)
+// 3. Configure strings.xml (ensure GritLoop app_name & add server_client_id)
 const STRINGS_XML = path.join(APP_DIR, 'src', 'main', 'res', 'values', 'strings.xml');
 const SERVER_CLIENT_ID = '356781067799-5su4b6r7tfgpgpm590cd4b0f1853jeu5.apps.googleusercontent.com';
 
 if (fs.existsSync(STRINGS_XML)) {
   let stringsContent = fs.readFileSync(STRINGS_XML, 'utf8');
+  stringsContent = stringsContent.replace(/<string name="app_name">.*?<\/string>/, '<string name="app_name">GritLoop</string>');
+  stringsContent = stringsContent.replace(/<string name="title_activity_main">.*?<\/string>/, '<string name="title_activity_main">GritLoop</string>');
   if (!stringsContent.includes('server_client_id')) {
     stringsContent = stringsContent.replace(
       '</resources>',
       `    <string name="server_client_id">${SERVER_CLIENT_ID}</string>\n</resources>`
     );
-    fs.writeFileSync(STRINGS_XML, stringsContent, 'utf8');
-    console.log('[SUCCESS] Added server_client_id to strings.xml');
-  } else {
-    console.log('[INFO] server_client_id already in strings.xml');
   }
+  fs.writeFileSync(STRINGS_XML, stringsContent, 'utf8');
+  console.log('[SUCCESS] Configured strings.xml with GritLoop and server_client_id');
 }
 
 // 4. Configure MainActivity.java

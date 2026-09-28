@@ -1,4 +1,4 @@
-name: Build Discipline APK
+name: Build GritLoop APK
 
 on:
   push:
@@ -78,12 +78,16 @@ jobs:
           grep -E "Variant:|Config:|Store:|Alias:|MD5:|SHA1:|SHA-256:" signing_report.txt >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
 
+      # ── 8c. Rename APK to GritLoop ─────────────────────────────
+      - name: Rename APK to GritLoop
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/gritloop-debug.apk
+
       # ── 9. Upload debug APK as artifact ────────────────────────
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: discipline-debug-${{ github.run_number }}
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: gritloop-debug-${{ github.run_number }}
+          path: android/app/build/outputs/apk/debug/gritloop-debug.apk
           retention-days: 30
 
       # ── 10. Build RELEASE APK (only on version tags) ──────────
@@ -113,12 +117,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          name: Discipline ${{ github.ref_name }}
+          name: GritLoop ${{ github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
           files: |
-            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/gritloop-debug.apk
             ${{ steps.sign_apk.outputs.signedReleaseFile || 'android/app/build/outputs/apk/release/app-release-unsigned.apk' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

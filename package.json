@@ -1,7 +1,7 @@
 {
   "name": "discipline-app",
   "version": "1.0.0",
-  "description": "Discipline — Habit & Streak Tracker",
+  "description": "GritLoop — Habit & Streak Tracker",
   "private": true,
   "scripts": {
     "build": "node scripts/copy-web.js",

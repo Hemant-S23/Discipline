@@ -1,6 +1,6 @@
 {
   "appId": "com.discipline.habittracker",
-  "appName": "Discipline",
+  "appName": "GritLoop",
   "webDir": "www",
   "server": {
     "androidScheme": "https",
