@@ -674,17 +674,23 @@ window.setLandingTab = function(m) {
   const tabSignup = document.getElementById('landing-tab-signup');
   const nameGroup = document.getElementById('landing-name-group');
   const submitBtn = document.getElementById('landing-submit-btn');
+  const headingEl = document.querySelector('.landing-auth-heading');
+  const subEl = document.querySelector('.landing-auth-sub');
 
   if (m === 'signin') {
     tabSignin?.classList.add('active');
     tabSignup?.classList.remove('active');
     nameGroup?.classList.add('hidden');
     if (submitBtn) submitBtn.textContent = 'Sign In with Email';
+    if (headingEl) headingEl.textContent = 'Welcome Back';
+    if (subEl) subEl.textContent = 'Sign in or create your account to sync your habits';
   } else {
     tabSignup?.classList.add('active');
     tabSignin?.classList.remove('active');
     nameGroup?.classList.remove('hidden');
     if (submitBtn) submitBtn.textContent = 'Create Free Account';
+    if (headingEl) headingEl.textContent = 'Create Account';
+    if (subEl) subEl.textContent = 'Start your journey to unbroken daily discipline';
   }
 };
 

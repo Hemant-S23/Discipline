@@ -3,7 +3,7 @@
 // Offline caching, fast background updates, and standalone support
 // ============================================================
 
-const CACHE_NAME = 'gritloop-v1.0.0';
+const CACHE_NAME = 'gritloop-v1.0.1';
 
 const PRECACHE_ASSETS = [
   './',
@@ -16,6 +16,7 @@ const PRECACHE_ASSETS = [
   './icons/icon-maskable-192.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
+  './icons/qr-gritloop.png',
   './css/main.css',
   './css/components.css',
   './css/animations.css',
