@@ -11,7 +11,7 @@ const ROOT = path.resolve(__dirname, '..');
 const DEST = path.join(ROOT, 'www');
 
 // Folders and files to copy from project root → www/
-const COPY_DIRS  = ['css', 'js', 'icons'];
+const COPY_DIRS  = ['css', 'js', 'icons', 'download'];
 const COPY_FILES = ['index.html', 'manifest.json', 'sw.js', 'favicon.ico', 'favicon.svg', 'CNAME', 'download.html'];
 
 function ensureDir(dir) {
